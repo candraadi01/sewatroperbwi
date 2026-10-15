@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Mountain,
   LayoutDashboard,
@@ -22,11 +22,10 @@ import {
   Menu,
   X,
   LogOut,
-  ChevronDown,
   Newspaper,
   HelpCircle,
-} from 'lucide-react';
-import { cn } from '@/components/ui';
+} from "lucide-react";
+import { cn } from "@/components/ui";
 
 interface AdminUser {
   id: string;
@@ -48,45 +47,51 @@ interface NavItem {
 
 const navGroups: NavGroup[] = [
   {
-    label: 'Utama',
+    label: "Utama",
     items: [
-      { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-      { label: 'Pesanan', href: '/admin/pesanan', icon: ShoppingBag },
+      { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+      { label: "Pesanan", href: "/admin/pesanan", icon: ShoppingBag },
     ],
   },
   {
-    label: 'Katalog',
+    label: "Katalog",
     items: [
-      { label: 'Produk', href: '/admin/produk', icon: Package },
-      { label: 'Harga', href: '/admin/harga', icon: CreditCard },
-      { label: 'Kalender', href: '/admin/kalender', icon: Calendar },
-      { label: 'Promo', href: '/admin/promo', icon: Tag },
+      { label: "Produk", href: "/admin/produk", icon: Package },
+      { label: "Kategori", href: "/admin/kategori", icon: Package },
+      { label: "Penjemputan", href: "/admin/penjemputan", icon: Calendar },
+      { label: "Kuota", href: "/admin/kuota", icon: Calendar },
+      { label: "Harga", href: "/admin/harga", icon: CreditCard },
+      { label: "Kalender", href: "/admin/kalender", icon: Calendar },
+      { label: "Promo", href: "/admin/promo", icon: Tag },
     ],
   },
   {
-    label: 'Konten',
+    label: "Konten",
     items: [
-      { label: 'Halaman', href: '/admin/halaman', icon: FileText },
-      { label: 'Artikel', href: '/admin/artikel', icon: Newspaper },
-      { label: 'FAQ', href: '/admin/faq', icon: HelpCircle },
-      { label: 'Media', href: '/admin/media', icon: Image },
-      { label: 'Tampilan', href: '/admin/tampilan', icon: Globe },
+      { label: "Halaman", href: "/admin/halaman", icon: FileText },
+      { label: "Artikel", href: "/admin/artikel", icon: Newspaper },
+      { label: "FAQ", href: "/admin/faq", icon: HelpCircle },
+      { label: "Media", href: "/admin/media", icon: Image },
+      { label: "Tampilan", href: "/admin/tampilan", icon: Globe },
     ],
   },
   {
-    label: 'Manajemen',
+    label: "Manajemen",
     items: [
-      { label: 'Buyer', href: '/admin/buyer', icon: Users },
-      { label: 'Pembayaran', href: '/admin/pembayaran', icon: CreditCard },
-      { label: 'Notifikasi', href: '/admin/notifikasi', icon: Bell },
-      { label: 'Laporan', href: '/admin/laporan', icon: BarChart3 },
+      { label: "Buyer", href: "/admin/buyer", icon: Users },
+      { label: "Pembayaran", href: "/admin/pembayaran", icon: CreditCard },
+      { label: "Notifikasi", href: "/admin/notifikasi", icon: Bell },
+      { label: "Laporan", href: "/admin/laporan", icon: BarChart3 },
     ],
   },
   {
-    label: 'Sistem',
+    label: "Sistem",
     items: [
-      { label: 'Pengaturan', href: '/admin/pengaturan', icon: Settings },
-      { label: 'Riwayat', href: '/admin/riwayat', icon: History },
+      { label: "Pengaturan", href: "/admin/pengaturan", icon: Settings },
+      { label: "Ketentuan bisnis", href: "/admin/bisnis", icon: FileText },
+      { label: "Menu", href: "/admin/menu", icon: Globe },
+      { label: "Refund", href: "/admin/refund", icon: CreditCard },
+      { label: "Riwayat", href: "/admin/riwayat", icon: History },
     ],
   },
 ];
@@ -96,7 +101,7 @@ export function AdminSidebar({ user }: { user: AdminUser }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   function isActive(href: string) {
-    if (href === '/admin') return pathname === '/admin';
+    if (href === "/admin") return pathname === "/admin";
     return pathname.startsWith(href);
   }
 
@@ -114,7 +119,10 @@ export function AdminSidebar({ user }: { user: AdminUser }) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3" aria-label="Admin navigation">
+      <nav
+        className="flex-1 overflow-y-auto py-4 px-3"
+        aria-label="Admin navigation"
+      >
         {navGroups.map((group) => (
           <div key={group.label} className="mb-6">
             <p className="px-3 mb-2 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
@@ -126,10 +134,10 @@ export function AdminSidebar({ user }: { user: AdminUser }) {
                   <Link
                     href={item.href}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                       isActive(item.href)
-                        ? 'bg-primary-600 text-white'
-                        : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
+                        ? "bg-primary-600 text-white"
+                        : "text-neutral-300 hover:text-white hover:bg-neutral-800",
                     )}
                     onClick={() => setMobileOpen(false)}
                   >
@@ -159,10 +167,12 @@ export function AdminSidebar({ user }: { user: AdminUser }) {
         </Link>
         <div className="flex items-center gap-3 px-3 py-2">
           <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white font-semibold text-sm shrink-0">
-            {user.fullName?.[0]?.toUpperCase() || 'A'}
+            {user.fullName?.[0]?.toUpperCase() || "A"}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">{user.fullName}</p>
+            <p className="text-sm font-medium text-white truncate">
+              {user.fullName}
+            </p>
             <p className="text-xs text-neutral-500 truncate">{user.email}</p>
           </div>
         </div>
@@ -190,14 +200,13 @@ export function AdminSidebar({ user }: { user: AdminUser }) {
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
           className="p-2 text-neutral-300 hover:text-white rounded-lg"
-          aria-label={mobileOpen ? 'Tutup menu' : 'Buka menu'}
+          aria-label={mobileOpen ? "Tutup menu" : "Buka menu"}
         >
           {mobileOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
 
       {/* Mobile spacer */}
-      <div className="lg:hidden h-14" />
 
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 bg-neutral-900 z-40">

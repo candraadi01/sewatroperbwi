@@ -1,5 +1,7 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { isSupabaseConfigured } from "./config";
 
 /**
  * Supabase client untuk Server Components, Server Actions, dan Route Handlers.
@@ -9,8 +11,9 @@ import { cookies } from 'next/headers';
 export async function createClient() {
   const cookieStore = await cookies();
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';
+  if (!isSupabaseConfigured()) throw new Error("Supabase belum dikonfigurasi.");
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
   return createServerClient(url, key, {
     cookies: {
@@ -20,7 +23,7 @@ export async function createClient() {
       setAll(cookiesToSet) {
         try {
           cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
+            cookieStore.set(name, value, options),
           );
         } catch {
           // Read-only context
@@ -35,25 +38,15 @@ export async function createClient() {
  * HANYA untuk operasi terprivilege di server.
  */
 export async function createAdminClient() {
-  const cookieStore = await cookies();
-
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-key';
-
-  return createServerClient(url, key, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
-      setAll(cookiesToSet) {
-        try {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          );
-        } catch {
-          // Read-only context
-        }
-      },
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!isSupabaseConfigured() || !key || /placeholder|your-service/.test(key))
+    throw new Error("Konfigurasi server Supabase belum lengkap.");
+  // No cookies: a user session must never replace the service-role identity.
+  return createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
     },
   });
 }

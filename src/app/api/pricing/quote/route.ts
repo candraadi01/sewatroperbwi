@@ -1,32 +1,39 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { calculateQuote } from '@/lib/pricing/engine';
-
-export async function POST(req: NextRequest) {
+import { rateLimit } from "@/lib/security/rate-limit";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { NextResponse } from "next/server";
+import { calculateQuote } from "@/lib/pricing/engine";
+import {
+  assertSameOrigin,
+  readJson,
+  RequestError,
+  errorResponse,
+} from "@/lib/security/http";
+import { quoteRequestSchema } from "@/lib/validations/requests";
+export async function POST(request: Request) {
   try {
-    const body = await req.json();
-
-    if (!body.serviceDate) {
-      return NextResponse.json(
-        { error: 'Pilih tanggal sewa terlebih dahulu' },
-        { status: 400 }
+    assertSameOrigin(request);
+    const parsed = quoteRequestSchema.safeParse(await readJson(request));
+    if (!parsed.success) throw new RequestError(parsed.error.issues[0].message);
+    if (isSupabaseConfigured())
+      await rateLimit(
+        "quote:" +
+          (request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+            "unknown"),
+        60,
+      );
+    let data;
+    try {
+      data = await calculateQuote(parsed.data);
+    } catch (e) {
+      throw new RequestError(
+        e instanceof Error ? e.message : "Harga belum dapat dihitung.",
       );
     }
-
-    const quote = await calculateQuote({
-      productId: body.productId,
-      productSlug: body.productSlug,
-      serviceDate: body.serviceDate,
-      startTime: body.startTime,
-      numUnits: Number(body.numUnits) || 1,
-      numPassengers: Number(body.numPassengers) || 1,
-      pickupZoneId: body.pickupZoneId,
-      pickupAddress: body.pickupAddress,
-      promoCode: body.promoCode,
-    });
-
-    return NextResponse.json({ success: true, data: quote });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Gagal menghitung penawaran harga';
-    return NextResponse.json({ error: message }, { status: 400 });
+    return NextResponse.json(
+      { success: true, data },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  } catch (e) {
+    return errorResponse(e);
   }
 }

@@ -1,126 +1,128 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { calculateQuote } from '@/lib/pricing/engine';
-import { createSnapTransaction } from '@/lib/midtrans/snap';
-import { saveBooking, BookingRecord } from '@/lib/services/booking';
-
-export async function POST(req: NextRequest) {
+import { NextResponse } from "next/server";
+import { createHash } from "node:crypto";
+import { getAuthUser } from "@/lib/auth/helpers";
+import { createAdminClient } from "@/lib/supabase/server";
+import { createBookingSchema } from "@/lib/validations/requests";
+import { calculateQuote } from "@/lib/pricing/engine";
+import { getProductById } from "@/lib/services/catalog";
+import { getBusinessSettings } from "@/lib/services/business";
+import { getSiteSettings } from "@/lib/services/settings";
+import { midtransConfigured } from "@/lib/midtrans/snap";
+import {
+  preparePayment,
+  type StoredBooking,
+  type PaymentAttempt,
+} from "@/lib/services/booking";
+import {
+  assertSameOrigin,
+  readJson,
+  errorResponse,
+  RequestError,
+} from "@/lib/security/http";
+import { rateLimit } from "@/lib/security/rate-limit";
+export async function POST(request: Request) {
   try {
-    const body = await req.json();
-
-    const {
-      productSlug,
-      productId,
-      serviceDate,
-      startTime,
-      numUnits,
-      numPassengers,
-      pickupZoneId,
-      pickupAddress,
-      promoCode,
-      contactName,
-      contactPhone,
-      contactEmail,
-      paymentChoice,
-      termsAccepted,
-      notes,
-    } = body;
-
-    if (!termsAccepted) {
-      return NextResponse.json(
-        { error: 'Anda harus menyetujui Syarat dan Ketentuan untuk melanjutkan' },
-        { status: 400 }
+    assertSameOrigin(request);
+    const user = await getAuthUser();
+    if (!user)
+      throw new RequestError("Masuk terlebih dahulu untuk memesan.", 401);
+    const parsed = createBookingSchema.safeParse(await readJson(request));
+    if (!parsed.success) throw new RequestError(parsed.error.issues[0].message);
+    const p = parsed.data;
+    await rateLimit("checkout:" + user.id, 10);
+    const settings = await getSiteSettings();
+    if (!settings.checkout_enabled || !midtransConfigured())
+      throw new RequestError(
+        "Pembayaran online belum dibuka oleh pengelola.",
+        503,
+      );
+    let quote;
+    try {
+      quote = await calculateQuote(p);
+    } catch (e) {
+      throw new RequestError(
+        e instanceof Error ? e.message : "Harga tidak tersedia.",
       );
     }
-
-    if (!contactName || !contactPhone || !contactEmail) {
-      return NextResponse.json(
-        { error: 'Mohon lengkapi data nama, nomor WhatsApp/telepon, dan email' },
-        { status: 400 }
+    if (quote.is_sample_pricing)
+      throw new RequestError("Harga paket belum disetujui pengelola.", 409);
+    if (quote.total_amount !== p.expectedTotal)
+      throw new RequestError(
+        "Harga berubah. Kembali ke detail paket untuk memeriksa rincian terbaru.",
+        409,
       );
-    }
-
-    // Server-side authoritative price recalculation (tamper-proof!)
-    const verifiedQuote = await calculateQuote({
-      productId,
-      productSlug,
-      serviceDate,
-      startTime,
-      numUnits: Number(numUnits) || 1,
-      numPassengers: Number(numPassengers) || 1,
-      pickupZoneId,
-      pickupAddress,
-      promoCode,
-    });
-
-    const isDp = paymentChoice === 'dp';
-    const amountToPay = isDp ? verifiedQuote.dp_amount : verifiedQuote.total_amount;
-    const remainingAmount = verifiedQuote.total_amount - amountToPay;
-
-    // Generate Order ID
-    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const randomHex = Math.random().toString(36).substring(2, 6).toUpperCase();
-    const bookingId = `BWI-${dateStr}-${randomHex}`;
-
-    // Item details for Midtrans
-    const items = [
-      {
-        id: verifiedQuote.product_id,
-        name: isDp
-          ? `DP 30%: ${verifiedQuote.product_name}`
-          : verifiedQuote.product_name,
-        price: amountToPay,
-        quantity: 1,
+    const [product, business, db] = await Promise.all([
+      getProductById(p.productId),
+      getBusinessSettings(),
+      createAdminClient(),
+    ]);
+    const payload = {
+      user_id: user.id,
+      product_id: p.productId,
+      service_date: p.serviceDate,
+      start_time: p.startTime,
+      num_units: p.numUnits,
+      num_passengers: p.numPassengers,
+      pickup_zone_id: p.pickupZoneId ?? "",
+      pickup_address: p.pickupAddress,
+      promo_id: quote.promo_id ?? "",
+      promo_code: quote.promo_code ?? "",
+      base_price: quote.base_price_per_unit,
+      pickup_cost: quote.pickup_surcharge,
+      subtotal: quote.subtotal_units + quote.pickup_surcharge,
+      discount_amount: quote.discount_amount,
+      total_amount: quote.total_amount,
+      dp_amount: quote.dp_amount,
+      dp_percentage: Math.round(quote.dp_percentage * 100),
+      contact_name: p.contactName,
+      contact_phone: p.contactPhone,
+      contact_email: p.contactEmail,
+      payment_choice: p.paymentChoice,
+      notes: p.notes,
+      price_snapshot: quote,
+      product_snapshot: product,
+      terms_snapshot: {
+        version: business.version,
+        balance_deadline_hours: business.balance_payment_deadline_hours,
+        cancellation_policy: business.cancellation_policy,
+        refund_policy: business.refund_policy,
+        privacy_policy: business.privacy_policy,
+        terms: business.terms_and_conditions,
+        product_terms: product?.terms_content,
       },
-    ];
-
-    // Create Snap Transaction
-    const snapResult = await createSnapTransaction({
-      orderId: bookingId,
-      grossAmount: amountToPay,
-      customerName: contactName,
-      customerEmail: contactEmail,
-      customerPhone: contactPhone,
-      items,
-    });
-
-    // Save booking
-    const booking: BookingRecord = {
-      id: bookingId,
-      quote_id: verifiedQuote.quote_id,
-      product_id: verifiedQuote.product_id,
-      product_name: verifiedQuote.product_name,
-      service_date: verifiedQuote.service_date,
-      num_units: verifiedQuote.num_units,
-      num_passengers: verifiedQuote.num_passengers,
-      contact_name: contactName,
-      contact_phone: contactPhone,
-      contact_email: contactEmail,
-      pickup_zone_name: verifiedQuote.pickup_zone?.name,
-      pickup_address: pickupAddress || '',
-      payment_choice: isDp ? 'dp' : 'full',
-      total_amount: verifiedQuote.total_amount,
-      amount_to_pay: amountToPay,
-      remaining_amount: remainingAmount,
-      payment_status: 'unpaid',
-      booking_status: 'pending_payment',
-      snap_token: snapResult.token,
-      notes: notes || '',
-      created_at: new Date().toISOString(),
+      confirmation_hours: business.confirmation_deadline_hours,
+      idempotency_key: p.idempotencyKey,
+      request_hash: createHash("sha256")
+        .update(JSON.stringify({ ...p, idempotencyKey: undefined }))
+        .digest("hex"),
     };
-
-    await saveBooking(booking);
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        bookingId,
-        snapToken: snapResult.token,
-        redirectUrl: snapResult.redirect_url,
-        isSimulated: snapResult.is_simulated,
+    const { data, error } = await db.rpc("reserve_booking", { p: payload });
+    if (error)
+      throw new RequestError(
+        "Pesanan belum dapat disimpan. Periksa kuota dan promo atau hubungi admin.",
+        409,
+      );
+    const stored = data as { booking: StoredBooking; attempt: PaymentAttempt };
+    let payment;
+    try {
+      payment = await preparePayment(stored.booking, stored.attempt);
+    } catch {
+      throw new RequestError(
+        `Tagihan belum siap. Pesanan ${stored.booking.booking_code} sudah tersimpan; buka Pesanan Saya atau hubungi admin.`,
+        502,
+      );
+    }
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          bookingId: stored.booking.booking_code,
+          redirectUrl: payment.redirect_url,
+        },
       },
-    });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Terjadi kesalahan saat membuat pesanan';
-    return NextResponse.json({ error: message }, { status: 400 });
+      { status: 201, headers: { "Cache-Control": "no-store" } },
+    );
+  } catch (e) {
+    return errorResponse(e);
   }
 }

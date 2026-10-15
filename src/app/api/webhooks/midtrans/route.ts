@@ -1,60 +1,55 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { verifyMidtransSignature } from '@/lib/midtrans/snap';
-import { getBookingById, updateBookingPaymentStatus } from '@/lib/services/booking';
-
-export async function POST(req: NextRequest) {
+import { NextResponse } from "next/server";
+import { createHash } from "node:crypto";
+import {
+  verifyMidtransSignature,
+  midtransConfigured,
+  getMidtransStatus,
+} from "@/lib/midtrans/snap";
+import { createAdminClient } from "@/lib/supabase/server";
+import { notificationSchema } from "@/lib/validations/requests";
+import { readJson, errorResponse, RequestError } from "@/lib/security/http";
+export async function POST(request: Request) {
   try {
-    const notification = await req.json();
-
-    const {
-      order_id,
-      status_code,
-      gross_amount,
-      signature_key,
-      transaction_status,
-      fraud_status,
-    } = notification;
-
-    if (!order_id) {
-      return NextResponse.json({ error: 'Order ID tidak ditemukan' }, { status: 400 });
+    if (!midtransConfigured())
+      throw new RequestError("Gateway belum dikonfigurasi.", 503);
+    const parsed = notificationSchema.safeParse(await readJson(request, 16000));
+    if (!parsed.success) throw new RequestError("Notifikasi tidak valid.", 400);
+    const n = parsed.data;
+    if (
+      !verifyMidtransSignature(
+        n.order_id,
+        n.status_code,
+        n.gross_amount,
+        n.signature_key,
+      )
+    )
+      throw new RequestError("Signature tidak valid.", 403);
+    if (
+      process.env.MIDTRANS_MERCHANT_ID &&
+      n.merchant_id !== process.env.MIDTRANS_MERCHANT_ID
+    )
+      throw new RequestError("Merchant tidak sesuai.", 403);
+    const safe = await getMidtransStatus(n.order_id);
+    if (Number(safe.gross_amount) !== Number(n.gross_amount))
+      throw new RequestError("Nominal gateway tidak sesuai.", 403);
+    if (
+      process.env.MIDTRANS_MERCHANT_ID &&
+      safe.merchant_id !== process.env.MIDTRANS_MERCHANT_ID
+    )
+      throw new RequestError("Merchant gateway tidak sesuai.", 403);
+    const eventId = createHash("sha256")
+      .update(JSON.stringify(safe))
+      .digest("hex");
+    const db = await createAdminClient();
+    const { data, error } = await db.rpc("apply_midtrans_event", {
+      p: { ...safe, event_id: eventId },
+    });
+    if (error) {
+      console.error("[midtrans] durable event failed", error.code);
+      throw new RequestError("Notifikasi belum dapat dicatat.", 503);
     }
-
-    // Verifikasi tanda tangan jika ada signature_key dan bukan mode lokal tanpa key
-    if (signature_key && process.env.MIDTRANS_SERVER_KEY && !process.env.MIDTRANS_SERVER_KEY.includes('placeholder')) {
-      const isValid = verifyMidtransSignature(order_id, status_code, gross_amount, signature_key);
-      if (!isValid) {
-        console.warn(`[Midtrans Webhook] Invalid signature key for order ${order_id}`);
-        return NextResponse.json({ error: 'Signature key tidak valid' }, { status: 403 });
-      }
-    }
-
-    const booking = await getBookingById(order_id);
-    if (!booking) {
-      console.warn(`[Midtrans Webhook] Booking ${order_id} tidak ditemukan`);
-      return NextResponse.json({ message: 'Booking tidak ditemukan, dicatat' }, { status: 200 });
-    }
-
-    // Idempotent state machine transition
-    if (transaction_status === 'capture') {
-      if (fraud_status === 'challenge') {
-        await updateBookingPaymentStatus(order_id, 'unpaid', 'pending_payment');
-      } else if (fraud_status === 'accept') {
-        const nextPaymentStatus = booking.payment_choice === 'dp' ? 'dp_paid' : 'settlement';
-        await updateBookingPaymentStatus(order_id, nextPaymentStatus, 'confirmed');
-      }
-    } else if (transaction_status === 'settlement') {
-      const nextPaymentStatus = booking.payment_choice === 'dp' ? 'dp_paid' : 'settlement';
-      await updateBookingPaymentStatus(order_id, nextPaymentStatus, 'confirmed');
-    } else if (transaction_status === 'pending') {
-      await updateBookingPaymentStatus(order_id, 'unpaid', 'pending_payment');
-    } else if (['deny', 'cancel', 'expire'].includes(transaction_status)) {
-      await updateBookingPaymentStatus(order_id, 'cancel', 'cancelled');
-    }
-
-    return NextResponse.json({ status: 'ok', message: 'Notifikasi berhasil diproses' });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Error processing webhook';
-    console.error('[Midtrans Webhook Error]:', msg);
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json({ status: "ok", result: data });
+  } catch (e) {
+    return errorResponse(e);
   }
 }

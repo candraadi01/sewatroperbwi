@@ -1,125 +1,105 @@
-import Link from 'next/link';
-import { Mountain, MapPin, Phone, Mail } from 'lucide-react';
-
-const footerLinks = {
-  layanan: [
-    { label: 'Paket Wisata', href: '/sewa?service=paket_rute' },
-    { label: 'Sewa Harian + Sopir', href: '/sewa?service=harian_sopir' },
-    { label: 'Sewa Lepas Kunci', href: '/sewa?service=harian_lepas_kunci' },
-    { label: 'Semua Kendaraan', href: '/sewa' },
-  ],
-  informasi: [
-    { label: 'Tentang Kami', href: '/tentang' },
-    { label: 'Cara Booking', href: '/#cara-booking' },
-    { label: 'FAQ', href: '/faq' },
-    { label: 'Artikel', href: '/artikel' },
-  ],
-  kebijakan: [
-    { label: 'Syarat & Ketentuan', href: '/syarat-ketentuan' },
-    { label: 'Kebijakan Pembatalan', href: '/kebijakan-pembatalan' },
-    { label: 'Kebijakan Privasi', href: '/kebijakan-privasi' },
-    { label: 'Kontak', href: '/kontak' },
-  ],
-};
-
-export function Footer() {
-  const currentYear = new Date().getFullYear();
-
+import { getMenu } from "@/lib/services/content";
+import Link from "next/link";
+import { getSiteSettings, whatsappLink } from "@/lib/services/settings";
+export async function Footer() {
+  const [s, menu] = await Promise.all([getSiteSettings(), getMenu("footer")]);
+  const wa = whatsappLink(s.contact_whatsapp);
   return (
-    <footer className="bg-neutral-900 text-neutral-300">
-      {/* Main footer */}
-      <div className="container-app py-12 lg:py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
-          {/* Brand column */}
-          <div className="sm:col-span-2 lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2.5 text-white mb-4">
-              <Mountain size={28} strokeWidth={2.5} />
-              <div className="flex flex-col leading-tight">
-                <span className="font-bold text-lg">Sewa Trooper</span>
-                <span className="text-xs text-neutral-400">Banyuwangi</span>
-              </div>
-            </Link>
-            <p className="text-sm text-neutral-400 mb-4 max-w-[280px]">
-              Layanan sewa Jeep Trooper untuk wisata Banyuwangi dan sekitarnya. 
-              Nikmati petualangan dengan kendaraan yang nyaman dan sopir berpengalaman.
-            </p>
-            <div className="flex flex-col gap-2 text-sm">
-              <span className="flex items-center gap-2">
-                <MapPin size={16} className="text-primary-400 shrink-0" />
-                <span>Banyuwangi, Jawa Timur</span>
-              </span>
-              <span className="flex items-center gap-2">
-                <Phone size={16} className="text-primary-400 shrink-0" />
-                <span>Hubungi via WhatsApp</span>
-              </span>
-              <span className="flex items-center gap-2">
-                <Mail size={16} className="text-primary-400 shrink-0" />
-                <span>Email tersedia di halaman kontak</span>
-              </span>
-            </div>
-          </div>
-
-          {/* Layanan */}
-          <div>
-            <h3 className="font-semibold text-white mb-4">Layanan</h3>
-            <ul className="space-y-2.5">
-              {footerLinks.layanan.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-neutral-400 hover:text-white transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Informasi */}
-          <div>
-            <h3 className="font-semibold text-white mb-4">Informasi</h3>
-            <ul className="space-y-2.5">
-              {footerLinks.informasi.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-neutral-400 hover:text-white transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Kebijakan */}
-          <div>
-            <h3 className="font-semibold text-white mb-4">Kebijakan</h3>
-            <ul className="space-y-2.5">
-              {footerLinks.kebijakan.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-neutral-400 hover:text-white transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom bar */}
-      <div className="border-t border-neutral-800">
-        <div className="container-app py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-sm text-neutral-500">
-            © {currentYear} Sewa Trooper Banyuwangi. Hak cipta dilindungi.
+    <footer className="bg-[#182922] text-white">
+      <div className="container-app py-12 grid sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr] gap-9">
+        <div>
+          <Link href="/" className="text-xl font-semibold">
+            {s.site_name}
+          </Link>
+          <p className="mt-3 text-sm text-white/65 max-w-sm">
+            {s.site_tagline}
           </p>
-          <p className="text-xs text-neutral-600">
-            Harga dan ketersediaan dapat berubah sewaktu-waktu.
+          <p className="mt-5 text-sm text-white/65">{s.contact_address}</p>
+          {wa && (
+            <a
+              className="block mt-3 text-sm underline underline-offset-4"
+              href={wa}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              WhatsApp admin
+            </a>
+          )}
+          {s.contact_email && (
+            <a
+              className="block mt-2 text-sm"
+              href={"mailto:" + s.contact_email}
+            >
+              {s.contact_email}
+            </a>
+          )}
+        </div>
+        {[
+          [
+            "Perjalanan",
+            [
+              ["Semua layanan", "/sewa"],
+              ["Cara pemesanan", "/#cara-booking"],
+              ["Pesanan Saya", "/akun/pesanan"],
+              ["Artikel", "/artikel"],
+              ["FAQ", "/faq"],
+            ],
+          ],
+          [
+            "Informasi",
+            [
+              ["Tentang kami", "/tentang"],
+              ["Kontak", "/kontak"],
+              ["Syarat & ketentuan", "/syarat-ketentuan"],
+              ["Pembatalan & refund", "/kebijakan-pembatalan"],
+              ["Privasi", "/kebijakan-privasi"],
+            ],
+          ],
+        ].map(([title, links]) => (
+          <div key={title as string}>
+            <h2 className="text-sm font-semibold">{title as string}</h2>
+            <ul className="mt-4 space-y-2">
+              {(title === "Informasi" && menu.length
+                ? menu.map((i) => [i.label, i.href])
+                : (links as string[][])
+              ).map(([label, href]) => (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    className="text-sm text-white/65 hover:text-white inline-block py-1"
+                  >
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <div className="border-t border-white/10">
+        <div className="container-app py-5 flex flex-wrap justify-between gap-4 text-xs text-white/50">
+          <p>
+            © {new Date().getFullYear()} {s.site_name}
+          </p>
+          <p>
+            Foto ilustrasi Trooper:{" "}
+            <a
+              className="underline"
+              href="https://commons.wikimedia.org/wiki/File:Isuzu_Trooper_3_Pintu,_Denpasar.jpg"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Sabung.hamster
+            </a>{" "}
+            ·{" "}
+            <a
+              className="underline"
+              href="https://creativecommons.org/licenses/by-sa/4.0/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              CC BY-SA 4.0
+            </a>
           </p>
         </div>
       </div>

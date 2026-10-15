@@ -1,42 +1,48 @@
-'use client';
+"use client";
 
-import { useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { Mountain, Mail, AlertCircle } from 'lucide-react';
-import { Button, Input, Card } from '@/components/ui';
-import { createClient } from '@/lib/supabase/client';
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { Mountain, Mail, AlertCircle } from "lucide-react";
+import { Button, Input, Card } from "@/components/ui";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { safeRedirectPath } from "@/lib/security/redirect";
+import { createClient } from "@/lib/supabase/client";
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirectTo') ?? '/';
-  const errorParam = searchParams.get('error');
+  const redirectTo = safeRedirectPath(searchParams.get("redirectTo") ?? "/");
+  const errorParam = searchParams.get("error");
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [error, setError] = useState(
-    errorParam === 'auth_callback_failed'
-      ? 'Gagal masuk. Silakan coba lagi.'
-      : ''
+    errorParam === "auth_callback_failed"
+      ? "Gagal masuk. Silakan coba lagi."
+      : "",
   );
 
   const supabase = createClient();
 
   async function handleGoogleLogin() {
+    if (!isSupabaseConfigured()) {
+      setError("Login belum dikonfigurasi pengelola.");
+      return;
+    }
     setGoogleLoading(true);
-    setError('');
+    setError("");
 
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
+      provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
       },
     });
 
     if (error) {
-      setError('Gagal masuk dengan Google. Silakan coba lagi.');
+      setError("Gagal masuk dengan Google. Silakan coba lagi.");
       setGoogleLoading(false);
     }
   }
@@ -44,10 +50,14 @@ function LoginForm() {
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim()) return;
+    if (!isSupabaseConfigured()) {
+      setError("Login belum dikonfigurasi pengelola.");
+      return;
+    }
 
     setLoading(true);
-    setError('');
-    setMessage('');
+    setError("");
+    setMessage("");
 
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
@@ -57,10 +67,12 @@ function LoginForm() {
     });
 
     if (error) {
-      setError('Gagal mengirim link masuk. Periksa alamat email dan coba lagi.');
+      setError(
+        "Gagal mengirim link masuk. Periksa alamat email dan coba lagi.",
+      );
     } else {
       setMessage(
-        'Link masuk telah dikirim ke email Anda. Periksa kotak masuk (dan folder spam) Anda.'
+        "Link masuk telah dikirim ke email Anda. Periksa kotak masuk (dan folder spam) Anda.",
       );
     }
     setLoading(false);
@@ -176,20 +188,20 @@ function LoginForm() {
           </form>
 
           <p className="text-xs text-neutral-400 text-center mt-6">
-            Dengan masuk, Anda menyetujui{' '}
+            Dengan masuk, Anda menyetujui{" "}
             <Link
               href="/syarat-ketentuan"
               className="text-primary-600 hover:underline"
             >
               Syarat & Ketentuan
-            </Link>{' '}
-            dan{' '}
+            </Link>{" "}
+            dan{" "}
             <Link
               href="/kebijakan-privasi"
               className="text-primary-600 hover:underline"
             >
               Kebijakan Privasi
-            </Link>{' '}
+            </Link>{" "}
             kami.
           </p>
         </Card>
@@ -211,7 +223,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-sand-50">
+        <div className="min-h-screen flex items-center justify-center bg-neutral-50">
           <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
         </div>
       }

@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { safeRedirectPath } from "@/lib/security/redirect";
 
 /**
  * Auth callback handler.
@@ -8,11 +9,11 @@ import { createClient } from '@/lib/supabase/server';
  */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/';
+  const code = searchParams.get("code");
+  const next = searchParams.get("next") ?? "/";
 
   // Validasi redirect — hanya izinkan path relatif (bukan URL eksternal)
-  const redirectTo = next.startsWith('/') ? next : '/';
+  const redirectTo = safeRedirectPath(next);
 
   if (code) {
     const supabase = await createClient();
@@ -26,6 +27,6 @@ export async function GET(request: Request) {
 
   // Jika error atau tidak ada code, redirect ke login dengan pesan error
   return NextResponse.redirect(
-    `${origin}/login?error=auth_callback_failed&redirectTo=${encodeURIComponent(redirectTo)}`
+    `${origin}/login?error=auth_callback_failed&redirectTo=${encodeURIComponent(redirectTo)}`,
   );
 }

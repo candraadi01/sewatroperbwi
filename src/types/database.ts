@@ -2,26 +2,21 @@
  * Database and Domain Types untuk Sewa Trooper Banyuwangi
  */
 
-export type ServiceType = 'paket_rute' | 'harian_sopir' | 'harian_lepas_kunci';
-export type ProductStatus = 'draft' | 'published' | 'archived';
-export type PriceUnit = 'per_vehicle' | 'per_person';
+export type ServiceType = "paket_rute" | "harian_sopir" | "harian_lepas_kunci";
+export type ProductStatus = "draft" | "published" | "inactive" | "archived";
+export type PriceUnit = "per_vehicle" | "per_person";
 export type BookingStatus =
-  | 'pending_payment'
-  | 'confirmed'
-  | 'vehicle_assigned'
-  | 'in_progress'
-  | 'completed'
-  | 'cancelled'
-  | 'refund_requested'
-  | 'refunded';
+  | "pending_payment"
+  | "confirmed"
+  | "vehicle_assigned"
+  | "in_progress"
+  | "completed"
+  | "cancelled"
+  | "refund_requested"
+  | "refunded";
 export type PaymentStatus =
-  | 'unpaid'
-  | 'dp_paid'
-  | 'settlement'
-  | 'expire'
-  | 'cancel'
-  | 'refund';
-export type UserRole = 'buyer' | 'admin';
+  "unpaid" | "dp_paid" | "settlement" | "expire" | "cancel" | "refund";
+export type UserRole = "buyer" | "admin";
 
 export interface ProductCategory {
   id: string;
@@ -59,6 +54,8 @@ export interface Product {
   // Computed / joined fields
   base_price?: number;
   images?: string[];
+  dp_override_percentage?: number | null;
+  default_start_time?: string;
 }
 
 export interface PricingRule {
@@ -86,10 +83,12 @@ export interface PickupZone {
 export interface QuoteBreakdownItem {
   label: string;
   amount: number;
-  type: 'base' | 'surcharge' | 'discount' | 'extra';
+  type: "base" | "surcharge" | "discount" | "extra";
 }
 
 export interface PricingQuote {
+  promo_id?: string;
+  promo_code?: string;
   quote_id: string;
   product_id: string;
   product_name: string;

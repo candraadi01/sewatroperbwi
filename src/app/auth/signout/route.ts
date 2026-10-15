@@ -1,13 +1,13 @@
-import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
-import { NextResponse } from 'next/server';
-
-/**
- * Sign out handler.
- * POST-only untuk CSRF protection.
- */
-export async function POST() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  redirect('/');
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { assertSameOrigin, errorResponse } from "@/lib/security/http";
+export async function POST(request: Request) {
+  try {
+    assertSameOrigin(request);
+    const db = await createClient();
+    await db.auth.signOut();
+  } catch (e) {
+    return errorResponse(e);
+  }
+  redirect("/");
 }

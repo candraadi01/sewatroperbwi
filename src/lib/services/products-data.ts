@@ -29,28 +29,28 @@ export const SAMPLE_CATEGORIES: ProductCategory[] = [
 
 export const SAMPLE_PICKUP_ZONES: PickupZone[] = [
   {
-    id: 'pz-001',
+    id: 'c1000000-0000-4000-8000-000000000001',
     name: 'Banyuwangi Kota (Hotel / Stasiun Karangasem / Ketapang)',
     description: 'Area pusat kota Banyuwangi, stasiun, pelabuhan Ketapang',
     surcharge: 0,
     is_active: true,
   },
   {
-    id: 'pz-002',
+    id: 'c1000000-0000-4000-8000-000000000002',
     name: 'Bandara Banyuwangi (BWX - Blimbingsari)',
     description: 'Penjemputan kedatangan terminal Bandara Banyuwangi',
     surcharge: 75000,
     is_active: true,
   },
   {
-    id: 'pz-003',
+    id: 'c1000000-0000-4000-8000-000000000003',
     name: 'Area Rogojampi / Songgon',
     description: 'Area luar kota Banyuwangi bagian selatan',
     surcharge: 100000,
     is_active: true,
   },
   {
-    id: 'pz-004',
+    id: 'c1000000-0000-4000-8000-000000000004',
     name: 'Area Genteng / Glenmore',
     description: 'Area Banyuwangi bagian barat daya',
     surcharge: 150000,

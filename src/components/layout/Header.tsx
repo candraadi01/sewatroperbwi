@@ -1,230 +1,132 @@
-'use client';
-
-import { useState } from 'react';
-import Link from 'next/link';
-import {
-  Menu,
-  X,
-  Mountain,
-  Phone,
-  Search,
-  User,
-  ChevronDown,
-} from 'lucide-react';
-import { Button, cn } from '@/components/ui';
-
-interface NavItem {
-  label: string;
-  href: string;
-}
-
-const mainNav: NavItem[] = [
-  { label: 'Beranda', href: '/' },
-  { label: 'Sewa Trooper', href: '/sewa' },
-  { label: 'Artikel', href: '/artikel' },
-  { label: 'Tentang Kami', href: '/tentang' },
-  { label: 'Kontak', href: '/kontak' },
+"use client";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Menu, X, Mountain, Search } from "lucide-react";
+import type { SiteSettings } from "@/lib/services/settings";
+const nav = [
+  ["Beranda", "/"],
+  ["Sewa Trooper", "/sewa"],
+  ["Artikel", "/artikel"],
+  ["Tentang", "/tentang"],
+  ["Kontak", "/kontak"],
 ];
-
-interface HeaderProps {
-  user?: {
-    fullName: string;
-    avatarUrl: string;
-    isAdmin: boolean;
-  } | null;
-}
-
-export function Header({ user }: HeaderProps) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-
+type User = { fullName: string; avatarUrl: string; isAdmin: boolean };
+export function Header({
+  user,
+  settings,
+  links,
+}: {
+  user?: User | null;
+  settings?: SiteSettings;
+  links?: { label: string; href: string }[];
+}) {
+  const [open, setOpen] = useState(false);
+  const path = usePathname();
+  useEffect(() => {
+    function close(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("keydown", close);
+    return () => document.removeEventListener("keydown", close);
+  }, []);
+  const items = links?.length
+    ? links
+    : nav.map(([label, href]) => ({ label, href }));
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-neutral-200/80">
-      {/* Top bar - contact info */}
-      <div className="hidden md:block bg-primary-700 text-white">
-        <div className="container-app flex items-center justify-between py-1.5 text-sm">
-          <span className="flex items-center gap-1.5">
-            <Phone size={14} />
-            Hubungi Kami: WhatsApp
+    <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/95 backdrop-blur">
+      <div className="container-app flex items-center justify-between h-[76px] gap-3">
+        <Link href="/" className="flex gap-2.5 items-center text-primary-800">
+          <Mountain size={29} strokeWidth={1.8} />
+          <span className="text-sm font-semibold leading-tight max-w-44">
+            {settings?.site_name || "Sewa Trooper Banyuwangi"}
           </span>
-          <span>Banyuwangi dan sekitarnya</span>
-        </div>
-      </div>
-
-      {/* Main nav */}
-      <div className="container-app">
-        <div className="flex items-center justify-between h-16 md:h-[72px]">
-          {/* Logo */}
+        </Link>
+        <nav
+          aria-label="Navigasi utama"
+          className="hidden lg:flex items-center gap-6"
+        >
+          {items.map(({ label, href }) => (
+            <Link
+              key={href}
+              href={href}
+              aria-current={path === href ? "page" : undefined}
+              className={
+                "text-sm transition hover:text-primary-700 " +
+                (path === href
+                  ? "text-primary-800 font-semibold"
+                  : "text-neutral-600")
+              }
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
+        <div className="flex gap-2 items-center">
           <Link
-            href="/"
-            className="flex items-center gap-2.5 text-primary-700 hover:text-primary-800 transition-colors"
+            href="/sewa#cari"
+            className="p-3 hover:bg-neutral-100 rounded-full"
+            aria-label="Cari layanan"
           >
-            <Mountain size={32} strokeWidth={2.5} />
-            <div className="flex flex-col leading-tight">
-              <span className="font-bold text-lg tracking-tight">
-                Sewa Trooper
-              </span>
-              <span className="text-xs text-neutral-500 -mt-0.5">
-                Banyuwangi
-              </span>
-            </div>
+            <Search size={19} />
           </Link>
-
-          {/* Desktop nav */}
-          <nav
-            className="hidden lg:flex items-center gap-1"
-            aria-label="Navigasi utama"
+          <Link
+            href={user ? "/akun/pesanan" : "/login"}
+            className="text-sm font-semibold border border-neutral-300 rounded-full px-4 py-2.5"
           >
-            {mainNav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="px-3 py-2 text-[15px] font-medium text-neutral-700 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          {/* Actions */}
-          <div className="flex items-center gap-2">
-            <button
-              className="p-2 text-neutral-600 hover:text-primary-700 hover:bg-neutral-100 rounded-lg transition-colors"
-              aria-label="Cari"
-            >
-              <Search size={20} />
-            </button>
-
-            {user ? (
-              <div className="relative">
-                <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 p-1.5 hover:bg-neutral-100 rounded-lg transition-colors"
-                  aria-expanded={userMenuOpen}
-                  aria-haspopup="true"
-                >
-                  <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold text-sm">
-                    {user.fullName?.[0]?.toUpperCase() || <User size={16} />}
-                  </div>
-                  <ChevronDown size={16} className="text-neutral-500 hidden sm:block" />
-                </button>
-
-                {userMenuOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setUserMenuOpen(false)}
-                    />
-                    <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-elevated border border-neutral-200 py-2 z-50">
-                      <div className="px-4 py-2 border-b border-neutral-100">
-                        <p className="font-semibold text-sm text-neutral-900 truncate">
-                          {user.fullName}
-                        </p>
-                      </div>
-                      <Link
-                        href="/akun"
-                        className="block px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        Profil Saya
-                      </Link>
-                      <Link
-                        href="/akun/pesanan"
-                        className="block px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        Pesanan Saya
-                      </Link>
-                      {user.isAdmin && (
-                        <Link
-                          href="/admin"
-                          className="block px-4 py-2.5 text-sm text-primary-700 font-medium hover:bg-primary-50 transition-colors"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
-                          Dashboard Admin
-                        </Link>
-                      )}
-                      <div className="border-t border-neutral-100 mt-1 pt-1">
-                        <form action="/auth/signout" method="POST">
-                          <button
-                            type="submit"
-                            className="w-full text-left px-4 py-2.5 text-sm text-error hover:bg-red-50 transition-colors"
-                          >
-                            Keluar
-                          </button>
-                        </form>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            ) : (
-              <Link href="/login">
-                <Button variant="primary" size="sm">
-                  Masuk
-                </Button>
-              </Link>
-            )}
-
-            {/* Mobile menu toggle */}
-            <button
-              className="lg:hidden p-2 text-neutral-600 hover:text-primary-700 hover:bg-neutral-100 rounded-lg transition-colors"
-              onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label={mobileOpen ? 'Tutup menu' : 'Buka menu'}
-              aria-expanded={mobileOpen}
-            >
-              {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
+            {user ? "Pesanan" : "Masuk"}
+          </Link>
+          <button
+            className="lg:hidden p-2"
+            onClick={() => setOpen(!open)}
+            aria-label={open ? "Tutup menu" : "Buka menu"}
+            aria-expanded={open}
+            aria-controls="mobile-nav"
+          >
+            {open ? <X /> : <Menu />}
+          </button>
         </div>
       </div>
-
-      {/* Mobile nav drawer */}
-      {mobileOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-40 bg-black/30 lg:hidden"
-            onClick={() => setMobileOpen(false)}
-          />
-          <nav
-            className="fixed top-0 right-0 z-50 w-[280px] h-full bg-white shadow-modal lg:hidden overflow-y-auto"
-            aria-label="Menu mobile"
-          >
-            <div className="flex items-center justify-between p-4 border-b border-neutral-200">
-              <span className="font-bold text-lg text-primary-700">Menu</span>
-              <button
-                onClick={() => setMobileOpen(false)}
-                className="p-2 text-neutral-600 hover:bg-neutral-100 rounded-lg"
-                aria-label="Tutup menu"
+      {open && (
+        <nav
+          id="mobile-nav"
+          aria-label="Navigasi seluler"
+          className="lg:hidden border-t border-neutral-200 bg-white px-5 py-4 max-h-[70dvh] overflow-y-auto"
+        >
+          {items.map(({ label, href }) => (
+            <Link
+              className="block py-3 text-sm"
+              key={href}
+              href={href}
+              onClick={() => setOpen(false)}
+            >
+              {label}
+            </Link>
+          ))}
+          {user && (
+            <>
+              <Link
+                href="/akun"
+                className="block py-3 text-sm"
+                onClick={() => setOpen(false)}
               >
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className="py-4">
-              {mainNav.map((item) => (
+                Akun saya
+              </Link>
+              {user.isAdmin && (
                 <Link
-                  key={item.href}
-                  href={item.href}
-                  className="block px-6 py-3 text-base font-medium text-neutral-700 hover:text-primary-700 hover:bg-primary-50 transition-colors"
-                  onClick={() => setMobileOpen(false)}
+                  href="/admin"
+                  className="block py-3 text-sm"
+                  onClick={() => setOpen(false)}
                 >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-
-            <div className="px-6 pt-4 border-t border-neutral-200">
-              {!user && (
-                <Link href="/login" onClick={() => setMobileOpen(false)}>
-                  <Button variant="primary" fullWidth>
-                    Masuk / Daftar
-                  </Button>
+                  Panel admin
                 </Link>
               )}
-            </div>
-          </nav>
-        </>
+              <form action="/auth/signout" method="POST">
+                <button className="text-sm py-3 text-red-700">Keluar</button>
+              </form>
+            </>
+          )}
+        </nav>
       )}
     </header>
   );

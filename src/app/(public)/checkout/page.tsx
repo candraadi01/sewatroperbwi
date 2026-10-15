@@ -1,95 +1,50 @@
-'use client';
-
-import { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import {
-  ShieldCheck,
-  Calendar,
-  Truck,
-  Users,
-  MapPin,
-  CreditCard,
-  CheckCircle,
-  AlertCircle,
-  ArrowRight,
-  ArrowLeft,
-  Lock,
-} from 'lucide-react';
-import { Button, Input, Card, Badge } from '@/components/ui';
-import { formatIDR } from '@/lib/utils/currency';
-import { PricingQuote } from '@/types/database';
-
-function CheckoutContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const quoteIdParam = searchParams.get('quote_id');
-
-  const [quote, setQuote] = useState<PricingQuote | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Form states
-  const [contactName, setContactName] = useState('');
-  const [contactPhone, setContactPhone] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
-  const [pickupAddress, setPickupAddress] = useState('');
-  const [paymentChoice, setPaymentChoice] = useState<'dp' | 'full'>('dp');
-  const [termsAccepted, setTermsAccepted] = useState(false);
-  const [notes, setNotes] = useState('');
-
-  // Submission state
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  // Restore quote from sessionStorage
+"use client";
+import { Suspense, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import type { PricingQuote } from "@/types/database";
+import { formatIDR } from "@/lib/utils/currency";
+function Checkout() {
+  const params = useSearchParams();
+  const [quote, setQuote] = useState<PricingQuote | null>(null),
+    [ready, setReady] = useState(false),
+    [choice, setChoice] = useState<"dp" | "full">("dp"),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState("");
+  const key = useRef("");
   useEffect(() => {
-    try {
-      const stored = sessionStorage.getItem('pending_booking_quote');
-      if (stored) {
-        const parsed = JSON.parse(stored) as PricingQuote;
-        if (!quoteIdParam || parsed.quote_id === quoteIdParam) {
-          setQuote(parsed);
-          if (parsed.pickup_address) {
-            setPickupAddress(parsed.pickup_address);
-          }
-        }
-      }
-    } catch (e) {
-      console.warn('Gagal membaca data quote', e);
-    } finally {
-      setLoading(false);
-    }
-  }, [quoteIdParam]);
-
-  const amountToPay = quote
-    ? paymentChoice === 'dp'
-      ? quote.dp_amount
-      : quote.total_amount
-    : 0;
-
-  const remainingAmount = quote ? quote.total_amount - amountToPay : 0;
-
-  async function handleSubmit(e: React.FormEvent) {
+    let active = true;
+    queueMicrotask(() => {
+      if (!active) return;
+      try {
+        const saved = JSON.parse(
+          sessionStorage.getItem("pending_booking_quote") || "null",
+        );
+        if (
+          saved &&
+          (!params.get("quote_id") || saved.quote_id === params.get("quote_id"))
+        )
+          setQuote(saved);
+      } catch {}
+      setReady(true);
+    });
+    return () => {
+      active = false;
+    };
+  }, [params]);
+  async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!quote) return;
-
-    if (!termsAccepted) {
-      setErrorMessage('Anda harus mencentang persetujuan syarat dan ketentuan.');
-      return;
-    }
-
-    if (!contactName.trim() || !contactPhone.trim() || !contactEmail.trim()) {
-      setErrorMessage('Lengkapi nama, nomor telepon/WhatsApp, dan alamat email.');
-      return;
-    }
-
-    setIsSubmitting(true);
-    setErrorMessage(null);
-
+    if (!quote || busy) return;
+    const fields = new FormData(e.currentTarget);
+    setBusy(true);
+    setError("");
     try {
-      const res = await fetch('/api/checkout/create-booking', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const intent = "booking-intent:" + quote.quote_id;
+      key.current ||= sessionStorage.getItem(intent) || crypto.randomUUID();
+      sessionStorage.setItem(intent, key.current);
+      const r = await fetch("/api/checkout/create-booking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           productId: quote.product_id,
           serviceDate: quote.service_date,
@@ -97,386 +52,226 @@ function CheckoutContent() {
           numUnits: quote.num_units,
           numPassengers: quote.num_passengers,
           pickupZoneId: quote.pickup_zone?.id,
-          pickupAddress: pickupAddress || quote.pickup_address,
-          contactName: contactName.trim(),
-          contactPhone: contactPhone.trim(),
-          contactEmail: contactEmail.trim(),
-          paymentChoice,
-          termsAccepted: true,
-          notes,
+          pickupAddress: String(fields.get("pickupAddress") || ""),
+          promoCode: quote.promo_code || "",
+          contactName: String(fields.get("name")),
+          contactPhone: String(fields.get("phone")),
+          contactEmail: String(fields.get("email")),
+          paymentChoice: choice,
+          termsAccepted: fields.get("terms") === "on",
+          notes: String(fields.get("notes") || ""),
+          idempotencyKey: key.current,
+          expectedTotal: quote.total_amount,
         }),
       });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Gagal memproses pesanan');
-      }
-
-      const { bookingId, redirectUrl, isSimulated } = data.data;
-
-      // Bersihkan session quote
-      sessionStorage.removeItem('pending_booking_quote');
-
-      // Arahkan ke halaman status pesanan / pembayaran Midtrans
-      if (redirectUrl) {
-        router.push(redirectUrl);
-      } else {
-        router.push(`/pesanan/${bookingId}`);
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Terjadi gangguan saat memproses transaksi';
-      setErrorMessage(msg);
-      setIsSubmitting(false);
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || "Pesanan belum dapat diproses.");
+      const url = new URL(data.data.redirectUrl);
+      if (
+        url.protocol !== "https:" ||
+        !["app.midtrans.com", "app.sandbox.midtrans.com"].includes(url.hostname)
+      )
+        throw new Error("Tautan pembayaran tidak valid.");
+      sessionStorage.removeItem("pending_booking_quote");
+      window.location.assign(url.href);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Jaringan bermasalah.");
+      setBusy(false);
     }
   }
-
-  if (loading) {
+  if (!ready) return <div className="container-app py-16">Memuat rincian…</div>;
+  if (!quote)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-sand-50">
-        <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
+      <div className="container-app py-16 max-w-2xl">
+        <h1 className="section-heading">Pilih layanan terlebih dahulu.</h1>
+        <p className="mt-4 text-neutral-600">
+          Rincian perjalanan belum tersedia di perangkat ini.
+        </p>
+        <Link href="/sewa" className="action-link mt-6">
+          Buka katalog
+        </Link>
+        <Link href="/akun/pesanan" className="block mt-5 underline">
+          Lihat pesanan yang sudah dibuat
+        </Link>
       </div>
     );
-  }
-
-  if (!quote) {
-    return (
-      <div className="min-h-screen bg-sand-50 py-16">
-        <div className="container-custom max-w-lg mx-auto text-center bg-white p-8 rounded-3xl border border-neutral-200 shadow-sm">
-          <AlertCircle className="w-12 h-12 text-amber-600 mx-auto mb-4" />
-          <h1 className="text-2xl font-heading font-bold text-neutral-900 mb-2">
-            Sesi Pemesanan Tidak Ditemukan
-          </h1>
-          <p className="text-neutral-600 text-sm mb-6">
-            Rincian penawaran harga Anda mungkin telah kedaluwarsa atau belum dipilih. Silakan kembali ke katalog untuk memilih paket rute.
-          </p>
-          <Link href="/sewa">
-            <Button className="w-full bg-primary-700 hover:bg-primary-800 text-white">
-              Kembali ke Katalog Sewa
-            </Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-sand-50 py-8 md:py-12">
-      <div className="container-custom max-w-5xl">
-        {/* Navigation Breadcrumb */}
-        <div className="mb-6">
-          <Link
-            href="/sewa"
-            className="inline-flex items-center gap-1.5 text-sm text-neutral-600 hover:text-primary-700 font-medium transition"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Kembali
-          </Link>
-        </div>
-
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-heading font-bold text-neutral-900">
-              Konfirmasi Pemesanan & Pembayaran
-            </h1>
-            <p className="text-sm text-neutral-600 mt-1">
-              Lengkapi data kontak pemesan dan pilih metode pembayaran deposit (DP).
-            </p>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-neutral-500 bg-white px-3.5 py-2 rounded-xl border border-neutral-200 shadow-xs self-start">
-            <Lock className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Koneksi Aman Midtrans Sandbox</span>
-          </div>
-        </div>
-
-        {errorMessage && (
-          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm flex items-center gap-2.5">
-            <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Form: Kontak & Pembayaran */}
-          <div className="lg:col-span-7 space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Data Pemesan */}
-              <div className="bg-white rounded-3xl border border-neutral-200 p-6 md:p-8 shadow-xs">
-                <h2 className="text-xl font-heading font-bold text-neutral-900 mb-4 flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-primary-600" />
-                  Data Kontak Pemesan
-                </h2>
-                <div className="space-y-4 text-sm">
-                  <div>
-                    <label className="block text-xs font-semibold text-neutral-700 mb-1">
-                      Nama Lengkap Pemesan *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Contoh: Budi Pratama"
-                      value={contactName}
-                      onChange={(e) => setContactName(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-neutral-700 mb-1">
-                        Nomor WhatsApp / HP *
-                      </label>
-                      <input
-                        type="tel"
-                        required
-                        placeholder="Contoh: 081234567890"
-                        value={contactPhone}
-                        onChange={(e) => setContactPhone(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
-                      />
-                      <span className="text-[11px] text-neutral-500 mt-1 block">
-                        Driver akan menghubungi nomor ini saat penjemputan.
-                      </span>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-neutral-700 mb-1">
-                        Alamat Email *
-                      </label>
-                      <input
-                        type="email"
-                        required
-                        placeholder="nama@email.com"
-                        value={contactEmail}
-                        onChange={(e) => setContactEmail(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-neutral-50 border border-neutral-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
-                      />
-                      <span className="text-[11px] text-neutral-500 mt-1 block">
-                        E-tiket dan invoice akan dikirim ke email ini.
-                      </span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-neutral-700 mb-1">
-                      Alamat / Patokan Penjemputan Spesifik
-                    </label>
-                    <textarea
-                      rows={2}
-                      placeholder="Nama Hotel, Nomor Kamar, atau patokan lokasi stasiun..."
-                      value={pickupAddress}
-                      onChange={(e) => setPickupAddress(e.target.value)}
-                      className="w-full px-3.5 py-2 bg-neutral-50 border border-neutral-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-neutral-700 mb-1">
-                      Catatan Tambahan (Opsional)
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Contoh: bawa lansia / minta jemput tepat waktu"
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      className="w-full px-3.5 py-2 bg-neutral-50 border border-neutral-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Pilihan Pembayaran */}
-              <div className="bg-white rounded-3xl border border-neutral-200 p-6 md:p-8 shadow-xs">
-                <h2 className="text-xl font-heading font-bold text-neutral-900 mb-4 flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-primary-600" />
-                  Opsi Pembayaran
-                </h2>
-
-                <div className="space-y-3">
-                  <label
-                    className={`block p-4 rounded-2xl border-2 cursor-pointer transition ${
-                      paymentChoice === 'dp'
-                        ? 'border-primary-600 bg-primary-50/30'
-                        : 'border-neutral-200 bg-neutral-50 hover:bg-neutral-100/50'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <input
-                        type="radio"
-                        name="payment_choice"
-                        value="dp"
-                        checked={paymentChoice === 'dp'}
-                        onChange={() => setPaymentChoice('dp')}
-                        className="mt-1 text-primary-600 focus:ring-primary-500"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-neutral-900">
-                            Bayar Deposit (DP {quote.dp_percentage}%)
-                          </span>
-                          <span className="font-bold text-primary-700">
-                            {formatIDR(quote.dp_amount)}
-                          </span>
-                        </div>
-                        <p className="text-xs text-neutral-600 mt-1">
-                          Direkomendasikan. Kunci armada sekarang, sisa pelunasan ({formatIDR(quote.remaining_amount)}) dibayarkan saat hari H trip.
-                        </p>
-                      </div>
-                    </div>
-                  </label>
-
-                  <label
-                    className={`block p-4 rounded-2xl border-2 cursor-pointer transition ${
-                      paymentChoice === 'full'
-                        ? 'border-primary-600 bg-primary-50/30'
-                        : 'border-neutral-200 bg-neutral-50 hover:bg-neutral-100/50'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <input
-                        type="radio"
-                        name="payment_choice"
-                        value="full"
-                        checked={paymentChoice === 'full'}
-                        onChange={() => setPaymentChoice('full')}
-                        className="mt-1 text-primary-600 focus:ring-primary-500"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-neutral-900">Bayar Lunas (100%)</span>
-                          <span className="font-bold text-neutral-900">
-                            {formatIDR(quote.total_amount)}
-                          </span>
-                        </div>
-                        <p className="text-xs text-neutral-600 mt-1">
-                          Praktis tanpa perlu transaksi tunai tambahan saat hari keberangkatan.
-                        </p>
-                      </div>
-                    </div>
-                  </label>
-                </div>
-
-                {/* Persetujuan Syarat */}
-                <div className="mt-6 pt-4 border-t border-neutral-100">
-                  <label className="flex items-start gap-2.5 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={termsAccepted}
-                      onChange={(e) => setTermsAccepted(e.target.checked)}
-                      className="mt-1 text-primary-600 rounded focus:ring-primary-500"
-                    />
-                    <span className="text-xs text-neutral-600 leading-relaxed">
-                      Saya telah membaca dan menyetujui Ketentuan Layanan Sewa Trooper Banyuwangi,
-                      serta memahami bahwa jadwal penjemputan bersifat tetap sesuai kesepakatan.
-                    </span>
-                  </label>
-                </div>
-
-                <div className="mt-6">
-                  <Button
-                    type="submit"
-                    size="lg"
-                    disabled={isSubmitting || !termsAccepted}
-                    className="w-full bg-primary-700 hover:bg-primary-800 text-white font-bold shadow-md gap-2"
-                  >
-                    {isSubmitting ? 'Menyiapkan Gateway Midtrans...' : `Bayar Sekarang: ${formatIDR(amountToPay)}`}
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </form>
-          </div>
-
-          {/* Right Summary Sidebar */}
-          <div className="lg:col-span-5">
-            <div className="bg-white rounded-3xl border border-neutral-200 p-6 md:p-8 shadow-xs sticky top-24">
-              <h3 className="text-lg font-heading font-bold text-neutral-900 mb-4 pb-3 border-b border-neutral-100">
-                Ringkasan Pesanan
-              </h3>
-
-              <div className="space-y-4 mb-6">
-                <div>
-                  <span className="text-xs text-neutral-500 block">Paket Rute</span>
-                  <span className="font-bold text-base text-neutral-900">{quote.product_name}</span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 text-xs text-neutral-600 pt-2 border-t border-neutral-100">
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4 text-primary-600" />
-                    <span>{quote.service_date}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Truck className="w-4 h-4 text-primary-600" />
-                    <span>{quote.num_units} Unit Jeep</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Users className="w-4 h-4 text-primary-600" />
-                    <span>{quote.num_passengers} Orang</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4 text-primary-600" />
-                    <span className="truncate">{quote.pickup_zone?.name || 'Banyuwangi Kota'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Rincian Finansial */}
-              <div className="p-4 rounded-2xl bg-sand-50 border border-neutral-200 text-xs space-y-2 mb-6">
-                <span className="font-bold text-neutral-800 block mb-2">Rincian Tagihan:</span>
-                {quote.breakdown.map((item, idx) => (
-                  <div key={idx} className="flex justify-between">
-                    <span className="text-neutral-600">{item.label}</span>
-                    <span className={item.amount < 0 ? 'text-emerald-700 font-semibold' : 'font-medium'}>
-                      {item.amount < 0 ? `- ${formatIDR(Math.abs(item.amount))}` : formatIDR(item.amount)}
-                    </span>
-                  </div>
-                ))}
-
-                <div className="pt-2 border-t border-neutral-200 flex justify-between font-bold text-sm text-neutral-900">
-                  <span>Total Harga</span>
-                  <span>{formatIDR(quote.total_amount)}</span>
-                </div>
-              </div>
-
-              {/* Tagihan Saat Ini */}
-              <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-xs space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold text-amber-900">
-                    Jumlah Tagihan Saat Ini ({paymentChoice === 'dp' ? 'DP' : 'Lunas'}):
+    <div className="container-app py-9 md:py-14">
+      <Link href="/sewa" className="text-sm text-neutral-600">
+        ← Kembali ke katalog
+      </Link>
+      <h1 className="section-heading mt-5">Lengkapi pemesananmu.</h1>
+      <p className="mt-3 text-neutral-600">
+        Pembayaran diterima lebih dulu. Ketersediaan unit kemudian dikonfirmasi
+        admin.
+      </p>
+      <div className="grid lg:grid-cols-[1.2fr_1fr] gap-8 mt-8">
+        <form onSubmit={submit} className="admin-panel space-y-5">
+          <h2 className="text-xl font-semibold">Data pemesan</h2>
+          <label className="admin-field">
+            Nama lengkap
+            <input
+              name="name"
+              required
+              minLength={2}
+              maxLength={100}
+              autoComplete="name"
+            />
+          </label>
+          <label className="admin-field">
+            Nomor WhatsApp
+            <input
+              name="phone"
+              type="tel"
+              required
+              maxLength={18}
+              autoComplete="tel"
+              placeholder="08…"
+            />
+          </label>
+          <label className="admin-field">
+            Email
+            <input
+              name="email"
+              type="email"
+              required
+              maxLength={255}
+              autoComplete="email"
+            />
+          </label>
+          <label className="admin-field">
+            Detail titik jemput
+            <input
+              name="pickupAddress"
+              maxLength={500}
+              defaultValue={quote.pickup_address}
+            />
+          </label>
+          <label className="admin-field">
+            Catatan (opsional)
+            <textarea name="notes" maxLength={1000} rows={3} />
+          </label>
+          <fieldset>
+            <legend className="font-semibold mb-3">Pilihan pembayaran</legend>
+            <div className="grid grid-cols-2 gap-3">
+              {(["dp", "full"] as const).map((v) => (
+                <label
+                  key={v}
+                  className={
+                    "flex gap-3 rounded-xl border p-4 cursor-pointer " +
+                    (choice === v
+                      ? "border-primary-700 bg-primary-50"
+                      : "border-neutral-200")
+                  }
+                >
+                  <input
+                    type="radio"
+                    name="payment"
+                    checked={choice === v}
+                    onChange={() => setChoice(v)}
+                    value={v}
+                  />
+                  <span className="text-sm">
+                    {v === "dp" ? "Bayar DP" : "Bayar lunas"}
+                    <strong className="block mt-1">
+                      {formatIDR(
+                        v === "dp" ? quote.dp_amount : quote.total_amount,
+                      )}
+                    </strong>
                   </span>
-                  <span className="text-lg font-bold text-amber-900 font-heading">
-                    {formatIDR(amountToPay)}
-                  </span>
-                </div>
-                {paymentChoice === 'dp' && (
-                  <div className="flex justify-between text-[11px] text-amber-800 pt-1 border-t border-amber-200/60">
-                    <span>Sisa dibayarkan saat hari H:</span>
-                    <span className="font-semibold">{formatIDR(remainingAmount)}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-4 text-[11px] text-neutral-500 text-center">
-                🛡️ Transaksi aman dengan enkripsi SSL & verifikasi Midtrans Snap Sandbox.
-              </div>
+                </label>
+              ))}
             </div>
-          </div>
-        </div>
+          </fieldset>
+          <label className="flex items-start gap-3 text-sm">
+            <input name="terms" type="checkbox" required className="mt-1" />
+            <span>
+              Saya menyetujui{" "}
+              <Link
+                href="/syarat-ketentuan"
+                target="_blank"
+                className="underline"
+              >
+                syarat dan ketentuan
+              </Link>
+              ,{" "}
+              <Link
+                href="/kebijakan-pembatalan"
+                target="_blank"
+                className="underline"
+              >
+                kebijakan pembatalan
+              </Link>
+              , serta tahap konfirmasi kendaraan oleh admin.
+            </span>
+          </label>
+          {error && (
+            <p role="alert" className="notice-error">
+              {error}
+            </p>
+          )}
+          <button
+            className="action-link w-full justify-center"
+            disabled={busy || quote.is_sample_pricing}
+          >
+            {busy ? "Membuat tagihan…" : "Lanjut ke pembayaran"}
+          </button>
+          <p className="text-xs text-neutral-500">
+            Pembayaran diproses melalui halaman Midtrans. Status pesanan dapat
+            diperiksa di{" "}
+            <Link href="/akun/pesanan" className="underline">
+              Pesanan Saya
+            </Link>
+            .
+          </p>
+        </form>
+        <aside className="admin-panel h-fit">
+          <p className="eyebrow">Rincian perjalanan</p>
+          <h2 className="text-xl font-semibold mt-3">{quote.product_name}</h2>
+          <p className="mt-4 text-sm text-neutral-600">
+            {quote.service_date} · {quote.start_time} WIB
+            <br />
+            {quote.num_units} unit · {quote.num_passengers} peserta
+            <br />
+            {quote.pickup_zone?.name || "Titik awal layanan"}
+          </p>
+          <dl className="mt-6 space-y-3 text-sm">
+            {quote.breakdown.map((b, i) => (
+              <div key={i} className="flex justify-between gap-4">
+                <dt>{b.label}</dt>
+                <dd className="shrink-0">{formatIDR(b.amount)}</dd>
+              </div>
+            ))}
+            <div className="flex justify-between border-t pt-4 border-neutral-200 font-semibold">
+              <dt>Total</dt>
+              <dd>{formatIDR(quote.total_amount)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt>Dibayar sekarang</dt>
+              <dd>
+                {formatIDR(
+                  choice === "dp" ? quote.dp_amount : quote.total_amount,
+                )}
+              </dd>
+            </div>
+            <div className="flex justify-between text-neutral-500">
+              <dt>Sisa setelah pembayaran</dt>
+              <dd>{formatIDR(choice === "dp" ? quote.remaining_amount : 0)}</dd>
+            </div>
+          </dl>
+          <p className="text-xs text-neutral-500 mt-6">
+            Harga diverifikasi ulang oleh server sebelum tagihan dibuat. Jika
+            berubah, kamu akan diminta memeriksa rincian terbaru.
+          </p>
+        </aside>
       </div>
     </div>
   );
 }
-
-export default function CheckoutPage() {
+export default function Page() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-sand-50">
-          <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
-        </div>
-      }
-    >
-      <CheckoutContent />
+    <Suspense fallback={<div className="container-app py-16">Memuat…</div>}>
+      <Checkout />
     </Suspense>
   );
 }

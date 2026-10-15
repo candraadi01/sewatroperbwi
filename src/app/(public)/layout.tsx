@@ -1,29 +1,31 @@
-import { Suspense } from 'react';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
-import { getAuthUser } from '@/lib/auth/helpers';
-
-async function HeaderWithAuth() {
-  const user = await getAuthUser();
+import { Suspense } from "react";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { getAuthUser } from "@/lib/auth/helpers";
+import { getSiteSettings } from "@/lib/services/settings";
+import { getHeaderMenu } from "@/lib/services/content";
+async function SiteHeader() {
+  const [u, settings, links] = await Promise.all([
+    getAuthUser(),
+    getSiteSettings(),
+    getHeaderMenu(),
+  ]);
   return (
     <Header
+      settings={settings}
+      links={links}
       user={
-        user
+        u
           ? {
-              fullName: user.fullName,
-              avatarUrl: user.avatarUrl,
-              isAdmin: user.roles.includes('admin'),
+              fullName: u.fullName,
+              avatarUrl: u.avatarUrl,
+              isAdmin: u.roles.includes("admin"),
             }
           : null
       }
     />
   );
 }
-
-/**
- * Layout untuk halaman publik (buyer-facing).
- * Header (streaming user session) + main content + Footer.
- */
 export default function PublicLayout({
   children,
 }: {
@@ -31,8 +33,8 @@ export default function PublicLayout({
 }) {
   return (
     <>
-      <Suspense fallback={<Header user={null} />}>
-        <HeaderWithAuth />
+      <Suspense fallback={<Header />}>
+        <SiteHeader />
       </Suspense>
       <main id="main-content" className="flex-1">
         {children}
