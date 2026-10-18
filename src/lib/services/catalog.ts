@@ -39,8 +39,14 @@ export function mapProduct(row: ProductRow): Product {
     status:
       row.status === "active" ? "published" : (row.status as Product["status"]),
     base_price: price?.base_price ?? row.base_price ?? 0,
-    images: row.cover_image_url ? [row.cover_image_url] : [],
+    images: row.cover_image_url ? [row.cover_image_url] : row.images ?? [],
     duration_minutes: row.duration_minutes ?? 0,
+    badge_label: row.badge_label ?? row.name,
+    destinations: row.destinations ?? [row.route_name || row.name],
+    gallery_images: row.gallery_images ?? (row.images?.slice(0, 3) || []),
+    duration_text: row.duration_text ?? `${Math.round((row.duration_minutes ?? 0) / 60)} Jam`,
+    is_best_seller: row.is_best_seller ?? false,
+    is_featured: row.is_featured ?? false,
   };
 }
 export const getProducts = cache(

@@ -2,46 +2,46 @@
 
 /* ============================================================
    SEWA TROOPER BWI — Design System
-   Visual: Petualangan Banyuwangi — Hijau hutan, netral terang, aksen oranye
-   Mobile-first. Body text ≥16px. Touch targets ~44px.
+   Visual: Mirip sewajeepbanyuwangi.com — Biru, pink aksen, Poppins
+   Mobile-first. Body text ≥14px.
    ============================================================ */
 
 @theme inline {
-  /* --- Primary: Forest Green --- */
-  --color-primary-50: #f0fdf4;
-  --color-primary-100: #dcfce7;
-  --color-primary-200: #bbf7d0;
-  --color-primary-300: #86efac;
-  --color-primary-400: #4ade80;
-  --color-primary-500: #1a7a4c;
-  --color-primary-600: #15673e;
-  --color-primary-700: #115533;
-  --color-primary-800: #0d4228;
-  --color-primary-900: #0a3520;
+  /* --- Primary: Sky / Ocean Blue (matching homestay-banyuwangi.vercel.app) --- */
+  --color-primary-50: #f0f9ff;
+  --color-primary-100: #e0f2fe;
+  --color-primary-200: #bae6fd;
+  --color-primary-300: #7dd3fc;
+  --color-primary-400: #38bdf8;
+  --color-primary-500: #0ea5e9;
+  --color-primary-600: #0284c7;
+  --color-primary-700: #0369a1;
+  --color-primary-800: #075985;
+  --color-primary-900: #0c4a6e;
 
-  /* --- Accent: Warm Orange --- */
-  --color-accent-50: #fff7ed;
-  --color-accent-100: #ffedd5;
-  --color-accent-200: #fed7aa;
-  --color-accent-300: #fdba74;
-  --color-accent-400: #fb923c;
-  --color-accent-500: #e97316;
-  --color-accent-600: #d4630e;
-  --color-accent-700: #b8510a;
-  --color-accent-800: #9a430d;
-  --color-accent-900: #7c350e;
+  /* --- Accent: Rose & Amber (matching homestay-banyuwangi.vercel.app) --- */
+  --color-accent-50: #fff1f2;
+  --color-accent-100: #ffe4e6;
+  --color-accent-200: #fecdd3;
+  --color-accent-300: #fda4af;
+  --color-accent-400: #fb7185;
+  --color-accent-500: #ff2357;
+  --color-accent-600: #e11d48;
+  --color-accent-700: #be123c;
+  --color-accent-800: #9f1239;
+  --color-accent-900: #881337;
 
-  /* --- Neutral --- */
-  --color-neutral-50: #fafafa;
-  --color-neutral-100: #f5f5f4;
-  --color-neutral-200: #e7e5e4;
-  --color-neutral-300: #d6d3d1;
-  --color-neutral-400: #a8a29e;
-  --color-neutral-500: #78716c;
-  --color-neutral-600: #57534e;
-  --color-neutral-700: #44403c;
-  --color-neutral-800: #292524;
-  --color-neutral-900: #1c1917;
+  /* --- Slate Neutrals (matching homestay-banyuwangi.vercel.app) --- */
+  --color-neutral-50: #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
 
   /* --- Semantic --- */
   --color-success: #16a34a;
@@ -51,17 +51,17 @@
 
   /* --- Background & Surface --- */
   --color-background: #ffffff;
-  --color-foreground: #1c1917;
+  --color-foreground: #0a0a0a;
   --color-surface: #fafafa;
   --color-surface-elevated: #ffffff;
   --color-border: #e7e5e4;
   --color-border-hover: #d6d3d1;
 
-  /* --- Typography (Sizes) --- */
-  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
-  --font-heading: var(--font-inter), system-ui, -apple-system, sans-serif;
+  /* --- Typography (Poppins matching sewajeepbanyuwangi.com) --- */
+  --font-sans: 'Poppins', var(--font-poppins), system-ui, -apple-system, sans-serif;
+  --font-heading: 'Poppins', var(--font-poppins), system-ui, -apple-system, sans-serif;
 
-  /* --- Spacing Scale --- */
+  /* --- Spacing --- */
   --spacing-section: 5rem;
   --spacing-card: 1.5rem;
 
@@ -95,6 +95,7 @@
 *::before,
 *::after {
   box-sizing: border-box;
+  font-family: 'Poppins', var(--font-poppins), system-ui, -apple-system, sans-serif;
 }
 
 html {
@@ -103,6 +104,7 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-family: 'Poppins', var(--font-poppins), system-ui, -apple-system, sans-serif;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -122,10 +124,32 @@ html {
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
-  font-family: var(--font-sans);
-  font-size: 1rem;
+  font-family: 'Poppins', var(--font-poppins), system-ui, -apple-system, sans-serif;
+  font-size: 14px;
   line-height: 1.625;
   min-height: 100dvh;
+}
+
+/* Form and interactive controls inherit Poppins directly */
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: 'Poppins', var(--font-poppins), system-ui, -apple-system, sans-serif !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+a,
+label {
+  font-family: 'Poppins', var(--font-poppins), system-ui, -apple-system, sans-serif;
 }
 
 /* ============================================================
@@ -513,4 +537,512 @@ button:disabled {
 .notice-success {
   background: #f0fdf4;
   color: #166534;
+}
+
+/* ============================================================
+   LANDING PAGE — NEWS TICKER
+   ============================================================ */
+
+@keyframes ticker-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.ticker-fade-mask {
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 2.5%,
+    black 96%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 2.5%,
+    black 96%,
+    transparent 100%
+  );
+}
+
+.news-ticker-track {
+  display: flex;
+  align-items: center;
+  animation: ticker-scroll 35s linear infinite;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.news-ticker-track:hover {
+  animation-play-state: paused;
+}
+
+/* ============================================================
+   LANDING PAGE — HERO SEARCH
+   ============================================================ */
+
+.hero-section {
+  position: relative;
+  min-height: 520px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center center;
+  z-index: 0;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.75) 0%,
+    rgba(0, 0, 0, 0.35) 50%,
+    rgba(0, 0, 0, 0.15) 100%
+  );
+  z-index: 1;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: 2.5rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .hero-section {
+    min-height: 600px;
+  }
+  .hero-content {
+    padding: 3.5rem 2rem;
+  }
+}
+
+/* ============================================================
+   LANDING PAGE — SEARCH FORM
+   ============================================================ */
+
+.search-form-container {
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.search-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .search-form-grid {
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 0.75rem;
+    align-items: end;
+  }
+}
+
+.search-form-select {
+  width: 100%;
+  height: 48px;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  padding: 0 1rem;
+  font-size: 14px;
+  font-family: inherit;
+  color: #333;
+  background: white;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23555' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.search-form-select:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px rgba(23, 147, 214, 0.15);
+}
+
+.search-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 48px;
+  padding: 0 2rem;
+  background: var(--color-primary-500);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.search-btn:hover {
+  background: var(--color-primary-600);
+}
+
+/* ============================================================
+   LANDING PAGE — WHY CHOOSE US
+   ============================================================ */
+
+.why-section {
+  background: rgba(255, 255, 255, 0.95);
+  position: relative;
+  z-index: 3;
+  margin-top: -4rem;
+}
+
+.why-card {
+  text-align: center;
+  padding: 2rem 1.5rem;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.06);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.why-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.why-card-icon {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-50);
+  border-radius: 50%;
+  color: var(--color-primary-500);
+}
+
+/* ============================================================
+   LANDING PAGE — FEATURED TOURS
+   ============================================================ */
+
+.featured-section {
+  position: relative;
+  padding: 5rem 0;
+}
+
+.featured-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+  background-position: center center;
+  background-size: cover;
+  opacity: 0.08;
+  z-index: 0;
+}
+
+.tour-card {
+  background: white;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.tour-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+}
+
+.tour-card-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+
+.tour-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s;
+}
+
+.tour-card:hover .tour-card-image img {
+  transform: scale(1.08);
+}
+
+.tour-card-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  background: var(--color-accent-500);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0.25rem 0.75rem;
+  border-radius: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tour-card-body {
+  padding: 1.25rem;
+}
+
+.tour-card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 0.5rem;
+}
+
+.tour-card-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 0.75rem;
+}
+
+.tour-card-price {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-primary-500);
+}
+
+.tour-card-price span {
+  font-size: 12px;
+  font-weight: 400;
+  color: #888;
+}
+
+.tour-card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+  padding: 0.5rem 1.25rem;
+  background: var(--color-primary-500);
+  color: white;
+  border: none;
+  border-radius: 0.4rem;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-decoration: none;
+}
+
+.tour-card-cta:hover {
+  background: var(--color-primary-600);
+}
+
+/* ============================================================
+   LANDING PAGE — TESTIMONIALS
+   ============================================================ */
+
+.testimonial-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.06);
+  transition: transform 0.3s;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-3px);
+}
+
+.testimonial-stars {
+  color: #f59e0b;
+  font-size: 1rem;
+  letter-spacing: 2px;
+  margin-bottom: 0.75rem;
+}
+
+.testimonial-text {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.7;
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.testimonial-author {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.testimonial-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-primary-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--color-primary-700);
+  font-size: 1rem;
+}
+
+/* ============================================================
+   LANDING PAGE — FLOATING WHATSAPP
+   ============================================================ */
+
+@keyframes wa-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 18px rgba(37, 211, 102, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+  }
+}
+
+.floating-wa {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9998;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #25d366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+  animation: wa-pulse 2s infinite;
+  text-decoration: none;
+  transition: transform 0.2s;
+}
+
+.floating-wa:hover {
+  transform: scale(1.1);
+}
+
+/* ============================================================
+   LANDING PAGE — FOOTER
+   ============================================================ */
+
+.landing-footer {
+  position: relative;
+  color: white;
+  overflow: hidden;
+}
+
+.landing-footer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center center;
+  z-index: 0;
+}
+
+.landing-footer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 1;
+}
+
+.landing-footer > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* ============================================================
+   LANDING PAGE — NAVBAR STYLES
+   ============================================================ */
+
+.landing-nav {
+  background: var(--color-primary-500);
+  color: white;
+}
+
+.landing-nav a {
+  color: white;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: background 0.2s;
+}
+
+.landing-nav a:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.landing-header {
+  background: white;
+  border-bottom: 3px solid var(--color-primary-500);
+  padding: 0.75rem 0;
+}
+
+/* ============================================================
+   LANDING PAGE — NEWS TICKER BAR
+   ============================================================ */
+
+/* Ticker classes modernized in component with Tailwind utility & .ticker-fade-mask */
+
+/* ============================================================
+   LANDING PAGE — IBTN (Reference site button style)
+   ============================================================ */
+
+.ibtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.25rem;
+  background: var(--color-accent-500);
+  color: white;
+  border: none;
+  border-radius: 0.35rem;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-decoration: none;
+}
+
+.ibtn:hover {
+  background: var(--color-accent-600);
 }

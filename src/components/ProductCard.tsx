@@ -1,63 +1,175 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Clock3, Users } from "lucide-react";
+import { MapPin, Clock, Check, Car } from "lucide-react";
 import type { Product } from "@/types/database";
 import { formatIDR } from "@/lib/utils/currency";
+import { useCart } from "@/lib/cart/context";
+
 export const serviceLabels = {
-  paket_rute: "Paket rute",
-  harian_sopir: "Harian + sopir",
-  harian_lepas_kunci: "Lepas kunci",
+  paket_rute: "Paket Rute",
+  harian_sopir: "Harian + Sopir",
+  harian_lepas_kunci: "Lepas Kunci",
 };
+
 export function ProductCard({ product: p }: { product: Product }) {
+  const { addItem, setIsCartOpen } = useCart();
+  const [isAdded, setIsAdded] = useState(false);
+
+  const mainImage = p.images?.[0] || "/images/landing/tour-baluran.jpg";
+  const gallery =
+    p.gallery_images && p.gallery_images.length >= 3
+      ? p.gallery_images
+      : [
+          mainImage,
+          p.images?.[1] || "/images/landing/tour-kawah-ijen.jpg",
+          p.images?.[2] || "/images/landing/tour-djawatan.jpg",
+        ];
+
+  const badgeText = p.badge_label || p.name;
+  const durationDisplay =
+    p.duration_text ||
+    (p.duration_minutes
+      ? `${Math.round(p.duration_minutes / 60)} Jam`
+      : "1 Hari");
+  const capacityDisplay = `Max ${p.passenger_capacity || 6} Orang`;
+  const destinationList =
+    p.destinations && p.destinations.length > 0
+      ? p.destinations
+      : [p.short_description || p.route_name || p.name];
+
+  const handleBooking = (e: React.MouseEvent) => {
+    e.preventDefault();
+    addItem({
+      id: p.id,
+      slug: p.slug,
+      title: p.name,
+      image: mainImage,
+      price: p.base_price || 0,
+      duration: durationDisplay,
+      capacity: capacityDisplay,
+    });
+    setIsAdded(true);
+    setTimeout(() => {
+      setIsAdded(false);
+      setIsCartOpen(true);
+    }, 400);
+  };
+
   return (
-    <Link
-      href={"/sewa/" + p.slug}
-      className="group overflow-hidden rounded-2xl bg-white border border-neutral-200 transition hover:border-primary-600 focus-visible:outline-2 focus-visible:outline-primary-600"
-    >
-      <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
+    <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+      {/* 1. Header Gambar dengan Kolase Polaroid & Ribbon Lipat */}
+      <div className="relative h-44 sm:h-48 overflow-hidden bg-slate-900 select-none">
         <Image
-          src={p.images?.[0] || "/images/trooper-reference.jpg"}
-          alt={p.images?.[0] ? p.name : "Ilustrasi model Jeep Trooper"}
+          src={mainImage}
+          alt={p.name}
           fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover transition duration-500 group-hover:scale-105"
+          sizes="(max-width: 768px) 100vw, 33vw"
+          className="object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
         />
-        <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1 text-xs font-medium">
-          {serviceLabels[p.service_type]}
-        </span>
-        {!p.images?.length && (
-          <span className="absolute bottom-3 right-3 rounded bg-black/60 px-2 py-1 text-[10px] text-white">
-            Foto ilustrasi model
-          </span>
-        )}
-      </div>
-      <div className="p-5">
-        <h3 className="text-xl font-semibold tracking-tight">{p.name}</h3>
-        <p className="mt-2 text-sm text-neutral-600 line-clamp-2">
-          {p.short_description}
-        </p>
-        <div className="mt-4 flex gap-4 text-xs text-neutral-600">
-          <span className="flex items-center gap-1">
-            <Clock3 size={14} />
-            {p.duration_minutes / 60} jam
-          </span>
-          <span className="flex items-center gap-1">
-            <Users size={14} />
-            Maks. {p.passenger_capacity} orang / unit
-          </span>
-        </div>
-        <div className="mt-5 flex items-end justify-between border-t border-neutral-100 pt-4">
-          <div>
-            <p className="text-xs text-neutral-500">
-              {p.is_sample_data ? "Tarif ilustrasi" : "Mulai dari"} / unit
-            </p>
-            <p className="mt-1 text-lg font-semibold">
-              {p.base_price ? formatIDR(p.base_price) : "Hubungi admin"}
-            </p>
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/30" />
+
+        {/* BEST SELLER Ribbon jika ada (Persis Foto 2) */}
+        {p.is_best_seller && (
+          <div className="absolute top-0 left-0 overflow-hidden w-28 h-28 pointer-events-none z-30">
+            <div className="absolute top-5 -left-8 w-34 bg-gradient-to-r from-red-600 via-rose-600 to-red-600 text-white text-[9.5px] font-black uppercase tracking-wider text-center py-1 -rotate-45 shadow-md border-y border-white/25">
+              BEST SELLER
+            </div>
           </div>
-          <ArrowUpRight size={22} className="text-primary-700" />
+        )}
+
+        {/* Watermark Brand Atas Kanan */}
+        <div className="absolute top-2.5 right-3 z-10 text-[9px] font-black italic text-white/90 drop-shadow-md tracking-wider">
+          SEWA JEEP BWI
+        </div>
+
+        {/* Kolase 3 Foto Polaroid Menumpuk */}
+        <div className="absolute top-3 left-0 right-0 flex items-center justify-center gap-1.5 z-10 pointer-events-none">
+          <div className="w-13 h-9 sm:w-15 sm:h-10 rounded-xs bg-white p-0.5 shadow-md -rotate-6 transform transition-transform group-hover:-translate-x-1">
+            <div className="relative w-full h-full rounded-2xs overflow-hidden">
+              <Image src={gallery[0]} alt="Preview 1" fill className="object-cover" sizes="60px" />
+            </div>
+          </div>
+          <div className="w-18 h-12 sm:w-20 sm:h-13 rounded-xs bg-white p-0.5 shadow-xl z-10 transform scale-105 transition-transform group-hover:scale-110">
+            <div className="relative w-full h-full rounded-2xs overflow-hidden">
+              <Image src={gallery[1]} alt="Preview 2" fill className="object-cover" sizes="80px" />
+            </div>
+          </div>
+          <div className="w-13 h-9 sm:w-15 sm:h-10 rounded-xs bg-white p-0.5 shadow-md rotate-6 transform transition-transform group-hover:translate-x-1">
+            <div className="relative w-full h-full rounded-2xs overflow-hidden">
+              <Image src={gallery[2]} alt="Preview 3" fill className="object-cover" sizes="60px" />
+            </div>
+          </div>
+        </div>
+
+        {/* Badge Bookmark Ribbon Lipat di Bawah Gambar */}
+        <div className="absolute -bottom-3 left-3.5 z-20">
+          <div className="relative bg-[#0284c7] text-white text-[11px] font-extrabold uppercase tracking-wide px-3 py-1.5 rounded-r-md flex items-center gap-1.5 shadow-md">
+            <div className="absolute -bottom-1 left-0 w-0 h-0 border-t-[4px] border-t-[#0369a1] border-l-[4px] border-l-transparent" />
+            <span className="max-w-[200px] truncate">{badgeText}</span>
+            <Car size={13} className="text-white shrink-0 ml-1" />
+          </div>
         </div>
       </div>
-    </Link>
+
+      {/* 2. Isi Badan Kartu */}
+      <div className="pt-6 pb-2 px-4 sm:px-5 flex-1 flex flex-col justify-between">
+        <div>
+          <Link href={`/sewa/${p.slug}`}>
+            <h3 className="text-center font-black text-sm sm:text-[15px] text-neutral-900 uppercase tracking-tight leading-snug group-hover:text-[#0284c7] transition-colors">
+              {p.name}
+            </h3>
+          </Link>
+
+          <div className="flex items-center justify-between text-[11px] text-neutral-500 font-semibold mt-2.5">
+            <span className="flex items-center gap-1 text-neutral-600">
+              <Clock size={12} className="text-neutral-400" />
+              <span>{durationDisplay}</span>
+            </span>
+            <span className="text-neutral-600 font-bold">{capacityDisplay}</span>
+          </div>
+
+          <div className="border-b border-dashed border-neutral-200 my-2.5" />
+
+          <div className="space-y-1.5 py-0.5 min-h-[46px]">
+            {destinationList.slice(0, 2).map((dest, i) => (
+              <div key={i} className="flex items-start gap-1.5 text-[11px] text-neutral-700 font-medium leading-tight">
+                <MapPin size={12} className="text-[#0284c7] shrink-0 mt-0.5" />
+                <span className="line-clamp-1">{dest}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="border-b border-dashed border-neutral-200 my-2.5" />
+
+          <div className="text-center py-1">
+            <span className="text-base sm:text-lg font-black text-[#ff2357] tracking-tight">
+              {p.base_price ? formatIDR(p.base_price) : "Hubungi Admin"}
+            </span>
+            <span className="text-xs text-neutral-400 font-semibold"> / Jeep</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Tombol Booking Sekarang Full Width */}
+      <div className="p-3 pt-0">
+        <button
+          onClick={handleBooking}
+          className="w-full bg-[#0284c7] hover:bg-[#0369a1] active:scale-[0.99] text-white font-extrabold text-xs sm:text-sm py-2.5 rounded-xl transition duration-200 flex items-center justify-center gap-1.5 shadow-sm uppercase tracking-wider cursor-pointer"
+        >
+          {isAdded ? (
+            <>
+              <Check size={16} className="text-emerald-300" />
+              <span>Masuk Keranjang</span>
+            </>
+          ) : (
+            <span>Booking Sekarang</span>
+          )}
+        </button>
+      </div>
+    </div>
   );
 }

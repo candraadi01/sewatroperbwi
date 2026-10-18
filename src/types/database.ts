@@ -56,6 +56,12 @@ export interface Product {
   images?: string[];
   dp_override_percentage?: number | null;
   default_start_time?: string;
+  badge_label?: string;
+  destinations?: string[];
+  gallery_images?: string[];
+  duration_text?: string;
+  is_best_seller?: boolean;
+  is_featured?: boolean;
 }
 
 export interface PricingRule {
