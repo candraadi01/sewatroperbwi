@@ -130,7 +130,9 @@ export async function getBookingById(
 ): Promise<BookingRecord | null> {
   const user = await getAuthUser();
   if (!user) return null;
-  const db = await createClient();
+  const db = user.roles.includes("admin")
+    ? await createAdminClient()
+    : await createClient();
   let query = db.from("bookings").select(columns).eq("booking_code", code);
   if (!user.roles.includes("admin")) query = query.eq("user_id", user.id);
   const { data, error } = await query.maybeSingle();
@@ -140,7 +142,9 @@ export async function getBookingById(
 export async function getAllBookings(): Promise<BookingRecord[]> {
   const user = await getAuthUser();
   if (!user) return [];
-  const db = await createClient();
+  const db = user.roles.includes("admin")
+    ? await createAdminClient()
+    : await createClient();
   let query = db
     .from("bookings")
     .select(columns)
@@ -195,7 +199,7 @@ export async function preparePayment(
 export async function getOwnBookings(): Promise<BookingRecord[]> {
   const user = await getAuthUser();
   if (!user) return [];
-  const db = await createClient();
+  const db = await createAdminClient();
   const { data, error } = await db
     .from("bookings")
     .select(columns)
@@ -211,7 +215,7 @@ export async function getBookingHistory(
 ): Promise<{ new_status: string; reason: string; created_at: string }[]> {
   const user = await getAuthUser();
   if (!user) return [];
-  const db = await createClient();
+  const db = await createAdminClient();
   const { data, error } = await db
     .from("booking_status_history")
     .select("new_status,reason,created_at")

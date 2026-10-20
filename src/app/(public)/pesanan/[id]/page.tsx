@@ -33,24 +33,76 @@ export default async function Order({
     !!b.approval_expires_at &&
     new Date(b.approval_expires_at) < new Date();
   return (
-    <div className="container-app py-10 md:py-14 max-w-4xl">
-      <Link href="/akun/pesanan" className="text-sm text-neutral-600">
-        ← Pesanan Saya
+    <div className="container-app py-10 md:py-14 max-w-4xl font-sans">
+      <Link href="/pesanan" className="text-sm font-semibold text-[#327691] hover:underline flex items-center gap-1">
+        <span>← Riwayat Booking Saya</span>
       </Link>
+
+      {/* NOTIFIKASI KHUSUS JIKA SUDAH DISETUJUI ADMIN */}
+      {b.booking_status === "approved" && !approvalExpired && (
+        <div className="mt-6 p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border-2 border-emerald-500 shadow-sm animate-pulse-subtle">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-2xl shrink-0 shadow-xs">
+                ✓
+              </div>
+              <div>
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-200 text-emerald-900 text-[11px] font-black uppercase tracking-wide">
+                  Pemberitahuan Persetujuan
+                </span>
+                <h2 className="text-lg sm:text-xl font-black text-emerald-950 mt-1">
+                  Pesanan Telah Disetujui Admin & Pemilik!
+                </h2>
+                <p className="text-xs sm:text-sm text-emerald-800 mt-1 leading-relaxed">
+                  Armada Jeep Trooper siap untuk jadwal Anda. Silakan selesaikan pembayaran{" "}
+                  <strong>({b.payment_choice === "dp" ? `DP ${formatIDR(b.amount_to_pay)}` : `Lunas ${formatIDR(b.amount_to_pay)}`})</strong>{" "}
+                  agar jadwal perjalanan Anda resmi terkunci.
+                </p>
+                {b.approval_expires_at && (
+                  <p className="text-xs text-emerald-700 font-bold mt-2">
+                    ⏰ Batas waktu pembayaran: {new Date(b.approval_expires_at).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })} WIB
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="shrink-0 sm:self-center">
+              <PaymentButton
+                code={b.id}
+                label={b.payment_choice === "dp" ? "Bayar DP Sekarang" : "Bayar Lunas Sekarang"}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* NOTIFIKASI KHUSUS JIKA MASIH MENUNGGU PENGECEKAN KENDARAAN */}
+      {b.booking_status === "pending_review" && (
+        <div className="mt-6 p-5 rounded-2xl bg-amber-50 border-2 border-amber-300 shadow-xs">
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center text-xl shrink-0 shadow-xs">
+              ⏳
+            </div>
+            <div>
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 text-[11px] font-black uppercase tracking-wide">
+                Sedang Diproses
+              </span>
+              <h2 className="text-base sm:text-lg font-black text-amber-950 mt-1">
+                Menunggu Konfirmasi Ketersediaan Armada
+              </h2>
+              <p className="text-xs sm:text-sm text-amber-800 mt-1 leading-relaxed">
+                Pesanan Anda telah berhasil tercatat dengan biaya Rp 0 di awal. Admin & Pemilik sedang mengecek ketersediaan armada Trooper pada tanggal <strong>{b.service_date}</strong>. Setelah disetujui, Anda akan mendapatkan notifikasi untuk melakukan pembayaran di halaman ini.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <p className="eyebrow mt-7">{b.id}</p>
       <h1 className="section-heading mt-3">
         {bookingStatus[b.booking_status] || b.booking_status}
       </h1>
-      <p className="mt-4 text-neutral-600">
-        {b.booking_status === "pending_review"
-          ? "Pesanan kamu sedang menunggu konfirmasi ketersediaan kendaraan dari admin. Kamu belum perlu melakukan pembayaran."
-          : b.booking_status === "approved"
-            ? "Admin telah mengonfirmasi ketersediaan kendaraan. Selesaikan pembayaran sebelum batas waktu yang ditentukan."
-            : b.booking_status === "payment_received"
-              ? "Pembayaran diterima. Admin sedang memproses konfirmasi kendaraan."
-              : b.booking_status === "pending_payment"
-                ? "Pesanan tersimpan. Selesaikan pembayaran agar dapat ditindaklanjuti admin."
-                : "Periksa rincian perjalanan dan hubungi admin jika membutuhkan bantuan."}
+      <p className="mt-2 text-neutral-600 text-sm">
+        Rincian pemesanan dan riwayat status perjalanan wisata Anda.
       </p>
       <div className="admin-panel mt-8">
         <h2 className="text-xl font-semibold">{b.product_name}</h2>

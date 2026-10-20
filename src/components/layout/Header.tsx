@@ -14,6 +14,7 @@ import {
   Star,
   Info,
   BookOpen,
+  ReceiptText,
 } from "lucide-react";
 import type { SiteSettings } from "@/lib/services/settings";
 import { useLanguage } from "@/lib/i18n/context";
@@ -185,6 +186,19 @@ export function Header({
                 {t("nav_about")}
               </Link>
 
+              {/* Pesanan Saya (Riwayat Booking) */}
+              <Link
+                href="/pesanan"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition ${
+                  path?.startsWith("/pesanan")
+                    ? "bg-[#e9f3f7] text-[#327691] font-bold"
+                    : "text-[#53636d] hover:bg-[#f4f9fb] hover:text-[#263b46]"
+                }`}
+              >
+                <ReceiptText size={14} className="text-[#327691]" />
+                <span>Pesanan Saya</span>
+              </Link>
+
               {/* Dropdown Artikel Wisata */}
               <div
                 className="relative"
@@ -298,6 +312,17 @@ export function Header({
             >
               <Info size={18} />
               <span>{t("nav_about")}</span>
+            </Link>
+
+            <Link
+              href="/pesanan"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`flex items-center gap-3 py-2.5 px-3.5 text-sm font-semibold rounded-xl transition ${
+                path?.startsWith("/pesanan") ? "bg-[#e9f3f7] text-[#327691] font-bold" : "text-[#53636d] hover:bg-[#f4f9fb]"
+              }`}
+            >
+              <ReceiptText size={18} className="text-[#327691]" />
+              <span>Pesanan Saya</span>
             </Link>
 
             {/* Artikel Wisata Submenu */}
