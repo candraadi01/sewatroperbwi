@@ -59,7 +59,7 @@ export function ProductCard({ product: p }: { product: Product }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+    <div className="bg-white rounded-2xl overflow-hidden border border-[#e4ebef] shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between group">
       {/* 1. Header Gambar dengan Kolase Polaroid & Ribbon Lipat */}
       <div className="relative h-44 sm:h-48 overflow-hidden bg-slate-900 select-none">
         <Image
@@ -72,7 +72,7 @@ export function ProductCard({ product: p }: { product: Product }) {
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/30" />
 
-        {/* BEST SELLER Ribbon jika ada (Persis Foto 2) */}
+        {/* BEST SELLER Ribbon jika ada */}
         {p.is_best_seller && (
           <div className="absolute top-0 left-0 overflow-hidden w-28 h-28 pointer-events-none z-30">
             <div className="absolute top-5 -left-8 w-34 bg-gradient-to-r from-red-600 via-rose-600 to-red-600 text-white text-[9.5px] font-black uppercase tracking-wider text-center py-1 -rotate-45 shadow-md border-y border-white/25">
@@ -107,8 +107,8 @@ export function ProductCard({ product: p }: { product: Product }) {
 
         {/* Badge Bookmark Ribbon Lipat di Bawah Gambar */}
         <div className="absolute -bottom-3 left-3.5 z-20">
-          <div className="relative bg-[#0284c7] text-white text-[11px] font-extrabold uppercase tracking-wide px-3 py-1.5 rounded-r-md flex items-center gap-1.5 shadow-md">
-            <div className="absolute -bottom-1 left-0 w-0 h-0 border-t-[4px] border-t-[#0369a1] border-l-[4px] border-l-transparent" />
+          <div className="relative bg-[#327691] text-white text-[11px] font-extrabold uppercase tracking-wide px-3 py-1.5 rounded-r-md flex items-center gap-1.5 shadow-md">
+            <div className="absolute -bottom-1 left-0 w-0 h-0 border-t-[4px] border-t-[#254958] border-l-[4px] border-l-transparent" />
             <span className="max-w-[200px] truncate">{badgeText}</span>
             <Car size={13} className="text-white shrink-0 ml-1" />
           </div>
@@ -119,37 +119,37 @@ export function ProductCard({ product: p }: { product: Product }) {
       <div className="pt-6 pb-2 px-4 sm:px-5 flex-1 flex flex-col justify-between">
         <div>
           <Link href={`/sewa/${p.slug}`}>
-            <h3 className="text-center font-black text-sm sm:text-[15px] text-neutral-900 uppercase tracking-tight leading-snug group-hover:text-[#0284c7] transition-colors">
+            <h3 className="text-center font-black text-sm sm:text-[15px] text-[#263b46] uppercase tracking-tight leading-snug group-hover:text-[#327691] transition-colors">
               {p.name}
             </h3>
           </Link>
 
-          <div className="flex items-center justify-between text-[11px] text-neutral-500 font-semibold mt-2.5">
-            <span className="flex items-center gap-1 text-neutral-600">
-              <Clock size={12} className="text-neutral-400" />
+          <div className="flex items-center justify-between text-[11px] text-[#53636d] font-semibold mt-2.5">
+            <span className="flex items-center gap-1 text-[#53636d]">
+              <Clock size={12} className="text-[#697780]" />
               <span>{durationDisplay}</span>
             </span>
-            <span className="text-neutral-600 font-bold">{capacityDisplay}</span>
+            <span className="text-[#263b46] font-bold">{capacityDisplay}</span>
           </div>
 
-          <div className="border-b border-dashed border-neutral-200 my-2.5" />
+          <div className="border-b border-dashed border-[#e4ebef] my-2.5" />
 
           <div className="space-y-1.5 py-0.5 min-h-[46px]">
             {destinationList.slice(0, 2).map((dest, i) => (
-              <div key={i} className="flex items-start gap-1.5 text-[11px] text-neutral-700 font-medium leading-tight">
-                <MapPin size={12} className="text-[#0284c7] shrink-0 mt-0.5" />
+              <div key={i} className="flex items-start gap-1.5 text-[11px] text-[#53636d] font-medium leading-tight">
+                <MapPin size={12} className="text-[#327691] shrink-0 mt-0.5" />
                 <span className="line-clamp-1">{dest}</span>
               </div>
             ))}
           </div>
 
-          <div className="border-b border-dashed border-neutral-200 my-2.5" />
+          <div className="border-b border-dashed border-[#e4ebef] my-2.5" />
 
           <div className="text-center py-1">
-            <span className="text-base sm:text-lg font-black text-[#ff2357] tracking-tight">
+            <span className="text-base sm:text-lg font-black text-[#2c6881] tracking-tight">
               {p.base_price ? formatIDR(p.base_price) : "Hubungi Admin"}
             </span>
-            <span className="text-xs text-neutral-400 font-semibold"> / Jeep</span>
+            <span className="text-xs text-[#697780] font-semibold"> / Jeep</span>
           </div>
         </div>
       </div>
@@ -158,7 +158,7 @@ export function ProductCard({ product: p }: { product: Product }) {
       <div className="p-3 pt-0">
         <button
           onClick={handleBooking}
-          className="w-full bg-[#0284c7] hover:bg-[#0369a1] active:scale-[0.99] text-white font-extrabold text-xs sm:text-sm py-2.5 rounded-xl transition duration-200 flex items-center justify-center gap-1.5 shadow-sm uppercase tracking-wider cursor-pointer"
+          className="w-full bg-[#327691] hover:bg-[#2c6881] active:scale-[0.99] text-white font-extrabold text-xs sm:text-sm py-2.5 rounded-xl transition duration-200 flex items-center justify-center gap-1.5 shadow-xs uppercase tracking-wider cursor-pointer"
         >
           {isAdded ? (
             <>

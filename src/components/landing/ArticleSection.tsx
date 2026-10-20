@@ -53,27 +53,27 @@ const landingArticles: ArticleItem[] = [
 
 export function ArticleSection() {
   return (
-    <section className="py-14 md:py-20 bg-white relative font-sans border-b border-neutral-100">
+    <section className="py-14 md:py-20 bg-white relative font-sans border-b border-[#e4ebef]">
       <div className="container-app">
-        {/* Header Section (Foto 4) */}
+        {/* Header Section */}
         <div className="text-center max-w-2xl mx-auto mb-10 md:mb-12">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#0ea5e9] tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#263b46] tracking-tight">
             Artikel Wisata
           </h2>
-          <p className="mt-2.5 text-neutral-600 text-xs sm:text-sm md:text-base leading-relaxed">
+          <p className="mt-2.5 text-[#53636d] text-xs sm:text-sm md:text-base leading-relaxed">
             Baca juga informasi menarik, tips & trik seputar Traveling & Jeep Wisata Banyuwangi berikut ini!
           </p>
         </div>
 
-        {/* 3 Horizontal Article Cards (Foto 4) */}
+        {/* 3 Horizontal Article Cards */}
         <div className="space-y-6 md:space-y-8 max-w-5xl mx-auto">
           {landingArticles.map((art) => (
             <div
               key={art.id}
-              className="flex flex-col sm:flex-row gap-5 md:gap-7 items-start sm:items-center bg-white p-2 rounded-2xl hover:bg-slate-50/60 transition group"
+              className="flex flex-col sm:flex-row gap-5 md:gap-7 items-start sm:items-center bg-white p-2 rounded-2xl hover:bg-[#f4f9fb] transition group"
             >
-              {/* Thumbnail Image (Foto 4) */}
-              <div className="relative w-full sm:w-64 md:w-72 aspect-[16/10] shrink-0 rounded-xl overflow-hidden shadow-xs border border-neutral-200">
+              {/* Thumbnail Image */}
+              <div className="relative w-full sm:w-64 md:w-72 aspect-[16/10] shrink-0 rounded-xl overflow-hidden shadow-xs border border-[#e4ebef]">
                 <Image
                   src={art.image}
                   alt={art.title}
@@ -83,36 +83,36 @@ export function ArticleSection() {
                 />
               </div>
 
-              {/* Content on Right (Foto 4) */}
+              {/* Content on Right */}
               <div className="flex-1 space-y-2">
                 <Link href={`/artikel/${art.slug}`}>
-                  <h3 className="text-base sm:text-lg md:text-xl font-bold text-[#0ea5e9] hover:text-[#0284c7] transition-colors leading-snug">
+                  <h3 className="text-base sm:text-lg md:text-xl font-bold text-[#263b46] group-hover:text-[#327691] transition-colors leading-snug">
                     {art.title}
                   </h3>
                 </Link>
 
-                {/* Metadata Row (Foto 4) */}
-                <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[11px] text-neutral-500 font-medium">
-                  <span className="flex items-center gap-1.5 text-neutral-700">
-                    <Calendar size={13} className="text-neutral-900" />
+                {/* Metadata Row */}
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[11px] text-[#697780] font-medium">
+                  <span className="flex items-center gap-1.5 text-[#53636d]">
+                    <Calendar size={13} className="text-[#327691]" />
                     <span>{art.date}</span>
                   </span>
-                  <span className="flex items-center gap-1.5 text-neutral-700">
-                    <Eye size={13} className="text-neutral-900" />
+                  <span className="flex items-center gap-1.5 text-[#53636d]">
+                    <Eye size={13} className="text-[#327691]" />
                     <span>{art.views}</span>
                   </span>
-                  <span className="flex items-center gap-1.5 text-[#0ea5e9]">
-                    <Folder size={13} className="text-neutral-900" />
+                  <span className="flex items-center gap-1.5 text-[#327691]">
+                    <Folder size={13} className="text-[#327691]" />
                     <span className="hover:underline">{art.category}</span>
                   </span>
                 </div>
 
-                {/* Excerpt Snippet with 'selengkapnya' (Foto 4) */}
-                <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed font-normal">
+                {/* Excerpt Snippet with 'selengkapnya' */}
+                <p className="text-xs sm:text-sm text-[#53636d] leading-relaxed font-normal">
                   {art.excerpt}{" "}
                   <Link
                     href={`/artikel/${art.slug}`}
-                    className="text-[#0ea5e9] hover:underline font-semibold inline"
+                    className="text-[#327691] hover:text-[#2c6881] hover:underline font-semibold inline"
                   >
                     selengkapnya
                   </Link>

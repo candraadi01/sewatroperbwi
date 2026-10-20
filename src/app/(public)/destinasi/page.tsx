@@ -138,15 +138,15 @@ export default function DestinasiPage() {
   return (
     <div className="bg-slate-50 min-h-screen py-10 md:py-16 font-sans">
       <div className="container-app">
-        {/* Header Section (Terinspirasi homestay-banyuwangi.vercel.app/destinasi) */}
+        {/* Header Section */}
         <div className="max-w-3xl">
-          <span className="inline-block px-3 py-1 bg-[#0ea5e9]/10 text-[#0284c7] rounded-full text-xs font-bold uppercase tracking-wider mb-2">
+          <span className="inline-block px-3 py-1 bg-[#e9f3f7] text-[#327691] rounded-full text-xs font-bold uppercase tracking-wider mb-2">
             Panduan Destinasi Banyuwangi
           </span>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-neutral-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#263b46] tracking-tight">
             Destinasi Wisata Pilihan di Banyuwangi
           </h1>
-          <p className="mt-3 text-neutral-600 text-xs sm:text-sm md:text-base leading-relaxed">
+          <p className="mt-3 text-[#53636d] text-xs sm:text-sm md:text-base leading-relaxed">
             Eksplorasi keindahan alam Banyuwangi mulai dari kawah vulkanik api biru, padang savana liar, hutan kanopi magis, hingga pantai eksotis bersama layanan Sewa Jeep Trooper 4x4 terpercaya.
           </p>
         </div>
@@ -159,8 +159,8 @@ export default function DestinasiPage() {
               onClick={() => setActiveCategory(cat)}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer ${
                 activeCategory === cat
-                  ? "bg-[#0284c7] text-white shadow-sm"
-                  : "bg-white text-neutral-600 hover:bg-slate-100 border border-slate-200"
+                  ? "bg-[#327691] text-white shadow-xs"
+                  : "bg-white text-[#53636d] hover:bg-[#f4f9fb] border border-[#e4ebef]"
               }`}
             >
               {cat}
@@ -169,8 +169,8 @@ export default function DestinasiPage() {
         </div>
 
         {/* Counter */}
-        <p className="mt-6 text-xs text-neutral-500 font-medium">
-          Menampilkan <span className="text-[#0284c7] font-bold">{filteredDestinations.length}</span> destinasi wisata pilihan
+        <p className="mt-6 text-xs text-[#53636d] font-medium">
+          Menampilkan <span className="text-[#327691] font-bold">{filteredDestinations.length}</span> destinasi wisata pilihan
         </p>
 
         {/* Destination Cards Grid */}
@@ -178,7 +178,7 @@ export default function DestinasiPage() {
           {filteredDestinations.map((dest) => (
             <div
               key={dest.id}
-              className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
+              className="bg-white rounded-2xl overflow-hidden border border-[#e4ebef] shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between group"
             >
               <div>
                 {/* Image & Badge */}
@@ -194,25 +194,25 @@ export default function DestinasiPage() {
 
                   {/* Category Pill */}
                   <div className="absolute top-3 left-3">
-                    <span className="px-2.5 py-1 rounded-full bg-white/95 text-[#0284c7] text-[10px] font-extrabold uppercase tracking-wider shadow-sm">
+                    <span className="px-2.5 py-1 rounded-full bg-white/95 text-[#327691] text-[10px] font-extrabold uppercase tracking-wider shadow-xs">
                       {dest.category}
                     </span>
                   </div>
 
                   {/* District Location in image bottom */}
                   <div className="absolute bottom-3 left-3 right-3 text-white flex items-center gap-1.5 text-xs font-semibold drop-shadow-sm">
-                    <MapPin size={14} className="text-[#ff2357] shrink-0" />
+                    <MapPin size={14} className="text-[#8abbd0] shrink-0" />
                     <span>{dest.district}</span>
                   </div>
                 </div>
 
                 {/* Content */}
                 <div className="p-5">
-                  <h3 className="text-lg font-bold text-neutral-900 group-hover:text-[#0284c7] transition-colors leading-snug">
+                  <h3 className="text-lg font-bold text-[#263b46] group-hover:text-[#327691] transition-colors leading-snug">
                     {dest.name}
                   </h3>
 
-                  <p className="mt-2 text-xs text-neutral-600 leading-relaxed line-clamp-3">
+                  <p className="mt-2 text-xs text-[#53636d] leading-relaxed line-clamp-3">
                     {dest.description}
                   </p>
 
@@ -221,7 +221,7 @@ export default function DestinasiPage() {
                     {dest.highlights.map((tag, i) => (
                       <span
                         key={i}
-                        className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-semibold border border-slate-200/80"
+                        className="px-2 py-0.5 rounded-md bg-[#f4f9fb] text-[#263b46] text-[10px] font-semibold border border-[#e4ebef]"
                       >
                         ✓ {tag}
                       </span>
@@ -234,7 +234,7 @@ export default function DestinasiPage() {
               <div className="p-5 pt-0">
                 <Link
                   href={`/sewa?q=${dest.queryParam}`}
-                  className="w-full bg-sky-50 hover:bg-[#0284c7] hover:text-white text-[#0284c7] font-bold text-xs py-2.5 rounded-xl transition duration-200 flex items-center justify-center gap-1.5 border border-sky-200 hover:border-[#0284c7]"
+                  className="w-full bg-[#f4f9fb] hover:bg-[#327691] hover:text-white text-[#327691] font-bold text-xs py-2.5 rounded-xl transition duration-200 flex items-center justify-center gap-1.5 border border-[#ccd8de] hover:border-[#327691]"
                 >
                   <span>Lihat Paket Jeep Tour</span>
                   <ArrowRight size={13} />
@@ -245,19 +245,19 @@ export default function DestinasiPage() {
         </div>
 
         {/* Bottom Banner */}
-        <div className="mt-14 bg-gradient-to-r from-[#0284c7] to-[#0ea5e9] rounded-2xl p-6 sm:p-8 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-md">
+        <div className="mt-14 bg-gradient-to-r from-[#254958] via-[#2c6881] to-[#327691] rounded-2xl p-6 sm:p-8 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-md">
           <div className="space-y-1 text-center sm:text-left">
             <h3 className="text-lg sm:text-xl font-black">
               Ingin Custom Rute atau Gabungkan Beberapa Destinasi?
             </h3>
-            <p className="text-xs sm:text-sm text-sky-100 max-w-xl">
+            <p className="text-xs sm:text-sm text-slate-100 max-w-xl">
               Armada Jeep Trooper 4x4 kami siap melayani rute fleksibel antar destinasi favorit pilihan Anda di Banyuwangi raya.
             </p>
           </div>
 
           <Link
             href="/sewa"
-            className="px-6 py-3 bg-white text-[#0284c7] hover:bg-sky-50 rounded-xl font-extrabold text-xs sm:text-sm transition shrink-0 shadow-sm"
+            className="px-6 py-3 bg-white text-[#254958] hover:bg-[#f4f9fb] rounded-xl font-extrabold text-xs sm:text-sm transition shrink-0 shadow-xs"
           >
             Pilih Sewa Jeep Sekarang
           </Link>

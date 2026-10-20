@@ -9,7 +9,10 @@
     "lint": "eslint",
     "test": "node --import tsx --test tests/*.test.ts",
     "typecheck": "tsc --noEmit",
-    "contract:emit": "prisma contract emit"
+    "contract:emit": "prisma contract emit",
+    "db:migrate": "node scripts/db-migrate.js",
+    "prisma:migrate": "node scripts/db-migrate.js",
+    "prisma:pull": "prisma db pull && prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

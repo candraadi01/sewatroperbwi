@@ -21,11 +21,11 @@ export function NewsTicker() {
   ];
 
   return (
-    <div className="bg-white border-b border-neutral-200 select-none">
+    <div className="bg-white border-b border-[#e4ebef] select-none">
       <div className="container-app flex items-center h-10 md:h-11 gap-2 md:gap-3 overflow-hidden">
-        {/* Fixed Title Label — Sesuai Foto 1: Teks biru tebal 'INFORMASI TERBARU', tanpa icon, tanpa box gelap */}
+        {/* Fixed Title Label */}
         <div className="flex items-center shrink-0 pr-2 md:pr-3 z-10 bg-white">
-          <span className="text-[11px] sm:text-xs md:text-[13px] font-black text-[#0ea5e9] tracking-wider uppercase whitespace-nowrap">
+          <span className="text-[11px] sm:text-xs md:text-[13px] font-black text-[#327691] tracking-wider uppercase whitespace-nowrap">
             {t("ticker_label")}
           </span>
         </div>
@@ -36,13 +36,12 @@ export function NewsTicker() {
             {[...items, ...items, ...items, ...items].map((item, i) => (
               <span
                 key={i}
-                className="inline-flex items-center gap-2.5 px-6 text-xs md:text-[13px] text-neutral-800 font-medium shrink-0"
+                className="inline-flex items-center gap-2.5 px-6 text-xs md:text-[13px] text-[#263b46] font-medium shrink-0"
               >
-                {/* Sesuai Foto 1: Tag pink/magenta seragam (PENTING, PROMO, INFO) */}
-                <span className="inline-flex items-center px-2 py-0.5 rounded-[4px] bg-[#ff2357] text-white text-[10.5px] font-bold tracking-wider uppercase shadow-2xs">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-[4px] bg-[#327691] text-white text-[10.5px] font-bold tracking-wider uppercase shadow-2xs">
                   {item.tag}
                 </span>
-                <span className="text-neutral-800">{item.text}</span>
+                <span className="text-[#263b46]">{item.text}</span>
               </span>
             ))}
           </div>

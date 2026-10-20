@@ -25,9 +25,13 @@ export default async function Order({
   );
   const payable =
     b.remaining_amount > 0 &&
-    ["pending_payment", "payment_received", "confirmed"].includes(
+    ["approved", "pending_payment", "payment_received", "confirmed"].includes(
       b.booking_status,
     );
+  const approvalExpired =
+    b.booking_status === "approved" &&
+    (b as unknown as { approval_expires_at?: string }).approval_expires_at &&
+    new Date((b as unknown as { approval_expires_at: string }).approval_expires_at) < new Date();
   return (
     <div className="container-app py-10 md:py-14 max-w-4xl">
       <Link href="/akun/pesanan" className="text-sm text-neutral-600">
@@ -38,11 +42,15 @@ export default async function Order({
         {bookingStatus[b.booking_status] || b.booking_status}
       </h1>
       <p className="mt-4 text-neutral-600">
-        {b.booking_status === "payment_received"
-          ? "Admin sedang menghubungi penyedia Trooper. Tunggu konfirmasi unit sebelum menganggap perjalanan sudah pasti."
-          : b.booking_status === "pending_payment"
-            ? "Pesanan tersimpan. Selesaikan pembayaran agar dapat ditindaklanjuti admin."
-            : "Periksa rincian perjalanan dan hubungi admin jika membutuhkan bantuan."}
+        {b.booking_status === "pending_review"
+          ? "Pesanan kamu sedang menunggu konfirmasi ketersediaan kendaraan dari admin. Kamu belum perlu melakukan pembayaran."
+          : b.booking_status === "approved"
+            ? "Admin telah mengonfirmasi ketersediaan kendaraan. Selesaikan pembayaran sebelum batas waktu yang ditentukan."
+            : b.booking_status === "payment_received"
+              ? "Pembayaran diterima. Admin sedang memproses konfirmasi kendaraan."
+              : b.booking_status === "pending_payment"
+                ? "Pesanan tersimpan. Selesaikan pembayaran agar dapat ditindaklanjuti admin."
+                : "Periksa rincian perjalanan dan hubungi admin jika membutuhkan bantuan."}
       </p>
       <div className="admin-panel mt-8">
         <h2 className="text-xl font-semibold">{b.product_name}</h2>
@@ -78,6 +86,21 @@ export default async function Order({
             WIB.
           </p>
         )}
+        {b.booking_status === "approved" && (b as unknown as { approval_expires_at?: string }).approval_expires_at && (
+          <p className="mt-3 text-sm text-amber-700 font-medium">
+            Batas waktu pembayaran:{" "}
+            {new Date((b as unknown as { approval_expires_at: string }).approval_expires_at).toLocaleString("id-ID", {
+              timeZone: "Asia/Jakarta",
+            })}{" "}
+            WIB.
+          </p>
+        )}
+        {b.booking_status === "pending_review" && (
+          <div className="mt-5 flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+            <span className="text-lg">⏳</span>
+            <span>Admin sedang memeriksa ketersediaan kendaraan. Kamu akan mendapat notifikasi setelah dikonfirmasi.</span>
+          </div>
+        )}
         {b.confirmation_deadline && b.booking_status === "payment_received" && (
           <p className="mt-3 text-sm text-neutral-600">
             Target tindak lanjut admin:{" "}
@@ -87,17 +110,24 @@ export default async function Order({
             WIB. Hubungi admin jika belum ada kabar.
           </p>
         )}
-        {payable && (
+        {payable && !approvalExpired && (
           <div className="mt-7">
             <PaymentButton
               code={b.id}
               label={
                 b.amount_paid > 0
                   ? "Bayar sisa tagihan"
-                  : "Lanjutkan pembayaran"
+                  : b.booking_status === "approved"
+                    ? "Bayar sekarang"
+                    : "Lanjutkan pembayaran"
               }
             />
           </div>
+        )}
+        {approvalExpired && (
+          <p className="mt-5 text-sm text-red-600">
+            Batas waktu pembayaran telah berakhir. Hubungi admin untuk tindak lanjut.
+          </p>
         )}
         <p className="mt-5 text-xs text-neutral-500">
           Status diperbarui setelah notifikasi Midtrans diverifikasi. Muat ulang

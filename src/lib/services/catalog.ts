@@ -11,6 +11,8 @@ export interface CatalogFilterOptions {
   categorySlug?: string;
   serviceType?: string;
   search?: string;
+  destination?: string;
+  duration?: string;
   sort?:
     "popular" | "price_asc" | "price_desc" | "duration_asc" | "duration_desc";
 }
@@ -70,10 +72,65 @@ export const getProducts = cache(
     if (options?.serviceType)
       items = items.filter((p) => p.service_type === options.serviceType);
     if (options?.categorySlug) {
-      const c = (await getCategories()).find(
-        (c) => c.slug === options.categorySlug,
-      );
+      const cats = await getCategories();
+      let c = cats.find((c) => c.slug === options.categorySlug);
+      if (!c) {
+        if (
+          options.categorySlug === "jeep-experience" ||
+          options.categorySlug === "jeep-wisata"
+        ) {
+          c = cats.find(
+            (c) =>
+              c.slug === "paket-rute" ||
+              c.slug === "jeep-experience" ||
+              c.slug === "jeep-wisata",
+          );
+        } else if (options.categorySlug === "paket-rute") {
+          c = cats.find(
+            (c) => c.slug === "jeep-experience" || c.slug === "paket-rute",
+          );
+        }
+      }
       items = c ? items.filter((p) => p.category_id === c.id) : [];
+    }
+    if (options?.destination) {
+      const d = options.destination.toLowerCase().trim().replace(/-/g, " ");
+      items = items.filter((p) => {
+        const fullText = [
+          p.name,
+          p.route_name,
+          p.description,
+          p.short_description,
+          ...(p.destinations || []),
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        if (d.includes("ijen")) return fullText.includes("ijen");
+        if (d.includes("baluran")) return fullText.includes("baluran");
+        if (d.includes("djawatan")) return fullText.includes("djawatan");
+        if (d.includes("sukamade")) return fullText.includes("sukamade");
+        if (d.includes("wurung")) return fullText.includes("wurung");
+        if (d.includes("purwo")) return fullText.includes("purwo");
+        if (d.includes("hijau")) return fullText.includes("hijau");
+        return fullText.includes(d);
+      });
+    }
+    if (options?.duration) {
+      const dur = options.duration.toLowerCase();
+      if (dur === "half-day" || dur === "half_day") {
+        items = items.filter((p) => (p.duration_minutes ?? 0) <= 360);
+      } else if (dur === "1-hari" || dur === "full-day" || dur === "1_hari") {
+        items = items.filter(
+          (p) => (p.duration_minutes ?? 0) > 360 && (p.duration_minutes ?? 0) <= 840,
+        );
+      } else if (
+        dur === "2-day-1-night" ||
+        dur === "2d1n" ||
+        dur === "multi-day"
+      ) {
+        items = items.filter((p) => (p.duration_minutes ?? 0) > 840);
+      }
     }
     if (options?.search) {
       const q = options.search.toLowerCase().trim();

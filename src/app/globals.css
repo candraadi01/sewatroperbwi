@@ -7,59 +7,60 @@
    ============================================================ */
 
 @theme inline {
-  /* --- Primary: Sky / Ocean Blue (matching homestay-banyuwangi.vercel.app) --- */
-  --color-primary-50: #f0f9ff;
-  --color-primary-100: #e0f2fe;
-  --color-primary-200: #bae6fd;
-  --color-primary-300: #7dd3fc;
-  --color-primary-400: #38bdf8;
-  --color-primary-500: #0ea5e9;
-  --color-primary-600: #0284c7;
-  --color-primary-700: #0369a1;
-  --color-primary-800: #075985;
-  --color-primary-900: #0c4a6e;
+  /* --- Primary: Coastal Blue / Ocean Teal (exact homestay-banyuwangi.vercel.app) --- */
+  --color-primary-50: #f4f9fb;
+  --color-primary-100: #e9f3f7;
+  --color-primary-200: #d3e7ef;
+  --color-primary-300: #b3d4e2;
+  --color-primary-400: #8abbd0;
+  --color-primary-500: #5a9bb7;
+  --color-primary-600: #327691;
+  --color-primary-700: #2c6881;
+  --color-primary-800: #28566a;
+  --color-primary-900: #254958;
 
-  /* --- Accent: Rose & Amber (matching homestay-banyuwangi.vercel.app) --- */
-  --color-accent-50: #fff1f2;
-  --color-accent-100: #ffe4e6;
-  --color-accent-200: #fecdd3;
-  --color-accent-300: #fda4af;
-  --color-accent-400: #fb7185;
-  --color-accent-500: #ff2357;
-  --color-accent-600: #e11d48;
-  --color-accent-700: #be123c;
-  --color-accent-800: #9f1239;
-  --color-accent-900: #881337;
+  /* --- Accent: Coastal Soft Tones (exact homestay-banyuwangi.vercel.app) --- */
+  --color-accent-50: #f2f8fa;
+  --color-accent-100: #e3f0f5;
+  --color-accent-200: #c2dfe9;
+  --color-accent-300: #9fcbdc;
+  --color-accent-400: #76b1c9;
+  --color-accent-500: #5a9bb7;
+  --color-accent-600: #327691;
+  --color-accent-700: #2c6881;
+  --color-accent-800: #28566a;
+  --color-accent-900: #254958;
 
-  /* --- Slate Neutrals (matching homestay-banyuwangi.vercel.app) --- */
-  --color-neutral-50: #f8fafc;
-  --color-neutral-100: #f1f5f9;
-  --color-neutral-200: #e2e8f0;
-  --color-neutral-300: #cbd5e1;
-  --color-neutral-400: #94a3b8;
-  --color-neutral-500: #64748b;
-  --color-neutral-600: #475569;
-  --color-neutral-700: #334155;
-  --color-neutral-800: #1e293b;
-  --color-neutral-900: #0f172a;
+  /* --- Slate Neutrals (exact homestay-banyuwangi.vercel.app) --- */
+  --color-neutral-50: #ffffff;
+  --color-neutral-100: #f7f8f9;
+  --color-neutral-200: #e4ebef;
+  --color-neutral-300: #ccd8de;
+  --color-neutral-400: #8e9da5;
+  --color-neutral-500: #697780;
+  --color-neutral-600: #53636d;
+  --color-neutral-700: #43545f;
+  --color-neutral-800: #334650;
+  --color-neutral-900: #263b46;
+  --color-neutral-950: #1f3039;
 
   /* --- Semantic --- */
   --color-success: #16a34a;
-  --color-warning: #d97706;
-  --color-error: #dc2626;
-  --color-info: #2563eb;
+  --color-warning: #f59e0b;
+  --color-error: #e11d48;
+  --color-info: #327691;
 
   /* --- Background & Surface --- */
   --color-background: #ffffff;
-  --color-foreground: #0a0a0a;
-  --color-surface: #fafafa;
+  --color-foreground: #263b46;
+  --color-surface: #f7f8f9;
   --color-surface-elevated: #ffffff;
-  --color-border: #e7e5e4;
-  --color-border-hover: #d6d3d1;
+  --color-border: #e4ebef;
+  --color-border-hover: #ccd8de;
 
-  /* --- Typography (Poppins matching sewajeepbanyuwangi.com) --- */
-  --font-sans: 'Poppins', var(--font-poppins), system-ui, -apple-system, sans-serif;
-  --font-heading: 'Poppins', var(--font-poppins), system-ui, -apple-system, sans-serif;
+  /* --- Typography (Urbanist & Inter matching homestay-banyuwangi.vercel.app) --- */
+  --font-sans: var(--font-urbanist), var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-heading: var(--font-urbanist), system-ui, -apple-system, sans-serif;
 
   /* --- Spacing --- */
   --spacing-section: 5rem;
@@ -75,11 +76,11 @@
 
   /* --- Shadows --- */
   --shadow-card:
-    0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08);
+    0 1px 3px 0 rgb(38 59 70 / 0.06), 0 1px 2px -1px rgb(38 59 70 / 0.06);
   --shadow-elevated:
-    0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    0 4px 16px 0 rgb(38 59 70 / 0.08);
   --shadow-modal:
-    0 20px 25px -5px rgb(0 0 0 / 0.12), 0 8px 10px -6px rgb(0 0 0 / 0.08);
+    0 20px 25px -5px rgb(38 59 70 / 0.12), 0 8px 10px -6px rgb(38 59 70 / 0.08);
 
   /* --- Animation --- */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -95,7 +96,7 @@
 *::before,
 *::after {
   box-sizing: border-box;
-  font-family: 'Poppins', var(--font-poppins), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
 }
 
 html {
@@ -104,7 +105,7 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-family: 'Poppins', var(--font-poppins), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -124,7 +125,7 @@ html {
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
-  font-family: 'Poppins', var(--font-poppins), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   line-height: 1.625;
   min-height: 100dvh;
@@ -1045,4 +1046,20 @@ button:disabled {
 
 .ibtn:hover {
   background: var(--color-accent-600);
+}
+
+/* ============================================================
+   CAROUSEL CIRCLE DOTS
+   ============================================================ */
+
+button.carousel-dot,
+.carousel-dot {
+  min-height: 0 !important;
+  min-width: 0 !important;
+  width: 10px !important;
+  height: 10px !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 9999px !important;
+  display: inline-block !important;
 }

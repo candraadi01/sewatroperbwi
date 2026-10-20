@@ -4,27 +4,76 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import type { PricingQuote } from "@/types/database";
 import { formatIDR } from "@/lib/utils/currency";
+import { createClient } from "@/lib/supabase/client";
+
+interface DraftFields {
+  name?: string;
+  phone?: string;
+  email?: string;
+  pickupAddress?: string;
+  notes?: string;
+  choice?: "dp" | "full";
+}
+
 function Checkout() {
   const params = useSearchParams();
   const [quote, setQuote] = useState<PricingQuote | null>(null),
     [ready, setReady] = useState(false),
     [choice, setChoice] = useState<"dp" | "full">("dp"),
     [busy, setBusy] = useState(false),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [draft, setDraft] = useState<DraftFields>({}),
+    [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const key = useRef("");
+
   useEffect(() => {
     let active = true;
-    queueMicrotask(() => {
+    queueMicrotask(async () => {
       if (!active) return;
       try {
-        const saved = JSON.parse(
-          sessionStorage.getItem("pending_booking_quote") || "null",
-        );
+        const raw =
+          sessionStorage.getItem("pending_booking_quote") ||
+          localStorage.getItem("pending_booking_quote") ||
+          "null";
+        const saved = JSON.parse(raw);
         if (
           saved &&
           (!params.get("quote_id") || saved.quote_id === params.get("quote_id"))
-        )
+        ) {
           setQuote(saved);
+        }
+
+        // Restore draft fields if saved before login
+        const savedDraft = JSON.parse(
+          sessionStorage.getItem("checkout_draft_fields") ||
+            localStorage.getItem("checkout_draft_fields") ||
+            "{}"
+        );
+        if (savedDraft) {
+          setDraft(savedDraft);
+          if (savedDraft.choice) setChoice(savedDraft.choice);
+        }
+
+        // Check user auth state to prefill email/name if not in draft
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          setIsLoggedIn(true);
+          setDraft((prev) => ({
+            ...prev,
+            email: prev.email || user.email || "",
+            name:
+              prev.name ||
+              user.user_metadata?.full_name ||
+              user.user_metadata?.name ||
+              "",
+            phone: prev.phone || user.user_metadata?.phone || "",
+          }));
+        } else {
+          setIsLoggedIn(false);
+        }
       } catch {}
       setReady(true);
     });
@@ -32,53 +81,86 @@ function Checkout() {
       active = false;
     };
   }, [params]);
+
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!quote || busy) return;
-    const fields = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const fields = new FormData(form);
     setBusy(true);
     setError("");
+
+    const formDataPayload = {
+      productId: quote.product_id,
+      serviceDate: quote.service_date,
+      startTime: quote.start_time,
+      numUnits: quote.num_units,
+      numPassengers: quote.num_passengers,
+      pickupZoneId: quote.pickup_zone?.id,
+      pickupAddress: String(fields.get("pickupAddress") || ""),
+      promoCode: quote.promo_code || "",
+      contactName: String(fields.get("name")),
+      contactPhone: String(fields.get("phone")),
+      contactEmail: String(fields.get("email")),
+      paymentChoice: choice,
+      termsAccepted: fields.get("terms") === "on",
+      notes: String(fields.get("notes") || ""),
+      idempotencyKey: "",
+      expectedTotal: quote.total_amount,
+    };
+
     try {
       const intent = "booking-intent:" + quote.quote_id;
       key.current ||= sessionStorage.getItem(intent) || crypto.randomUUID();
       sessionStorage.setItem(intent, key.current);
+      formDataPayload.idempotencyKey = key.current;
+
       const r = await fetch("/api/checkout/create-booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId: quote.product_id,
-          serviceDate: quote.service_date,
-          startTime: quote.start_time,
-          numUnits: quote.num_units,
-          numPassengers: quote.num_passengers,
-          pickupZoneId: quote.pickup_zone?.id,
-          pickupAddress: String(fields.get("pickupAddress") || ""),
-          promoCode: quote.promo_code || "",
-          contactName: String(fields.get("name")),
-          contactPhone: String(fields.get("phone")),
-          contactEmail: String(fields.get("email")),
-          paymentChoice: choice,
-          termsAccepted: fields.get("terms") === "on",
-          notes: String(fields.get("notes") || ""),
-          idempotencyKey: key.current,
-          expectedTotal: quote.total_amount,
-        }),
+        body: JSON.stringify(formDataPayload),
       });
       const data = await r.json();
+
+      if (r.status === 401) {
+        // User not logged in: persist draft fields so nothing is lost upon login
+        try {
+          const draftToSave = {
+            name: formDataPayload.contactName,
+            phone: formDataPayload.contactPhone,
+            email: formDataPayload.contactEmail,
+            pickupAddress: formDataPayload.pickupAddress,
+            notes: formDataPayload.notes,
+            choice,
+          };
+          sessionStorage.setItem("checkout_draft_fields", JSON.stringify(draftToSave));
+          localStorage.setItem("checkout_draft_fields", JSON.stringify(draftToSave));
+          sessionStorage.setItem("pending_booking_quote", JSON.stringify(quote));
+          localStorage.setItem("pending_booking_quote", JSON.stringify(quote));
+        } catch {}
+
+        const returnPath = window.location.pathname + window.location.search;
+        window.location.assign(`/login?redirectTo=${encodeURIComponent(returnPath)}`);
+        return;
+      }
+
       if (!r.ok) throw new Error(data.error || "Pesanan belum dapat diproses.");
-      const url = new URL(data.data.redirectUrl);
-      if (
-        url.protocol !== "https:" ||
-        !["app.midtrans.com", "app.sandbox.midtrans.com"].includes(url.hostname)
-      )
-        throw new Error("Tautan pembayaran tidak valid.");
-      sessionStorage.removeItem("pending_booking_quote");
-      window.location.assign(url.href);
+
+      // Booking submitted — clean up all pending draft storage
+      try {
+        sessionStorage.removeItem("pending_booking_quote");
+        localStorage.removeItem("pending_booking_quote");
+        sessionStorage.removeItem("checkout_draft_fields");
+        localStorage.removeItem("checkout_draft_fields");
+      } catch {}
+
+      window.location.assign("/pesanan/" + encodeURIComponent(data.data.bookingId));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Jaringan bermasalah.");
       setBusy(false);
     }
   }
+
   if (!ready) return <div className="container-app py-16">Memuat rincian…</div>;
   if (!quote)
     return (
@@ -102,11 +184,37 @@ function Checkout() {
       </Link>
       <h1 className="section-heading mt-5">Lengkapi pemesananmu.</h1>
       <p className="mt-3 text-neutral-600">
-        Pembayaran diterima lebih dulu. Ketersediaan unit kemudian dikonfirmasi
-        admin.
+        Isi data pemesan, lalu kirim permintaan. Admin akan mengonfirmasi ketersediaan kendaraan
+        sebelum kamu diminta membayar.
       </p>
+
+      {isLoggedIn === false && (
+        <div className="mt-6 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-4 text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <p className="font-semibold">💡 Kamu belum masuk ke akun</p>
+            <p className="text-xs text-amber-700 mt-0.5">
+              Masuk agar pesanan langsung terhubung ke profilmu. Rincian perjalanan yang sudah dipilih akan tetap tersimpan aman.
+            </p>
+          </div>
+          <Link
+            href={`/login?redirectTo=${encodeURIComponent(
+              typeof window !== "undefined"
+                ? window.location.pathname + window.location.search
+                : "/checkout"
+            )}`}
+            className="action-link text-xs py-2 px-3 whitespace-nowrap shrink-0"
+          >
+            Masuk sekarang →
+          </Link>
+        </div>
+      )}
+
       <div className="grid lg:grid-cols-[1.2fr_1fr] gap-8 mt-8">
-        <form onSubmit={submit} className="admin-panel space-y-5">
+        <form
+          key={`${draft.email || ""}-${draft.name || ""}`}
+          onSubmit={submit}
+          className="admin-panel space-y-5"
+        >
           <h2 className="text-xl font-semibold">Data pemesan</h2>
           <label className="admin-field">
             Nama lengkap
@@ -116,6 +224,7 @@ function Checkout() {
               minLength={2}
               maxLength={100}
               autoComplete="name"
+              defaultValue={draft.name || ""}
             />
           </label>
           <label className="admin-field">
@@ -127,6 +236,7 @@ function Checkout() {
               maxLength={18}
               autoComplete="tel"
               placeholder="08…"
+              defaultValue={draft.phone || ""}
             />
           </label>
           <label className="admin-field">
@@ -137,6 +247,7 @@ function Checkout() {
               required
               maxLength={255}
               autoComplete="email"
+              defaultValue={draft.email || ""}
             />
           </label>
           <label className="admin-field">
@@ -144,12 +255,17 @@ function Checkout() {
             <input
               name="pickupAddress"
               maxLength={500}
-              defaultValue={quote.pickup_address}
+              defaultValue={draft.pickupAddress || quote.pickup_address}
             />
           </label>
           <label className="admin-field">
             Catatan (opsional)
-            <textarea name="notes" maxLength={1000} rows={3} />
+            <textarea
+              name="notes"
+              maxLength={1000}
+              rows={3}
+              defaultValue={draft.notes || ""}
+            />
           </label>
           <fieldset>
             <legend className="font-semibold mb-3">Pilihan pembayaran</legend>
@@ -214,11 +330,12 @@ function Checkout() {
             className="action-link w-full justify-center"
             disabled={busy || quote.is_sample_pricing}
           >
-            {busy ? "Membuat tagihan…" : "Lanjut ke pembayaran"}
+            {busy ? "Mengirim permintaan…" : "Kirim Permintaan Booking"}
           </button>
           <p className="text-xs text-neutral-500">
-            Pembayaran diproses melalui halaman Midtrans. Status pesanan dapat
-            diperiksa di{" "}
+            Pesanan akan disimpan dengan status{" "}
+            <strong>Menunggu konfirmasi admin</strong>. Setelah admin menyetujui,
+            kamu baru dapat membayar. Status dapat diperiksa di{" "}
             <Link href="/akun/pesanan" className="underline">
               Pesanan Saya
             </Link>

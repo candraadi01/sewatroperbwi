@@ -7,12 +7,7 @@ import { calculateQuote } from "@/lib/pricing/engine";
 import { getProductById } from "@/lib/services/catalog";
 import { getBusinessSettings } from "@/lib/services/business";
 import { getSiteSettings } from "@/lib/services/settings";
-import { midtransConfigured } from "@/lib/midtrans/snap";
-import {
-  preparePayment,
-  type StoredBooking,
-  type PaymentAttempt,
-} from "@/lib/services/booking";
+import type { StoredBooking } from "@/lib/services/booking";
 import {
   assertSameOrigin,
   readJson,
@@ -20,6 +15,7 @@ import {
   RequestError,
 } from "@/lib/security/http";
 import { rateLimit } from "@/lib/security/rate-limit";
+
 export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
@@ -31,9 +27,9 @@ export async function POST(request: Request) {
     const p = parsed.data;
     await rateLimit("checkout:" + user.id, 10);
     const settings = await getSiteSettings();
-    if (!settings.checkout_enabled || !midtransConfigured())
+    if (!settings.checkout_enabled)
       throw new RequestError(
-        "Pembayaran online belum dibuka oleh pengelola.",
+        "Pemesanan belum dibuka oleh pengelola.",
         503,
       );
     let quote;
@@ -102,22 +98,17 @@ export async function POST(request: Request) {
         "Pesanan belum dapat disimpan. Periksa kuota dan promo atau hubungi admin.",
         409,
       );
-    const stored = data as { booking: StoredBooking; attempt: PaymentAttempt };
-    let payment;
-    try {
-      payment = await preparePayment(stored.booking, stored.attempt);
-    } catch {
-      throw new RequestError(
-        `Tagihan belum siap. Pesanan ${stored.booking.booking_code} sudah tersimpan; buka Pesanan Saya atau hubungi admin.`,
-        502,
-      );
-    }
+    const stored = data as { booking: StoredBooking; attempt: null };
+    // Booking is now in pending_review. No payment attempt created yet.
+    // Admin must approve before buyer can pay.
     return NextResponse.json(
       {
         success: true,
         data: {
           bookingId: stored.booking.booking_code,
-          redirectUrl: payment.redirect_url,
+          status: "pending_review",
+          message:
+            "Pesanan berhasil dibuat. Admin akan mengonfirmasi ketersediaan kendaraan. Pantau status di Pesanan Saya.",
         },
       },
       { status: 201, headers: { "Cache-Control": "no-store" } },
@@ -126,3 +117,4 @@ export async function POST(request: Request) {
     return errorResponse(e);
   }
 }
+

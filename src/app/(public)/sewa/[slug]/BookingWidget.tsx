@@ -78,7 +78,10 @@ export function BookingWidget({
     (quote.promo_code || "") !== promo.trim();
   function next() {
     if (!quote || pending) return;
-    sessionStorage.setItem("pending_booking_quote", JSON.stringify(quote));
+    try {
+      sessionStorage.setItem("pending_booking_quote", JSON.stringify(quote));
+      localStorage.setItem("pending_booking_quote", JSON.stringify(quote));
+    } catch {}
     router.push("/checkout?quote_id=" + encodeURIComponent(quote.quote_id));
   }
   return (

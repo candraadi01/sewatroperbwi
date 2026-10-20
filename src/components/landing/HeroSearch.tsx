@@ -6,26 +6,34 @@ import { Search } from "lucide-react";
 import Image from "next/image";
 import { useLanguage } from "@/lib/i18n/context";
 
-type OptionItem =
-  | { value: string; labelKey: "search_all_destinations" | "search_all_durations"; label?: never }
-  | { value: string; label: string; labelKey?: never };
+type OptionItem = {
+  value: string;
+  label: string;
+};
+
+const categoryOptions: OptionItem[] = [
+  { value: "", label: "Semua Kategori" },
+  { value: "jeep-experience", label: "Paket Jeep Experience" },
+  { value: "jeep-wisata", label: "Jeep Wisata Banyuwangi" },
+  { value: "harian-sopir", label: "Sewa Harian + Sopir" },
+];
 
 const destinationOptions: OptionItem[] = [
-  { value: "", labelKey: "search_all_destinations" },
-  { value: "kawah-ijen", label: "Kawah Ijen" },
-  { value: "taman-nasional-baluran", label: "Taman Nasional Baluran" },
-  { value: "djawatan", label: "Djawatan" },
-  { value: "pantai-sukamade", label: "Pantai Sukamade" },
-  { value: "kawah-wurung-bondowoso", label: "Kawah Wurung Bondowoso" },
+  { value: "", label: "Semua Destinasi" },
+  { value: "ijen", label: "Kawah Ijen" },
+  { value: "baluran", label: "Taman Nasional Baluran" },
+  { value: "djawatan", label: "Hutan De Djawatan" },
+  { value: "sukamade", label: "Pantai Sukamade" },
+  { value: "kawah-wurung", label: "Kawah Wurung" },
   { value: "alas-purwo", label: "Alas Purwo" },
-  { value: "explore-banyuwangi", label: "Explore Banyuwangi" },
+  { value: "teluk-hijau", label: "Teluk Hijau" },
 ];
 
 const durationOptions: OptionItem[] = [
-  { value: "", labelKey: "search_all_durations" },
-  { value: "1-hari", label: "1 Hari" },
-  { value: "2-day-1-night", label: "2 Day 1 Night" },
-  { value: "3-day-2-night", label: "3 Day 2 Night" },
+  { value: "", label: "Semua Durasi" },
+  { value: "half-day", label: "Half Day (≤ 5 Jam)" },
+  { value: "1-hari", label: "1 Hari / Full Day (6–14 Jam)" },
+  { value: "2-day-1-night", label: "2 Hari 1 Malam (2D1N)" },
 ];
 
 export function HeroSearch() {
@@ -62,7 +70,7 @@ export function HeroSearch() {
       {/* Teks Hero Utama di Atas: Diturunkan sedikit agar berjarak pas dari navbar/ticker */}
       <div className="relative z-10 w-full max-w-[960px] mx-auto px-3 sm:px-4 pt-10 sm:pt-13 md:pt-16 text-center">
         <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-[48px] font-black text-white tracking-tight leading-tight drop-shadow-[0_2px_14px_rgba(0,0,0,0.85)]">
-          Jelajahi Banyuwangi <span className="text-[#38bdf8]">Tanpa Batas</span>
+          Jelajahi Banyuwangi <span className="text-[#8abbd0]">Tanpa Batas</span>
         </h1>
 
         <p className="mt-2 text-xs sm:text-sm md:text-base text-slate-100 max-w-xl mx-auto font-normal leading-relaxed drop-shadow-[0_1px_6px_rgba(0,0,0,0.85)]">
@@ -75,102 +83,104 @@ export function HeroSearch() {
         {/* Search Title (Pill Floating) */}
         <div className="text-center mb-3 sm:mb-4">
           <h2 className="inline-flex items-center gap-2 bg-black/40 backdrop-blur-md rounded-full px-4 py-1.5 sm:px-5 sm:py-2 text-white font-bold text-xs sm:text-sm border border-white/30 shadow-lg">
-              <Search size={16} className="text-[#38bdf8]" />
-              <span>{t("search_heading")}</span>
-            </h2>
+            <Search size={16} className="text-[#8abbd0]" />
+            <span>{t("search_heading")}</span>
+          </h2>
+        </div>
+
+        {/* Search Form Card — Frosted Glassmorphism */}
+        <form
+          onSubmit={handleSearch}
+          className="bg-gradient-to-b from-white/25 to-white/10 backdrop-blur-md rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] border border-white/40"
+        >
+          {/* Labels Desktop */}
+          <div className="hidden md:grid grid-cols-[1fr_1fr_1fr_auto] gap-3 mb-2">
+            <span className="text-xs font-bold text-white tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
+              {t("search_kategori")}
+            </span>
+            <span className="text-xs font-bold text-white tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
+              {t("search_destinasi")}
+            </span>
+            <span className="text-xs font-bold text-white tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
+              {t("search_durasi")}
+            </span>
+            <span className="w-28"></span>
           </div>
 
-          {/* Search Form Card — Benar-Benar Transparan Tembus Pandang (Frosted Glassmorphism Luminous) */}
-          <form
-            onSubmit={handleSearch}
-            className="bg-gradient-to-b from-white/25 to-white/10 backdrop-blur-md rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] border border-white/40"
-          >
-            {/* Labels Desktop */}
-            <div className="hidden md:grid grid-cols-[1fr_1fr_1fr_auto] gap-3 mb-2">
-              <span className="text-xs font-bold text-white tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto] gap-2.5 sm:gap-3 items-end">
+            {/* Kategori */}
+            <div>
+              <label className="block text-xs font-bold text-white mb-1.5 md:hidden drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
                 {t("search_kategori")}
-              </span>
-              <span className="text-xs font-bold text-white tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
+              </label>
+              <select
+                className="w-full h-11 px-3 text-sm font-semibold border border-white/40 rounded-xl bg-white/90 hover:bg-white text-neutral-900 focus:outline-none focus:border-[#327691] focus:ring-2 focus:ring-[#327691]/40 shadow-xs transition cursor-pointer"
+                value={kategori}
+                onChange={(e) => setKategori(e.target.value)}
+              >
+                {categoryOptions.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Destinasi */}
+            <div>
+              <label className="block text-xs font-bold text-white mb-1.5 md:hidden drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
                 {t("search_destinasi")}
-              </span>
-              <span className="text-xs font-bold text-white tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
+              </label>
+              <select
+                className="w-full h-11 px-3 text-sm font-semibold border border-white/40 rounded-xl bg-white/90 hover:bg-white text-neutral-900 focus:outline-none focus:border-[#327691] focus:ring-2 focus:ring-[#327691]/40 shadow-xs transition cursor-pointer"
+                value={destinasi}
+                onChange={(e) => setDestinasi(e.target.value)}
+              >
+                {destinationOptions.map((d) => (
+                  <option key={d.value} value={d.value}>
+                    {d.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Durasi */}
+            <div>
+              <label className="block text-xs font-bold text-white mb-1.5 md:hidden drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
                 {t("search_durasi")}
-              </span>
-              <span className="w-28"></span>
+              </label>
+              <select
+                className="w-full h-11 px-3 text-sm font-semibold border border-white/40 rounded-xl bg-white/90 hover:bg-white text-neutral-900 focus:outline-none focus:border-[#327691] focus:ring-2 focus:ring-[#327691]/40 shadow-xs transition cursor-pointer"
+                value={durasi}
+                onChange={(e) => setDurasi(e.target.value)}
+              >
+                {durationOptions.map((d) => (
+                  <option key={d.value} value={d.value}>
+                    {d.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto] gap-2.5 sm:gap-3 items-end">
-              {/* Kategori */}
-              <div>
-                <label className="block text-xs font-bold text-white mb-1.5 md:hidden drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
-                  {t("search_kategori")}
-                </label>
-                <select
-                  className="w-full h-11 px-3 text-sm font-semibold border border-white/40 rounded-xl bg-white/90 hover:bg-white text-neutral-900 focus:outline-none focus:border-[#0ea5e9] focus:ring-2 focus:ring-[#0ea5e9]/40 shadow-sm transition cursor-pointer"
-                  value={kategori}
-                  onChange={(e) => setKategori(e.target.value)}
-                >
-                  <option value="">{t("search_all_categories")}</option>
-                  <option value="jeep-dokumentasi-premium">Jeep + Dokumentasi Premium</option>
-                  <option value="private-trip-banyuwangi">Private Trip Banyuwangi</option>
-                </select>
-              </div>
-
-              {/* Destinasi */}
-              <div>
-                <label className="block text-xs font-bold text-white mb-1.5 md:hidden drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
-                  {t("search_destinasi")}
-                </label>
-                <select
-                  className="w-full h-11 px-3 text-sm font-semibold border border-white/40 rounded-xl bg-white/90 hover:bg-white text-neutral-900 focus:outline-none focus:border-[#0ea5e9] focus:ring-2 focus:ring-[#0ea5e9]/40 shadow-sm transition cursor-pointer"
-                  value={destinasi}
-                  onChange={(e) => setDestinasi(e.target.value)}
-                >
-                  {destinationOptions.map((d) => (
-                    <option key={d.value} value={d.value}>
-                      {d.labelKey ? t(d.labelKey) : d.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Durasi */}
-              <div>
-                <label className="block text-xs font-bold text-white mb-1.5 md:hidden drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
-                  {t("search_durasi")}
-                </label>
-                <select
-                  className="w-full h-11 px-3 text-sm font-semibold border border-white/40 rounded-xl bg-white/90 hover:bg-white text-neutral-900 focus:outline-none focus:border-[#0ea5e9] focus:ring-2 focus:ring-[#0ea5e9]/40 shadow-sm transition cursor-pointer"
-                  value={durasi}
-                  onChange={(e) => setDurasi(e.target.value)}
-                >
-                  {durationOptions.map((d) => (
-                    <option key={d.value} value={d.value}>
-                      {d.labelKey ? t(d.labelKey) : d.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Action Buttons — Mobile Friendly Layout */}
-              <div className="grid grid-cols-[48px_1fr] md:flex md:items-center gap-2 pt-1 md:pt-0">
-                <button
-                  type="submit"
-                  className="h-11 w-12 bg-[#ff2357] hover:bg-[#e11d48] active:scale-95 text-white rounded-xl flex items-center justify-center transition shadow-sm cursor-pointer shrink-0"
-                  aria-label="Cari"
-                >
-                  <Search size={19} strokeWidth={2.4} />
-                </button>
-                <button
-                  type="submit"
-                  className="h-11 px-5 md:px-6 bg-[#0ea5e9] hover:bg-[#0284c7] active:scale-95 text-white font-bold text-sm rounded-xl transition shadow-md shadow-[#0ea5e9]/25 flex items-center justify-center cursor-pointer whitespace-nowrap"
-                >
-                  {t("search_btn")}
-                </button>
-              </div>
+            {/* Action Buttons */}
+            <div className="grid grid-cols-[48px_1fr] md:flex md:items-center gap-2 pt-1 md:pt-0">
+              <button
+                type="submit"
+                className="h-11 w-12 bg-[#2c6881] hover:bg-[#254958] active:scale-95 text-white rounded-xl flex items-center justify-center transition shadow-xs cursor-pointer shrink-0"
+                aria-label="Cari"
+              >
+                <Search size={19} strokeWidth={2.4} />
+              </button>
+              <button
+                type="submit"
+                className="h-11 px-5 md:px-6 bg-[#327691] hover:bg-[#2c6881] active:scale-95 text-white font-bold text-sm rounded-xl transition shadow-md shadow-[#327691]/25 flex items-center justify-center cursor-pointer whitespace-nowrap"
+              >
+                {t("search_btn")}
+              </button>
             </div>
-          </form>
-        </div>
+          </div>
+        </form>
+      </div>
       </section>
   );
 }

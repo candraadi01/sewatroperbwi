@@ -14,6 +14,8 @@ import {
   RequestError,
 } from "@/lib/security/http";
 import { rateLimit } from "@/lib/security/rate-limit";
+import { midtransConfigured } from "@/lib/midtrans/snap";
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ code: string }> },
@@ -30,6 +32,11 @@ export async function POST(
       .strict()
       .safeParse(await readJson(request));
     if (!input.success) throw new RequestError("Permintaan tidak valid.");
+    if (!midtransConfigured())
+      throw new RequestError(
+        "Pembayaran online belum dikonfigurasi. Hubungi admin.",
+        503,
+      );
     await rateLimit("payment:" + user.id, 10);
     const db = await createAdminClient();
     const { data: b, error } = await db
@@ -39,8 +46,29 @@ export async function POST(
       .eq("user_id", user.id)
       .maybeSingle();
     if (error || !b) throw new RequestError("Pesanan tidak ditemukan.", 404);
+
+    // === APPROVAL GATE: block payment until admin approves ===
+    if (b.status === "pending_review") {
+      throw new RequestError(
+        "Pesanan sedang menunggu konfirmasi admin. Pembayaran baru dapat dilakukan setelah admin menyetujui ketersediaan kendaraan.",
+        409,
+      );
+    }
+    if (
+      b.status === "approved" &&
+      b.approval_expires_at &&
+      new Date(b.approval_expires_at) < new Date()
+    ) {
+      throw new RequestError(
+        "Waktu pembayaran telah berakhir. Hubungi admin untuk memperpanjang persetujuan.",
+        409,
+      );
+    }
+    // =========================================================
+
     if (
       ![
+        "approved",
         "pending_payment",
         "payment_received",
         "confirmed",
@@ -49,6 +77,7 @@ export async function POST(
       b.outstanding < 1
     )
       throw new RequestError("Pesanan tidak memiliki tagihan aktif.", 409);
+
     let booking = b as StoredBooking,
       attempt: PaymentAttempt;
     if (b.amount_paid > 0) {
@@ -62,6 +91,7 @@ export async function POST(
       booking = v.booking;
       attempt = v.attempt;
     } else {
+      // payment_attempt was created by approve_booking RPC
       const r = await db
         .from("payment_attempts")
         .select("*")

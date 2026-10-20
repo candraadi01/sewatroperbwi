@@ -50,21 +50,21 @@ export function CartDrawer() {
       {/* Drawer */}
       <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-300">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-neutral-200 flex items-center justify-between bg-neutral-50/80">
+        <div className="p-4 sm:p-5 border-b border-[#e4ebef] flex items-center justify-between bg-[#f4f9fb]">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-lg bg-[#0ea5e9]/10 text-[#0ea5e9] flex items-center justify-center">
+            <div className="w-9 h-9 rounded-lg bg-[#e9f3f7] text-[#327691] flex items-center justify-center">
               <Car size={20} strokeWidth={2.2} />
             </div>
             <div>
-              <h3 className="font-bold text-neutral-900 text-base">{t("cart_title")}</h3>
-              <p className="text-xs text-neutral-500">
+              <h3 className="font-bold text-[#263b46] text-base">{t("cart_title")}</h3>
+              <p className="text-xs text-[#53636d]">
                 {items.length} {t("cart_item_label")}
               </p>
             </div>
           </div>
           <button
             onClick={() => setIsCartOpen(false)}
-            className="p-2 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200/50 rounded-full transition"
+            className="p-2 text-[#697780] hover:text-[#263b46] hover:bg-[#e4ebef] rounded-full transition cursor-pointer"
             aria-label="Tutup keranjang"
           >
             <X size={20} />
@@ -75,18 +75,18 @@ export function CartDrawer() {
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
           {items.length === 0 ? (
             <div className="py-16 text-center space-y-3">
-              <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-[#0ea5e9]">
+              <div className="w-16 h-16 rounded-full bg-[#e9f3f7] flex items-center justify-center mx-auto text-[#327691]">
                 <Car size={32} strokeWidth={2} />
               </div>
-              <h4 className="font-bold text-neutral-800 text-sm">
+              <h4 className="font-bold text-[#263b46] text-sm">
                 {t("nav_cart_empty")}
               </h4>
-              <p className="text-xs text-neutral-500 max-w-xs mx-auto">
+              <p className="text-xs text-[#53636d] max-w-xs mx-auto">
                 {t("cart_empty_desc")}
               </p>
               <button
                 onClick={() => setIsCartOpen(false)}
-                className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-xs font-semibold rounded-lg transition shadow-sm"
+                className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-[#327691] hover:bg-[#2c6881] text-white text-xs font-semibold rounded-lg transition shadow-xs cursor-pointer"
               >
                 {t("cart_empty_btn")}
               </button>
@@ -95,7 +95,7 @@ export function CartDrawer() {
             items.map((item) => (
               <div
                 key={item.id}
-                className="flex gap-3.5 p-3 rounded-xl border border-neutral-200 bg-white hover:border-[#0ea5e9]/40 transition shadow-xs"
+                className="flex gap-3.5 p-3 rounded-xl border border-[#e4ebef] bg-white hover:border-[#327691]/40 transition shadow-xs"
               >
                 {/* Image */}
                 <div className="relative w-20 h-20 rounded-lg overflow-hidden shrink-0 bg-neutral-100">
@@ -111,42 +111,42 @@ export function CartDrawer() {
                 <div className="flex-1 flex flex-col justify-between min-w-0">
                   <div>
                     <div className="flex items-start justify-between gap-2">
-                      <h4 className="text-xs font-bold text-neutral-900 line-clamp-1">
+                      <h4 className="text-xs font-bold text-[#263b46] line-clamp-1">
                         {item.title}
                       </h4>
                       <button
                         onClick={() => removeItem(item.id)}
-                        className="text-neutral-400 hover:text-red-500 p-1 transition shrink-0"
+                        className="text-[#697780] hover:text-red-500 p-1 transition shrink-0 cursor-pointer"
                         title="Hapus"
                       >
                         <Trash2 size={14} />
                       </button>
                     </div>
                     {item.duration && (
-                      <p className="text-[11px] text-neutral-500 mt-0.5">{item.duration}</p>
+                      <p className="text-[11px] text-[#53636d] mt-0.5">{item.duration}</p>
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-neutral-100">
-                    <span className="text-xs font-extrabold text-[#0ea5e9]">
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#e4ebef]">
+                    <span className="text-xs font-extrabold text-[#2c6881]">
                       {formatIDR(item.price * item.quantity)}
                     </span>
 
                     {/* Quantity Selector */}
-                    <div className="flex items-center gap-1.5 bg-neutral-100 rounded-md p-0.5">
+                    <div className="flex items-center gap-1.5 bg-[#f4f9fb] border border-[#e4ebef] rounded-md p-0.5">
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="w-5 h-5 flex items-center justify-center rounded bg-white text-neutral-600 hover:bg-neutral-200 text-xs shadow-xs transition"
+                        className="w-5 h-5 flex items-center justify-center rounded bg-white text-[#263b46] hover:bg-[#e9f3f7] text-xs shadow-xs transition cursor-pointer"
                         aria-label="Kurangi"
                       >
                         <Minus size={11} />
                       </button>
-                      <span className="text-xs font-semibold text-neutral-800 w-5 text-center">
+                      <span className="text-xs font-semibold text-[#263b46] w-5 text-center">
                         {item.quantity}
                       </span>
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="w-5 h-5 flex items-center justify-center rounded bg-white text-neutral-600 hover:bg-neutral-200 text-xs shadow-xs transition"
+                        className="w-5 h-5 flex items-center justify-center rounded bg-white text-[#263b46] hover:bg-[#e9f3f7] text-xs shadow-xs transition cursor-pointer"
                         aria-label="Tambah"
                       >
                         <Plus size={11} />
@@ -161,10 +161,10 @@ export function CartDrawer() {
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="p-4 sm:p-5 border-t border-neutral-200 bg-neutral-50/70 space-y-3">
+          <div className="p-4 sm:p-5 border-t border-[#e4ebef] bg-[#f4f9fb] space-y-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-neutral-600 font-medium">{t("cart_total")}</span>
-              <span className="text-base font-extrabold text-neutral-900">
+              <span className="text-[#53636d] font-medium">{t("cart_total")}</span>
+              <span className="text-base font-extrabold text-[#263b46]">
                 {formatIDR(totalPrice)}
               </span>
             </div>
@@ -172,7 +172,7 @@ export function CartDrawer() {
             <Link
               href="/checkout"
               onClick={() => setIsCartOpen(false)}
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-[#0ea5e9] hover:bg-[#0284c7] text-white text-sm font-bold rounded-xl transition shadow-md shadow-[#0ea5e9]/20"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-[#327691] hover:bg-[#2c6881] text-white text-sm font-bold rounded-xl transition shadow-md shadow-[#327691]/20 cursor-pointer"
             >
               <span>{t("cart_checkout")}</span>
               <ArrowRight size={16} />

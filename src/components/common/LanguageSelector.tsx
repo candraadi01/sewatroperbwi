@@ -39,14 +39,14 @@ export function LanguageSelector() {
                 }}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-left text-xs transition ${
                   isSelected
-                    ? "bg-[#0ea5e9]/10 text-[#0284c7] font-bold"
-                    : "text-neutral-700 hover:bg-neutral-100 font-medium"
+                    ? "bg-[#e9f3f7] text-[#327691] font-bold"
+                    : "text-[#53636d] hover:bg-[#f4f9fb] font-medium"
                 }`}
               >
                 <FlagIcon code={lang.code} className="w-6 h-4" />
                 <span className="truncate flex-1 text-[13px]">{lang.name}</span>
                 {isSelected && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#0ea5e9] shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#327691] shrink-0" />
                 )}
               </button>
             );

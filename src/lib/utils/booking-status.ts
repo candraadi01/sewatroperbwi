@@ -1,6 +1,8 @@
 export const bookingStatus: Record<string, string> = {
+  pending_review: "Menunggu konfirmasi admin",
+  approved: "Disetujui — segera selesaikan pembayaran",
   pending_payment: "Menunggu pembayaran",
-  payment_received: "Pembayaran diterima · menunggu kendaraan",
+  payment_received: "Pembayaran diterima · menunggu konfirmasi kendaraan",
   confirmed: "Kendaraan terkonfirmasi",
   in_progress: "Perjalanan berlangsung",
   completed: "Perjalanan selesai",

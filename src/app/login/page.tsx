@@ -14,7 +14,9 @@ function LoginForm() {
   const redirectTo = safeRedirectPath(searchParams.get("redirectTo") ?? "/");
   const errorParam = searchParams.get("error");
 
+  const [method, setMethod] = useState<"password" | "magic_link">("password");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -47,7 +49,53 @@ function LoginForm() {
     }
   }
 
-  async function handleEmailLogin(e: React.FormEvent) {
+  async function handlePasswordLogin(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.trim() || !password) return;
+    if (!isSupabaseConfigured()) {
+      setError("Login belum dikonfigurasi pengelola.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setMessage("");
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+
+    if (error) {
+      setError(
+        error.message === "Invalid login credentials"
+          ? "Email atau kata sandi tidak cocok. Silakan periksa kembali."
+          : error.message
+      );
+      setLoading(false);
+      return;
+    }
+
+    if (data?.user) {
+      // Periksa apakah user memiliki role admin
+      const { data: rolesData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.user.id);
+
+      const isAdmin = rolesData?.some((r: { role: string }) => r.role === "admin");
+      
+      // Jika diarahkan dari halaman tertentu, ikuti redirect. Jika tidak, admin otomatis ke /admin
+      let target = redirectTo;
+      if (!redirectTo || redirectTo === "/") {
+        target = isAdmin ? "/admin" : "/";
+      }
+
+      window.location.assign(target);
+    }
+  }
+
+  async function handleMagicLinkLogin(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim()) return;
     if (!isSupabaseConfigured()) {
@@ -78,6 +126,14 @@ function LoginForm() {
     setLoading(false);
   }
 
+  function setQuickAccount(eMail: string, pass: string) {
+    setEmail(eMail);
+    setPassword(pass);
+    setMethod("password");
+    setError("");
+    setMessage("");
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4 py-12">
       <div className="w-full max-w-md">
@@ -98,8 +154,8 @@ function LoginForm() {
         <Card variant="elevated" padding="lg">
           <div className="text-center mb-6">
             <h1 className="heading-2 text-neutral-900">Masuk</h1>
-            <p className="text-neutral-600 mt-1">
-              Masuk untuk melanjutkan pemesanan Anda
+            <p className="text-neutral-600 mt-1 text-sm">
+              Masuk untuk mengelola sistem atau melanjutkan pesanan Anda
             </p>
           </div>
 
@@ -125,6 +181,133 @@ function LoginForm() {
             </div>
           )}
 
+          {/* Method Tabs */}
+          <div className="grid grid-cols-2 p-1 bg-neutral-100 rounded-xl mb-5 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => {
+                setMethod("password");
+                setError("");
+              }}
+              className={`py-2 rounded-lg transition ${
+                method === "password"
+                  ? "bg-white text-neutral-900 shadow-xs"
+                  : "text-neutral-500 hover:text-neutral-900"
+              }`}
+            >
+              Kata Sandi
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMethod("magic_link");
+                setError("");
+              }}
+              className={`py-2 rounded-lg transition ${
+                method === "magic_link"
+                  ? "bg-white text-neutral-900 shadow-xs"
+                  : "text-neutral-500 hover:text-neutral-900"
+              }`}
+            >
+              Link Email (OTP)
+            </button>
+          </div>
+
+          {/* Form Password Login */}
+          {method === "password" && (
+            <form onSubmit={handlePasswordLogin} className="space-y-4">
+              <Input
+                label="Alamat Email"
+                type="email"
+                placeholder="nama@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={loading || googleLoading}
+                autoComplete="email"
+              />
+              <Input
+                label="Kata Sandi"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={loading || googleLoading}
+                autoComplete="current-password"
+              />
+              <Button
+                type="submit"
+                variant="primary"
+                fullWidth
+                loading={loading}
+                disabled={googleLoading || !email.trim() || !password}
+                className="mt-2"
+              >
+                Masuk ke Akun
+              </Button>
+            </form>
+          )}
+
+          {/* Form Magic Link Login */}
+          {method === "magic_link" && (
+            <form onSubmit={handleMagicLinkLogin} className="space-y-4">
+              <Input
+                label="Alamat Email"
+                type="email"
+                placeholder="nama@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={loading || googleLoading}
+                autoComplete="email"
+              />
+              <Button
+                type="submit"
+                variant="primary"
+                fullWidth
+                loading={loading}
+                disabled={googleLoading || !email.trim()}
+                className="mt-2"
+              >
+                <Mail size={18} />
+                Kirim Link Masuk
+              </Button>
+            </form>
+          )}
+
+          {/* Quick Fill Demo Badges */}
+          <div className="mt-5 pt-4 border-t border-neutral-100">
+            <p className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider mb-2">
+              Akun Pengelola Tersedia (Klik untuk isi cepat):
+            </p>
+            <div className="flex flex-col gap-1.5 text-xs">
+              <button
+                type="button"
+                onClick={() => setQuickAccount("admin@sewatrooperbwi.com", "AdminTrooper2026!")}
+                className="text-left px-2.5 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 transition flex items-center justify-between"
+              >
+                <span className="font-medium">🛠 Admin: admin@sewatrooperbwi.com</span>
+                <span className="text-[10px] bg-sky-200/70 px-1.5 py-0.5 rounded">Isi Form</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setQuickAccount("owner@sewatrooperbwi.com", "OwnerTrooper2026!")}
+                className="text-left px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 transition flex items-center justify-between"
+              >
+                <span className="font-medium">👑 Pemilik: owner@sewatrooperbwi.com</span>
+                <span className="text-[10px] bg-emerald-200/70 px-1.5 py-0.5 rounded">Isi Form</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="flex items-center gap-4 my-6">
+            <div className="flex-1 border-t border-neutral-200" />
+            <span className="text-xs text-neutral-400">atau</span>
+            <div className="flex-1 border-t border-neutral-200" />
+          </div>
+
           {/* Google Login */}
           <Button
             variant="outline"
@@ -132,9 +315,8 @@ function LoginForm() {
             onClick={handleGoogleLogin}
             loading={googleLoading}
             disabled={loading}
-            className="mb-4"
           >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
+            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
                 fill="#4285F4"
@@ -154,38 +336,6 @@ function LoginForm() {
             </svg>
             Masuk dengan Google
           </Button>
-
-          {/* Divider */}
-          <div className="flex items-center gap-4 my-6">
-            <div className="flex-1 border-t border-neutral-200" />
-            <span className="text-sm text-neutral-400">atau</span>
-            <div className="flex-1 border-t border-neutral-200" />
-          </div>
-
-          {/* Email Login */}
-          <form onSubmit={handleEmailLogin}>
-            <Input
-              label="Alamat Email"
-              type="email"
-              placeholder="nama@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={loading || googleLoading}
-              autoComplete="email"
-            />
-            <Button
-              type="submit"
-              variant="primary"
-              fullWidth
-              loading={loading}
-              disabled={googleLoading || !email.trim()}
-              className="mt-4"
-            >
-              <Mail size={18} />
-              Kirim Link Masuk
-            </Button>
-          </form>
 
           <p className="text-xs text-neutral-400 text-center mt-6">
             Dengan masuk, Anda menyetujui{" "}

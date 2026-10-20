@@ -107,21 +107,21 @@ export function WhyChooseUs() {
   ];
 
   return (
-    <section className="bg-white py-12 md:py-16 border-b border-neutral-200 font-sans">
+    <section className="bg-white py-12 md:py-16 border-b border-[#e4ebef] font-sans">
       <div className="container-app">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           {features.map((f, i) => (
             <div
               key={i}
-              className="flex flex-col items-center text-center p-5 rounded-2xl bg-neutral-50 hover:bg-white hover:shadow-lg transition-all duration-300 border border-neutral-200/80 group"
+              className="flex flex-col items-center text-center p-5 rounded-2xl bg-[#f4f9fb] hover:bg-white hover:shadow-md transition-all duration-300 border border-[#e4ebef] group"
             >
               <div className="mb-4 transform group-hover:scale-110 transition-transform duration-300">
                 {f.icon}
               </div>
-              <h2 className="text-base font-extrabold text-[#0284c7] mb-2 leading-tight">
+              <h2 className="text-base font-extrabold text-[#263b46] group-hover:text-[#327691] transition-colors mb-2 leading-tight">
                 {f.title}
               </h2>
-              <p className="text-xs text-neutral-600 leading-relaxed">
+              <p className="text-xs text-[#53636d] leading-relaxed">
                 {f.description}
               </p>
             </div>
