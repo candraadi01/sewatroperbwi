@@ -8,7 +8,6 @@ import {
   X,
   Home,
   ChevronDown,
-  ShoppingCart,
   Compass,
   Car,
   Star,
@@ -21,10 +20,11 @@ import {
   LayoutDashboard,
   ShoppingBag,
   Heart,
+  Search,
+  Bell,
 } from "lucide-react";
 import type { SiteSettings } from "@/lib/services/settings";
 import { useLanguage } from "@/lib/i18n/context";
-import { useCart } from "@/lib/cart/context";
 
 export interface HeaderUser {
   fullName?: string;
@@ -59,7 +59,6 @@ export function Header({
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const path = usePathname();
   const { t } = useLanguage();
-  const { totalItems, setIsCartOpen } = useCart();
 
   useEffect(() => {
     function close(e: KeyboardEvent) {
@@ -238,93 +237,118 @@ export function Header({
               </div>
             </nav>
 
-            {/* Cart Button */}
-            <div className="flex items-center pl-2 lg:pl-3 border-l border-[#e4ebef]">
-              <button
-                onClick={() => setIsCartOpen(true)}
-                className="relative p-2 text-[#263b46] hover:bg-[#f4f9fb] hover:text-[#327691] rounded-lg transition flex items-center justify-center shrink-0 cursor-pointer"
-                aria-label="Keranjang Booking Jeep"
+            {/* Top Right Actions (Exact Foto 1): Search + Bell + User Pill */}
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              {/* Search Circle Button */}
+              <Link
+                href="/sewa"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-[#dce6eb] bg-white flex items-center justify-center text-[#527484] hover:bg-[#f4f9fb] hover:text-[#263b46] transition cursor-pointer shadow-2xs"
+                aria-label="Cari Paket Tour"
               >
-                <ShoppingCart size={20} strokeWidth={2.2} />
-                <span className="absolute -top-1 -right-1 bg-[#327691] text-white text-[10px] font-extrabold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center shadow-xs">
-                  {totalItems}
-                </span>
-              </button>
-            </div>
+                <Search size={17} />
+              </Link>
 
-            {/* Login / Daftar or User Account Dropdown */}
-            <div className="flex items-center pl-2 lg:pl-3 border-l border-[#e4ebef]">
               {user ? (
-                <div className="relative">
-                  <button
-                    onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-[#f4f9fb] text-[#263b46] transition border border-[#e4ebef] text-xs font-bold cursor-pointer"
+                <>
+                  {/* Bell Notification Circle Button */}
+                  <Link
+                    href="/pesanan"
+                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-[#dce6eb] bg-white flex items-center justify-center text-[#527484] hover:bg-[#f4f9fb] hover:text-[#263b46] transition cursor-pointer shadow-2xs relative"
+                    aria-label="Notifikasi Pesanan"
                   >
-                    <div className="w-6 h-6 rounded-full bg-[#327691] text-white flex items-center justify-center text-[11px] font-bold">
-                      {user.fullName?.[0]?.toUpperCase() || "U"}
-                    </div>
-                    <span className="hidden md:inline max-w-[110px] truncate">{user.fullName || "Akun"}</span>
-                    <ChevronDown size={13} className={`transition-transform duration-200 ${userDropdownOpen ? "rotate-180" : ""}`} />
-                  </button>
+                    <Bell size={17} />
+                  </Link>
 
-                  {userDropdownOpen && (
-                    <div 
-                      className="absolute right-0 top-full mt-1.5 w-52 bg-white text-[#263b46] rounded-2xl shadow-xl py-2 z-50 border border-[#e4ebef] text-xs animate-in fade-in zoom-in-95"
-                      onClick={() => setUserDropdownOpen(false)}
+                  {/* User Pill Button (Matches Foto 1) */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                      className="flex items-center gap-2 sm:gap-2.5 pl-1.5 pr-3 py-1 rounded-full border border-[#dce6eb] bg-white hover:bg-[#f4f9fb] text-[#263b46] transition cursor-pointer shadow-2xs"
                     >
-                      <div className="px-4 py-2 border-b border-[#e4ebef]">
-                        <p className="font-bold text-neutral-900 truncate">{user.fullName}</p>
-                        <p className="text-[11px] text-neutral-500 truncate">{user.email || (user.isAdmin ? "Administrator" : user.isOwner ? "Pemilik Armada" : "Pelanggan")}</p>
+                      {/* Avatar Circle C */}
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#5d7d8c] text-white flex items-center justify-center text-xs sm:text-sm font-bold shrink-0">
+                        {user.fullName?.[0]?.toUpperCase() || "C"}
                       </div>
+                      
+                      {/* User Name */}
+                      <span className="text-xs sm:text-sm font-bold text-[#263b46] max-w-[85px] sm:max-w-[120px] truncate">
+                        {user.fullName?.split(" ")[0] || "User"}
+                      </span>
 
-                      <div className="py-1">
-                        <Link
-                          href={user.isAdmin ? "/admin" : user.isOwner ? "/owner" : "/akun"}
-                          className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
-                        >
-                          <LayoutDashboard size={14} />
-                          <span>{user.isAdmin ? "Dashboard Admin" : user.isOwner ? "Portal Pemilik" : "Dashboard Buyer"}</span>
-                        </Link>
+                      {/* Role Tag 'User' */}
+                      <span className="border border-[#cddae1] bg-white text-[#55717f] text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-md leading-tight">
+                        {user.isAdmin ? "Admin" : user.isOwner ? "Owner" : "User"}
+                      </span>
 
-                        <Link
-                          href="/pesanan"
-                          className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
-                        >
-                          <ShoppingBag size={14} />
-                          <span>Pesanan Saya</span>
-                        </Link>
+                      {/* Chevron Down */}
+                      <ChevronDown
+                        size={14}
+                        className={`text-[#55717f] transition-transform duration-200 ${
+                          userDropdownOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
 
-                        <Link
-                          href="/akun/favorit"
-                          className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
-                        >
-                          <Heart size={14} />
-                          <span>Paket Favorit</span>
-                        </Link>
+                    {/* Dropdown Menu */}
+                    {userDropdownOpen && (
+                      <div 
+                        className="absolute right-0 top-full mt-2 w-56 bg-white text-[#263b46] rounded-2xl shadow-xl py-2 z-50 border border-[#e4ebef] text-xs animate-in fade-in zoom-in-95"
+                        onClick={() => setUserDropdownOpen(false)}
+                      >
+                        <div className="px-4 py-2.5 border-b border-[#e4ebef]">
+                          <p className="font-bold text-neutral-900 truncate">{user.fullName}</p>
+                          <p className="text-[11px] text-neutral-500 truncate">{user.email || "Pelanggan"}</p>
+                        </div>
 
-                        <Link
-                          href="/akun/profil"
-                          className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
-                        >
-                          <User size={14} />
-                          <span>Profil Akun</span>
-                        </Link>
-                      </div>
-
-                      <div className="pt-1 border-t border-[#e4ebef]">
-                        <form action="/auth/signout" method="POST">
-                          <button
-                            type="submit"
-                            className="flex items-center gap-2.5 w-full px-4 py-2 text-red-600 hover:bg-red-50 font-semibold transition text-left cursor-pointer"
+                        <div className="py-1">
+                          <Link
+                            href={user.isAdmin ? "/admin" : user.isOwner ? "/owner" : "/akun"}
+                            className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
                           >
-                            <LogOut size={14} />
-                            <span>Keluar</span>
-                          </button>
-                        </form>
+                            <LayoutDashboard size={14} />
+                            <span>{user.isAdmin ? "Dashboard Admin" : user.isOwner ? "Portal Pemilik" : "Beranda Saya"}</span>
+                          </Link>
+
+                          <Link
+                            href="/pesanan"
+                            className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
+                          >
+                            <ShoppingBag size={14} />
+                            <span>Pesanan Saya</span>
+                          </Link>
+
+                          <Link
+                            href="/akun/favorit"
+                            className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
+                          >
+                            <Heart size={14} />
+                            <span>Disukai</span>
+                          </Link>
+
+                          <Link
+                            href="/akun/profil"
+                            className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
+                          >
+                            <User size={14} />
+                            <span>Profil Akun</span>
+                          </Link>
+                        </div>
+
+                        <div className="pt-1 border-t border-[#e4ebef]">
+                          <form action="/auth/signout" method="POST">
+                            <button
+                              type="submit"
+                              className="flex items-center gap-2.5 w-full px-4 py-2 text-red-600 hover:bg-red-50 font-semibold transition text-left cursor-pointer"
+                            >
+                              <LogOut size={14} />
+                              <span>Keluar</span>
+                            </button>
+                          </form>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                </>
               ) : (
                 <div className="flex items-center gap-1 sm:gap-2">
                   <Link
@@ -336,7 +360,7 @@ export function Header({
                   </Link>
                   <Link
                     href="/daftar"
-                    className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#327691] hover:bg-[#2c6881] text-white shadow-xs transition"
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#327691] hover:bg-[#2c6881] text-white shadow-xs transition"
                   >
                     <UserPlus size={13} />
                     <span>Daftar</span>
@@ -443,19 +467,6 @@ export function Header({
               )}
             </div>
 
-            {/* Mobile Cart Quick Access Button */}
-            <div className="pt-2 border-t border-[#e4ebef] mt-2">
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  setIsCartOpen(true);
-                }}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#327691] hover:bg-[#2c6881] text-white font-bold text-sm rounded-xl shadow-xs active:scale-98 transition cursor-pointer"
-              >
-                <ShoppingCart size={18} />
-                <span>Keranjang Booking ({totalItems})</span>
-              </button>
-            </div>
 
             {/* Mobile User Section / Login & Register */}
             <div className="pt-2">

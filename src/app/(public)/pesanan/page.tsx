@@ -4,21 +4,23 @@ import { getOwnBookings } from "@/lib/services/booking";
 import { formatIDR } from "@/lib/utils/currency";
 import { bookingStatus } from "@/lib/utils/booking-status";
 import { Calendar, Clock, Users, Car, CheckCircle2, AlertCircle, ArrowRight, CreditCard, ShieldCheck } from "lucide-react";
+import { BuyerPortalLayout } from "@/components/layout/BuyerPortalLayout";
 
 export const metadata = {
-  title: "Riwayat Booking Saya | Sewa Trooper Banyuwangi",
+  title: "Pesanan Saya | Sewa Trooper Banyuwangi",
   description: "Daftar histori dan status pemesanan sewa Jeep Trooper Banyuwangi Anda.",
 };
 
 export default async function PesananHistoryPage() {
-  await requireBuyer("/pesanan");
+  const user = await requireBuyer("/pesanan");
   const orders = await getOwnBookings();
 
   const approvedOrders = orders.filter((o) => o.booking_status === "approved");
   const pendingOrders = orders.filter((o) => o.booking_status === "pending_review");
 
   return (
-    <div className="container-app py-10 md:py-14 max-w-4xl font-sans">
+    <BuyerPortalLayout user={user} activeMenu="pesanan">
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#e4ebef]">
         <div>
@@ -240,6 +242,6 @@ export default async function PesananHistoryPage() {
           </div>
         )}
       </div>
-    </div>
+    </BuyerPortalLayout>
   );
 }

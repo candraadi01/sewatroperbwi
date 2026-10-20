@@ -14,7 +14,7 @@ export default async function AdminLayout({
   const user = await requireAdmin();
 
   return (
-    <div className="flex min-h-screen bg-neutral-50">
+    <div className="flex min-h-screen bg-[#f8fafc] font-sans">
       <AdminSidebar user={user} />
       <div className="flex-1 min-w-0 pt-14 lg:pt-0 lg:ml-64">
         <main className="p-4 md:p-6 lg:p-8 max-w-[1400px]">{children}</main>
