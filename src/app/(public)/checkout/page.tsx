@@ -209,7 +209,29 @@ function Checkout() {
         </div>
       )}
 
-      <div className="grid lg:grid-cols-[1.2fr_1fr] gap-8 mt-8">
+      {/* 3-Step Visual Flow Indicator */}
+      <div className="mt-6 mb-8 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-sans">
+        <div className="p-3 rounded-xl border-2 border-[#327691] bg-[#e9f3f7] font-bold text-[#263b46] shadow-xs">
+          <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#327691] text-white text-[11px] font-bold mr-2">
+            1
+          </span>
+          Pengajuan Booking (Rp 0)
+        </div>
+        <div className="p-3 rounded-xl border border-[#e4ebef] bg-white text-[#53636d] flex items-center">
+          <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-neutral-200 text-neutral-700 text-[11px] font-bold mr-2">
+            2
+          </span>
+          Admin Cek Ketersediaan
+        </div>
+        <div className="p-3 rounded-xl border border-[#e4ebef] bg-white text-[#53636d] flex items-center">
+          <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-neutral-200 text-neutral-700 text-[11px] font-bold mr-2">
+            3
+          </span>
+          Bayar Setelah Disetujui
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-[1.2fr_1fr] gap-8 mt-4">
         <form
           key={`${draft.email || ""}-${draft.name || ""}`}
           onSubmit={submit}
@@ -268,7 +290,10 @@ function Checkout() {
             />
           </label>
           <fieldset>
-            <legend className="font-semibold mb-3">Pilihan pembayaran</legend>
+            <legend className="font-semibold mb-1.5">Rencana pembayaran (Dibayar setelah disetujui admin)</legend>
+            <p className="text-xs text-neutral-500 mb-3">
+              Tidak ada penagihan sekarang. Pilih rencana pembayaran saat admin menyetujui kendaraan Anda:
+            </p>
             <div className="grid grid-cols-2 gap-3">
               {(["dp", "full"] as const).map((v) => (
                 <label
@@ -276,7 +301,7 @@ function Checkout() {
                   className={
                     "flex gap-3 rounded-xl border p-4 cursor-pointer " +
                     (choice === v
-                      ? "border-primary-700 bg-primary-50"
+                      ? "border-[#327691] bg-[#e9f3f7]"
                       : "border-neutral-200")
                   }
                 >
@@ -288,8 +313,8 @@ function Checkout() {
                     value={v}
                   />
                   <span className="text-sm">
-                    {v === "dp" ? "Bayar DP" : "Bayar lunas"}
-                    <strong className="block mt-1">
+                    {v === "dp" ? "Rencana Bayar DP" : "Rencana Bayar Lunas"}
+                    <strong className="block mt-1 text-[#263b46]">
                       {formatIDR(
                         v === "dp" ? quote.dp_amount : quote.total_amount,
                       )}
@@ -327,19 +352,15 @@ function Checkout() {
             </p>
           )}
           <button
-            className="action-link w-full justify-center"
+            className="action-link w-full justify-center py-3 text-sm font-bold"
             disabled={busy || quote.is_sample_pricing}
           >
-            {busy ? "Mengirim permintaan…" : "Kirim Permintaan Booking"}
+            {busy ? "Mengirim pengajuan…" : "Kirim Pengajuan Booking (Tanpa Bayar Sekarang)"}
           </button>
           <p className="text-xs text-neutral-500">
             Pesanan akan disimpan dengan status{" "}
-            <strong>Menunggu konfirmasi admin</strong>. Setelah admin menyetujui,
-            kamu baru dapat membayar. Status dapat diperiksa di{" "}
-            <Link href="/akun/pesanan" className="underline">
-              Pesanan Saya
-            </Link>
-            .
+            <strong>Menunggu konfirmasi admin</strong>. Setelah admin menyetujui ketersediaan kendaraan,
+            kamu akan menerima notifikasi untuk menyelesaikan pembayaran.
           </p>
         </form>
         <aside className="admin-panel h-fit">
@@ -360,26 +381,32 @@ function Checkout() {
               </div>
             ))}
             <div className="flex justify-between border-t pt-4 border-neutral-200 font-semibold">
-              <dt>Total</dt>
+              <dt>Total Nilai Sewa</dt>
               <dd>{formatIDR(quote.total_amount)}</dd>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-lg text-emerald-800 font-semibold">
               <dt>Dibayar sekarang</dt>
-              <dd>
-                {formatIDR(
-                  choice === "dp" ? quote.dp_amount : quote.total_amount,
-                )}
+              <dd className="text-base font-extrabold">Rp 0 (Gratis)</dd>
+            </div>
+            <div className="flex justify-between text-xs text-neutral-500 pt-1">
+              <dt>Tagihan saat disetujui ({choice === "dp" ? "DP" : "Lunas"})</dt>
+              <dd className="font-semibold text-neutral-700">
+                {formatIDR(choice === "dp" ? quote.dp_amount : quote.total_amount)}
               </dd>
             </div>
-            <div className="flex justify-between text-neutral-500">
-              <dt>Sisa setelah pembayaran</dt>
-              <dd>{formatIDR(choice === "dp" ? quote.remaining_amount : 0)}</dd>
-            </div>
+            {choice === "dp" && (
+              <div className="flex justify-between text-xs text-neutral-400">
+                <dt>Sisa setelah pelunasan</dt>
+                <dd>{formatIDR(quote.remaining_amount)}</dd>
+              </div>
+            )}
           </dl>
-          <p className="text-xs text-neutral-500 mt-6">
-            Harga diverifikasi ulang oleh server sebelum tagihan dibuat. Jika
-            berubah, kamu akan diminta memeriksa rincian terbaru.
-          </p>
+          <div className="mt-6 p-3 rounded-xl bg-[#f4f9fb] border border-[#e4ebef] text-xs text-[#53636d] space-y-1">
+            <p className="font-semibold text-[#263b46]">🛡 Jaminan Keamanan:</p>
+            <p>
+              Admin memastikan kendaraan dan sopir siap sebelum Anda diminta membayar, sehingga Anda tidak perlu khawatir unit tidak tersedia.
+            </p>
+          </div>
         </aside>
       </div>
     </div>

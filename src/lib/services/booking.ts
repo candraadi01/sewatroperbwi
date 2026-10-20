@@ -26,6 +26,11 @@ export interface BookingRecord {
   balance_deadline?: string;
   payment_url?: string;
   notes: string;
+  approved_at?: string;
+  approved_by?: string;
+  approval_expires_at?: string;
+  rejected_at?: string;
+  rejection_reason?: string;
 }
 export interface StoredBooking {
   id: string;
@@ -51,6 +56,11 @@ export interface StoredBooking {
   notes: string;
   confirmation_deadline?: string;
   terms_snapshot?: { balance_deadline_hours?: number };
+  approved_at?: string;
+  approved_by?: string;
+  approval_expires_at?: string;
+  rejected_at?: string;
+  rejection_reason?: string;
   payment_attempts?: PaymentAttempt[];
 }
 export interface PaymentAttempt {
@@ -65,7 +75,7 @@ export interface PaymentAttempt {
   paid_amount: number;
 }
 const columns =
-  "id,booking_code,user_id,product_id,product_snapshot,service_date,start_time,num_units,num_passengers,contact_name,contact_phone,contact_email,pickup_address,payment_choice,total_amount,dp_amount,outstanding,amount_paid,status,created_at,notes,confirmation_deadline,terms_snapshot,payment_attempts(id,booking_id,midtrans_order_id,purpose,expected_amount,snap_token,snap_redirect_url,status,paid_amount)";
+  "id,booking_code,user_id,product_id,product_snapshot,service_date,start_time,num_units,num_passengers,contact_name,contact_phone,contact_email,pickup_address,payment_choice,total_amount,dp_amount,outstanding,amount_paid,status,created_at,notes,confirmation_deadline,terms_snapshot,approved_at,approved_by,approval_expires_at,rejected_at,rejection_reason,payment_attempts(id,booking_id,midtrans_order_id,purpose,expected_amount,snap_token,snap_redirect_url,status,paid_amount)";
 export function mapBooking(b: StoredBooking): BookingRecord {
   return {
     id: b.booking_code,
@@ -98,6 +108,10 @@ export function mapBooking(b: StoredBooking): BookingRecord {
     created_at: b.created_at,
     notes: b.notes,
     confirmation_deadline: b.confirmation_deadline,
+    approved_at: b.approved_at,
+    approval_expires_at: b.approval_expires_at,
+    rejected_at: b.rejected_at,
+    rejection_reason: b.rejection_reason,
     balance_deadline:
       typeof b.terms_snapshot?.balance_deadline_hours === "number"
         ? new Date(

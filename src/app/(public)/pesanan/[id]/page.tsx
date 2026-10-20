@@ -30,8 +30,8 @@ export default async function Order({
     );
   const approvalExpired =
     b.booking_status === "approved" &&
-    (b as unknown as { approval_expires_at?: string }).approval_expires_at &&
-    new Date((b as unknown as { approval_expires_at: string }).approval_expires_at) < new Date();
+    !!b.approval_expires_at &&
+    new Date(b.approval_expires_at) < new Date();
   return (
     <div className="container-app py-10 md:py-14 max-w-4xl">
       <Link href="/akun/pesanan" className="text-sm text-neutral-600">
@@ -86,10 +86,10 @@ export default async function Order({
             WIB.
           </p>
         )}
-        {b.booking_status === "approved" && (b as unknown as { approval_expires_at?: string }).approval_expires_at && (
+        {b.booking_status === "approved" && b.approval_expires_at && (
           <p className="mt-3 text-sm text-amber-700 font-medium">
             Batas waktu pembayaran:{" "}
-            {new Date((b as unknown as { approval_expires_at: string }).approval_expires_at).toLocaleString("id-ID", {
+            {new Date(b.approval_expires_at).toLocaleString("id-ID", {
               timeZone: "Asia/Jakarta",
             })}{" "}
             WIB.

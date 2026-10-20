@@ -154,20 +154,21 @@ export function ProductCard({ product: p }: { product: Product }) {
         </div>
       </div>
 
-      {/* 3. Tombol Booking Sekarang Full Width */}
-      <div className="p-3 pt-0">
+      {/* 3. Tombol Booking Sekarang & Keranjang */}
+      <div className="p-3 pt-0 flex gap-2">
+        <Link
+          href={`/sewa/${p.slug}`}
+          className="flex-1 bg-[#327691] hover:bg-[#2c6881] active:scale-[0.99] text-white font-extrabold text-xs sm:text-sm py-2.5 rounded-xl transition duration-200 flex items-center justify-center gap-1.5 shadow-xs uppercase tracking-wider cursor-pointer"
+        >
+          <span>Booking Sekarang</span>
+        </Link>
         <button
           onClick={handleBooking}
-          className="w-full bg-[#327691] hover:bg-[#2c6881] active:scale-[0.99] text-white font-extrabold text-xs sm:text-sm py-2.5 rounded-xl transition duration-200 flex items-center justify-center gap-1.5 shadow-xs uppercase tracking-wider cursor-pointer"
+          className="px-3 py-2.5 rounded-xl border border-[#e4ebef] hover:border-[#327691] hover:bg-[#f4f9fb] text-[#263b46] transition flex items-center justify-center cursor-pointer"
+          title="Tambah ke Keranjang"
+          aria-label="Tambah ke Keranjang"
         >
-          {isAdded ? (
-            <>
-              <Check size={16} className="text-emerald-300" />
-              <span>Masuk Keranjang</span>
-            </>
-          ) : (
-            <span>Booking Sekarang</span>
-          )}
+          {isAdded ? <Check size={18} className="text-emerald-500" /> : <Car size={18} className="text-[#327691]" />}
         </button>
       </div>
     </div>

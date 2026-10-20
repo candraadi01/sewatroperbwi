@@ -216,16 +216,20 @@ export function BookingWidget({
         </p>
       )}
       <button
-        className="action-link mt-6 w-full justify-center"
+        className="action-link mt-6 w-full justify-center text-sm py-3 font-bold"
         onClick={next}
         disabled={pending || !quote || quote.is_sample_pricing}
       >
-        Lanjutkan pemesanan →
+        Lanjutkan Pengajuan Booking →
       </button>
-      <p className="text-xs text-neutral-500 mt-4 leading-relaxed">
-        Masuk ke akun saat checkout. Admin mengonfirmasi ketersediaan kendaraan
-        setelah pembayaran diterima.
-      </p>
+      <div className="mt-4 p-3 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-900 leading-relaxed space-y-1">
+        <p className="font-bold flex items-center gap-1.5 text-sky-800">
+          <span>✓</span> Pengajuan Tanpa Bayar di Awal
+        </p>
+        <p className="text-sky-700">
+          Admin akan memeriksa ketersediaan armada Trooper terlebih dahulu. Setelah admin menyetujui, Anda baru dapat melakukan pembayaran DP atau lunas.
+        </p>
+      </div>
     </aside>
   );
 }

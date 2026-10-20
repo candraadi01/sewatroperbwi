@@ -84,9 +84,9 @@ export default async function Detail({
               </p>
             </section>
           )}
-          <p className="mt-8 text-sm text-neutral-500">
-            Pemesanan minimal {p.min_booking_hours} jam sebelum keberangkatan.
-            Ketersediaan unit dikonfirmasi admin setelah pembayaran diterima.
+          <p className="mt-8 text-sm text-neutral-600 bg-neutral-50 p-3 rounded-lg border border-neutral-200">
+            ℹ Pemesanan minimal {p.min_booking_hours} jam sebelum keberangkatan.
+            Pengajuan sewa diajukan terlebih dahulu tanpa biaya. Admin akan memeriksa ketersediaan armada Trooper sebelum pembayaran dibuka.
           </p>
         </article>
         <BookingWidget
