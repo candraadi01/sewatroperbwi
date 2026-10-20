@@ -328,7 +328,7 @@ export function Header({
               ) : (
                 <div className="flex items-center gap-1 sm:gap-2">
                   <Link
-                    href="/masuk"
+                    href="/login"
                     className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-[#53636d] hover:text-[#263b46] hover:bg-[#f4f9fb] transition flex items-center gap-1"
                   >
                     <LogIn size={14} className="text-[#327691]" />
@@ -519,7 +519,7 @@ export function Header({
               ) : (
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <Link
-                    href="/masuk"
+                    href="/login"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center justify-center gap-1.5 py-2.5 px-3 border border-[#327691] text-[#327691] hover:bg-[#f4f9fb] font-bold text-xs rounded-xl transition"
                   >

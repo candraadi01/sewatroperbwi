@@ -77,18 +77,22 @@ function LoginForm() {
     }
 
     if (data?.user) {
-      // Periksa apakah user memiliki role admin
+      // Periksa role user: admin, owner, atau buyer
       const { data: rolesData } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", data.user.id);
 
-      const isAdmin = rolesData?.some((r: { role: string }) => r.role === "admin");
+      const roles = (rolesData ?? []).map((r: { role: string }) => r.role);
+      const isAdmin = roles.includes("admin");
+      const isOwner = roles.includes("owner");
       
-      // Jika diarahkan dari halaman tertentu, ikuti redirect. Jika tidak, admin otomatis ke /admin
+      // Jika diarahkan dari halaman tertentu, ikuti redirect. Jika tidak, redirect sesuai role
       let target = redirectTo;
       if (!redirectTo || redirectTo === "/") {
-        target = isAdmin ? "/admin" : "/";
+        if (isAdmin) target = "/admin";
+        else if (isOwner) target = "/owner";
+        else target = "/akun";
       }
 
       window.location.assign(target);
@@ -336,6 +340,17 @@ function LoginForm() {
             </svg>
             Masuk dengan Google
           </Button>
+
+          {/* Switch to Register */}
+          <div className="mt-6 text-center text-xs text-neutral-500 pt-4 border-t border-neutral-100">
+            Belum memiliki akun?{" "}
+            <Link
+              href="/daftar"
+              className="font-bold text-[#327691] hover:underline"
+            >
+              Daftar akun di sini
+            </Link>
+          </div>
 
           <p className="text-xs text-neutral-400 text-center mt-6">
             Dengan masuk, Anda menyetujui{" "}
