@@ -20,8 +20,11 @@ async function SiteHeader() {
         u
           ? {
               fullName: u.fullName,
+              email: u.email,
               avatarUrl: u.avatarUrl,
               isAdmin: u.roles.includes("admin"),
+              isOwner: u.roles.includes("owner"),
+              roles: u.roles,
             }
           : null
       }

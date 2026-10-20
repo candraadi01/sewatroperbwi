@@ -14,11 +14,26 @@ import {
   Star,
   Info,
   BookOpen,
-  ReceiptText,
+  User,
+  LogIn,
+  UserPlus,
+  LogOut,
+  LayoutDashboard,
+  ShoppingBag,
+  Heart,
 } from "lucide-react";
 import type { SiteSettings } from "@/lib/services/settings";
 import { useLanguage } from "@/lib/i18n/context";
 import { useCart } from "@/lib/cart/context";
+
+export interface HeaderUser {
+  fullName?: string;
+  email?: string;
+  avatarUrl?: string | null;
+  isAdmin?: boolean;
+  isOwner?: boolean;
+  roles?: string[];
+}
 
 const artikelCategories = [
   { label: "Destinasi Wisata Banyuwangi", href: "/artikel?kategori=destinasi" },
@@ -33,13 +48,15 @@ const artikelCategories = [
 
 export function Header({
   settings: _settings,
+  user,
 }: {
   settings?: SiteSettings;
   links?: { label: string; href: string }[];
-  user?: unknown;
+  user?: HeaderUser | null;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [artikelDropdownOpen, setArtikelDropdownOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const path = usePathname();
   const { t } = useLanguage();
   const { totalItems, setIsCartOpen } = useCart();
@@ -49,6 +66,7 @@ export function Header({
       if (e.key === "Escape") {
         setMobileMenuOpen(false);
         setArtikelDropdownOpen(false);
+        setUserDropdownOpen(false);
       }
     }
     document.addEventListener("keydown", close);
@@ -186,19 +204,6 @@ export function Header({
                 {t("nav_about")}
               </Link>
 
-              {/* Pesanan Saya (Riwayat Booking) */}
-              <Link
-                href="/pesanan"
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition ${
-                  path?.startsWith("/pesanan")
-                    ? "bg-[#e9f3f7] text-[#327691] font-bold"
-                    : "text-[#53636d] hover:bg-[#f4f9fb] hover:text-[#263b46]"
-                }`}
-              >
-                <ReceiptText size={14} className="text-[#327691]" />
-                <span>Pesanan Saya</span>
-              </Link>
-
               {/* Dropdown Artikel Wisata */}
               <div
                 className="relative"
@@ -245,6 +250,99 @@ export function Header({
                   {totalItems}
                 </span>
               </button>
+            </div>
+
+            {/* Login / Daftar or User Account Dropdown */}
+            <div className="flex items-center pl-2 lg:pl-3 border-l border-[#e4ebef]">
+              {user ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-[#f4f9fb] text-[#263b46] transition border border-[#e4ebef] text-xs font-bold cursor-pointer"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-[#327691] text-white flex items-center justify-center text-[11px] font-bold">
+                      {user.fullName?.[0]?.toUpperCase() || "U"}
+                    </div>
+                    <span className="hidden md:inline max-w-[110px] truncate">{user.fullName || "Akun"}</span>
+                    <ChevronDown size={13} className={`transition-transform duration-200 ${userDropdownOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {userDropdownOpen && (
+                    <div 
+                      className="absolute right-0 top-full mt-1.5 w-52 bg-white text-[#263b46] rounded-2xl shadow-xl py-2 z-50 border border-[#e4ebef] text-xs animate-in fade-in zoom-in-95"
+                      onClick={() => setUserDropdownOpen(false)}
+                    >
+                      <div className="px-4 py-2 border-b border-[#e4ebef]">
+                        <p className="font-bold text-neutral-900 truncate">{user.fullName}</p>
+                        <p className="text-[11px] text-neutral-500 truncate">{user.email || (user.isAdmin ? "Administrator" : user.isOwner ? "Pemilik Armada" : "Pelanggan")}</p>
+                      </div>
+
+                      <div className="py-1">
+                        <Link
+                          href={user.isAdmin ? "/admin" : user.isOwner ? "/owner" : "/akun"}
+                          className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
+                        >
+                          <LayoutDashboard size={14} />
+                          <span>{user.isAdmin ? "Dashboard Admin" : user.isOwner ? "Portal Pemilik" : "Dashboard Buyer"}</span>
+                        </Link>
+
+                        <Link
+                          href="/pesanan"
+                          className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
+                        >
+                          <ShoppingBag size={14} />
+                          <span>Pesanan Saya</span>
+                        </Link>
+
+                        <Link
+                          href="/akun/favorit"
+                          className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
+                        >
+                          <Heart size={14} />
+                          <span>Paket Favorit</span>
+                        </Link>
+
+                        <Link
+                          href="/akun/profil"
+                          className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
+                        >
+                          <User size={14} />
+                          <span>Profil Akun</span>
+                        </Link>
+                      </div>
+
+                      <div className="pt-1 border-t border-[#e4ebef]">
+                        <form action="/auth/signout" method="POST">
+                          <button
+                            type="submit"
+                            className="flex items-center gap-2.5 w-full px-4 py-2 text-red-600 hover:bg-red-50 font-semibold transition text-left cursor-pointer"
+                          >
+                            <LogOut size={14} />
+                            <span>Keluar</span>
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <Link
+                    href="/masuk"
+                    className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-[#53636d] hover:text-[#263b46] hover:bg-[#f4f9fb] transition flex items-center gap-1"
+                  >
+                    <LogIn size={14} className="text-[#327691]" />
+                    <span>Masuk</span>
+                  </Link>
+                  <Link
+                    href="/daftar"
+                    className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#327691] hover:bg-[#2c6881] text-white shadow-xs transition"
+                  >
+                    <UserPlus size={13} />
+                    <span>Daftar</span>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -314,17 +412,6 @@ export function Header({
               <span>{t("nav_about")}</span>
             </Link>
 
-            <Link
-              href="/pesanan"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`flex items-center gap-3 py-2.5 px-3.5 text-sm font-semibold rounded-xl transition ${
-                path?.startsWith("/pesanan") ? "bg-[#e9f3f7] text-[#327691] font-bold" : "text-[#53636d] hover:bg-[#f4f9fb]"
-              }`}
-            >
-              <ReceiptText size={18} className="text-[#327691]" />
-              <span>Pesanan Saya</span>
-            </Link>
-
             {/* Artikel Wisata Submenu */}
             <div>
               <button
@@ -363,11 +450,92 @@ export function Header({
                   setMobileMenuOpen(false);
                   setIsCartOpen(true);
                 }}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#327691] hover:bg-[#2c6881] text-white font-bold text-sm rounded-xl shadow-xs active:scale-98 transition"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#327691] hover:bg-[#2c6881] text-white font-bold text-sm rounded-xl shadow-xs active:scale-98 transition cursor-pointer"
               >
                 <ShoppingCart size={18} />
                 <span>Keranjang Booking ({totalItems})</span>
               </button>
+            </div>
+
+            {/* Mobile User Section / Login & Register */}
+            <div className="pt-2">
+              {user ? (
+                <div className="p-3 bg-[#f8fafc] rounded-2xl border border-[#e4ebef] space-y-2">
+                  <div className="flex items-center gap-2.5 pb-2 border-b border-[#e4ebef]">
+                    <div className="w-8 h-8 rounded-full bg-[#327691] text-white font-bold flex items-center justify-center text-xs shrink-0">
+                      {user.fullName?.[0]?.toUpperCase() || "U"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-neutral-900 truncate">{user.fullName || "Akun Saya"}</p>
+                      <p className="text-[10px] text-neutral-500 truncate">{user.email || (user.isAdmin ? "Admin" : user.isOwner ? "Owner" : "Buyer")}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-1.5 text-xs font-bold">
+                    <Link
+                      href={user.isAdmin ? "/admin" : user.isOwner ? "/owner" : "/akun"}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="py-2 px-2 bg-white rounded-xl border border-[#e4ebef] text-center text-[#327691] hover:bg-[#e9f3f7] flex items-center justify-center gap-1.5"
+                    >
+                      <LayoutDashboard size={14} />
+                      <span>Dashboard</span>
+                    </Link>
+                    <Link
+                      href="/pesanan"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="py-2 px-2 bg-white rounded-xl border border-[#e4ebef] text-center text-neutral-700 hover:bg-neutral-100 flex items-center justify-center gap-1.5"
+                    >
+                      <ShoppingBag size={14} />
+                      <span>Pesanan</span>
+                    </Link>
+                    <Link
+                      href="/akun/favorit"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="py-2 px-2 bg-white rounded-xl border border-[#e4ebef] text-center text-neutral-700 hover:bg-neutral-100 flex items-center justify-center gap-1.5"
+                    >
+                      <Heart size={14} />
+                      <span>Favorit</span>
+                    </Link>
+                    <Link
+                      href="/akun/profil"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="py-2 px-2 bg-white rounded-xl border border-[#e4ebef] text-center text-neutral-700 hover:bg-neutral-100 flex items-center justify-center gap-1.5"
+                    >
+                      <User size={14} />
+                      <span>Profil</span>
+                    </Link>
+                  </div>
+
+                  <form action="/auth/signout" method="POST" className="pt-1">
+                    <button
+                      type="submit"
+                      className="w-full py-1.5 text-center text-xs font-bold text-red-600 hover:text-red-700 flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <LogOut size={13} />
+                      <span>Keluar Akun</span>
+                    </button>
+                  </form>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <Link
+                    href="/masuk"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-center gap-1.5 py-2.5 px-3 border border-[#327691] text-[#327691] hover:bg-[#f4f9fb] font-bold text-xs rounded-xl transition"
+                  >
+                    <LogIn size={15} />
+                    <span>Masuk</span>
+                  </Link>
+                  <Link
+                    href="/daftar"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-[#327691] hover:bg-[#2c6881] text-white font-bold text-xs rounded-xl shadow-xs transition"
+                  >
+                    <UserPlus size={15} />
+                    <span>Daftar</span>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </>
