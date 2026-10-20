@@ -241,6 +241,7 @@ export default async function PesananHistoryPage() {
             </Link>
           </div>
         )}
+        </div>
       </div>
     </BuyerPortalLayout>
   );
