@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
-export type UserRole = "buyer" | "admin";
+export type UserRole = "buyer" | "admin" | "owner";
 
 export interface AuthUser {
   id: string;
@@ -94,6 +94,19 @@ export async function requireAdmin(): Promise<AuthUser> {
 export async function requireBuyer(returnTo = "/akun/pesanan") {
   const user = await getAuthUser();
   if (!user) redirect(`/login?redirectTo=${encodeURIComponent(returnTo)}`);
+  return user;
+}
+
+/**
+ * Server guard untuk route owner / pemilik armada.
+ * Mengizinkan user dengan role 'owner' atau 'admin'.
+ */
+export async function requireOwner(returnTo = "/owner"): Promise<AuthUser> {
+  const user = await getAuthUser();
+  if (!user || (!user.roles.includes("owner") && !user.roles.includes("admin"))) {
+    if (user) redirect("/akses-ditolak");
+    redirect(`/login?redirectTo=${encodeURIComponent(returnTo)}`);
+  }
   return user;
 }
 

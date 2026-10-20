@@ -47,51 +47,28 @@ interface NavItem {
 
 const navGroups: NavGroup[] = [
   {
-    label: "Utama",
+    label: "Menu Utama Admin",
     items: [
-      { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-      { label: "Pesanan", href: "/admin/pesanan", icon: ShoppingBag },
+      { label: "1. Dashboard", href: "/admin", icon: LayoutDashboard },
+      { label: "2. Manajemen Users", href: "/admin/users", icon: Users },
+      { label: "3. Manajemen Tour & Armada", href: "/admin/produk", icon: Package },
+      { label: "4. History Transaksi", href: "/admin/pesanan", icon: ShoppingBag },
+      { label: "5. Kelola Artikel", href: "/admin/artikel", icon: Newspaper },
+      { label: "6. Kelola Tim Driver", href: "/admin/tim", icon: Users },
+      { label: "7. Kelola FAQ", href: "/admin/faq", icon: HelpCircle },
+      { label: "8. Penarikan Dana", href: "/admin/penarikan", icon: CreditCard },
+      { label: "9. Pengaturan Aplikasi", href: "/admin/pengaturan", icon: Settings },
     ],
   },
   {
-    label: "Katalog",
+    label: "Konfigurasi Lain",
     items: [
-      { label: "Produk", href: "/admin/produk", icon: Package },
-      { label: "Kategori", href: "/admin/kategori", icon: Package },
-      { label: "Penjemputan", href: "/admin/penjemputan", icon: Calendar },
-      { label: "Kuota", href: "/admin/kuota", icon: Calendar },
-      { label: "Harga", href: "/admin/harga", icon: CreditCard },
-      { label: "Kalender", href: "/admin/kalender", icon: Calendar },
-      { label: "Promo", href: "/admin/promo", icon: Tag },
-    ],
-  },
-  {
-    label: "Konten",
-    items: [
-      { label: "Halaman", href: "/admin/halaman", icon: FileText },
-      { label: "Artikel", href: "/admin/artikel", icon: Newspaper },
-      { label: "FAQ", href: "/admin/faq", icon: HelpCircle },
-      { label: "Media", href: "/admin/media", icon: Image },
-      { label: "Tampilan", href: "/admin/tampilan", icon: Globe },
-    ],
-  },
-  {
-    label: "Manajemen",
-    items: [
-      { label: "Buyer", href: "/admin/buyer", icon: Users },
-      { label: "Pembayaran", href: "/admin/pembayaran", icon: CreditCard },
-      { label: "Notifikasi", href: "/admin/notifikasi", icon: Bell },
-      { label: "Laporan", href: "/admin/laporan", icon: BarChart3 },
-    ],
-  },
-  {
-    label: "Sistem",
-    items: [
-      { label: "Pengaturan", href: "/admin/pengaturan", icon: Settings },
-      { label: "Ketentuan bisnis", href: "/admin/bisnis", icon: FileText },
-      { label: "Menu", href: "/admin/menu", icon: Globe },
-      { label: "Refund", href: "/admin/refund", icon: CreditCard },
-      { label: "Riwayat", href: "/admin/riwayat", icon: History },
+      { label: "Kategori Layanan", href: "/admin/kategori", icon: Tag },
+      { label: "Area Penjemputan", href: "/admin/penjemputan", icon: Calendar },
+      { label: "Kalender & Kuota", href: "/admin/kalender", icon: Calendar },
+      { label: "Kode Promo", href: "/admin/promo", icon: Tag },
+      { label: "Laporan Finansial", href: "/admin/laporan", icon: BarChart3 },
+      { label: "Ketentuan Bisnis", href: "/admin/bisnis", icon: FileText },
     ],
   },
 ];
