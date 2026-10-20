@@ -153,12 +153,55 @@ export const getProducts = cache(
     );
   },
 );
+const SLUG_ALIASES: Record<string, string> = {
+  // Aliases lama <-> baru
+  "ijen-baluran": "kawah-ijen-baluran",
+  "ijen-kawah-wurung": "kawah-ijen-kawah-wurung",
+  "baluran": "jeep-baluran",
+  "kawah-ijen": "kawah-ijen-kawah-wurung",
+  "de-djawatan": "jeep-djawatan",
+  "djawatan-baluran": "kawah-ijen-baluran",
+  "kawah-wurung": "kawah-wurung-djawatan",
+  "harian-sopir": "sewa-trooper-harian-kota",
+  "lepas-kunci": "sewa-trooper-harian-kota",
+};
+
 export const getProductBySlug = cache(
-  async (slug: string) =>
-    (await getProducts()).find((p) => p.slug === slug) ?? null,
+  async (slug: string): Promise<Product | null> => {
+    const products = await getProducts();
+    // 1. Cocokkan langsung dengan slug produk di database
+    let found = products.find((p) => p.slug === slug);
+    if (found) return found;
+
+    // 2. Cocokkan alias forward
+    const alias = SLUG_ALIASES[slug];
+    if (alias) {
+      found = products.find((p) => p.slug === alias);
+      if (found) return found;
+    }
+
+    // 3. Cocokkan alias reverse
+    const reverseKey = Object.keys(SLUG_ALIASES).find((k) => SLUG_ALIASES[k] === slug);
+    if (reverseKey) {
+      found = products.find((p) => p.slug === reverseKey);
+      if (found) return found;
+    }
+
+    // 4. Fallback ke SAMPLE_PRODUCTS
+    const sample = SAMPLE_PRODUCTS.find(
+      (p) => p.slug === slug || (alias && p.slug === alias)
+    );
+    return sample ?? null;
+  },
 );
+
 export const getProductById = cache(
-  async (id: string) => (await getProducts()).find((p) => p.id === id) ?? null,
+  async (id: string): Promise<Product | null> => {
+    const products = await getProducts();
+    const found = products.find((p) => p.id === id);
+    if (found) return found;
+    return SAMPLE_PRODUCTS.find((p) => p.id === id) ?? null;
+  },
 );
 export const getCategories = cache(async (): Promise<ProductCategory[]> => {
   if (!isSupabaseConfigured()) return SAMPLE_CATEGORIES;
