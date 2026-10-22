@@ -4,10 +4,18 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { SAMPLE_PRODUCTS } from "@/lib/services/products-data";
 import { ProductCard } from "@/components/ProductCard";
+import type { Product } from "@/types/database";
+import { useLanguage } from "@/lib/i18n/context";
 
-export function TourPackages() {
-  // Hanya tampilkan 6 produk Jeep Wisata Banyuwangi di landing page
-  const wisataProducts = SAMPLE_PRODUCTS.filter((p) => !p.is_featured).slice(0, 6);
+interface TourPackagesProps {
+  products?: Product[];
+}
+
+export function TourPackages({ products }: TourPackagesProps) {
+  const { t } = useLanguage();
+  // Tampilkan produk live database (atau fallback SAMPLE_PRODUCTS jika belum ada)
+  const sourceProducts = products && products.length > 0 ? products : SAMPLE_PRODUCTS;
+  const wisataProducts = sourceProducts.filter((p) => !p.is_featured).slice(0, 6);
 
   return (
     <section className="py-14 md:py-20 bg-[#f7f8f9] relative font-sans border-b border-[#e4ebef]">
@@ -15,10 +23,10 @@ export function TourPackages() {
         {/* Header Section */}
         <div className="text-center max-w-2xl mx-auto mb-10 md:mb-12">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#263b46] tracking-tight">
-            Jeep Wisata Banyuwangi
+            {t("tour_banyuwangi_title", "Jeep Wisata Banyuwangi")}
           </h2>
           <p className="mt-2.5 text-[#53636d] text-xs sm:text-sm md:text-base leading-relaxed">
-            Berbagai Paket Wisata Jeep yang telah kami siapkan untuk Anda dan keluarga. Are you ready for adventure with us?
+            {t("tour_banyuwangi_subtitle", "Berbagai paket wisata Jeep Trooper lengkap siap melayani petualangan keluarga.")}
           </p>
         </div>
 
@@ -35,7 +43,7 @@ export function TourPackages() {
             href="/sewa"
             className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#327691] hover:text-[#2c6881] hover:underline transition"
           >
-            <span>Lihat Semua Tour</span>
+            <span>{t("tour_see_all", "Lihat Semua Tour")}</span>
             <ChevronRight size={15} />
           </Link>
         </div>

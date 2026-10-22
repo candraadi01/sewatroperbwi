@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Calendar, Eye, Folder } from "lucide-react";
+import type { ContentRow } from "@/lib/services/content";
 
 interface ArticleItem {
   id: string;
@@ -51,7 +52,41 @@ const landingArticles: ArticleItem[] = [
   },
 ];
 
-export function ArticleSection() {
+const fallbackImages = [
+  "/images/landing/article-menjangan.jpg",
+  "/images/landing/article-alaspurwo.jpg",
+  "/images/landing/article-jagir.jpg",
+];
+
+interface ArticleSectionProps {
+  articles?: ContentRow[];
+}
+
+export function ArticleSection({ articles }: ArticleSectionProps) {
+  const displayedArticles: ArticleItem[] =
+    articles && articles.length > 0
+      ? articles.slice(0, 3).map((a, idx) => ({
+          id: a.id,
+          slug: a.slug,
+          title: a.title,
+          date: a.published_at
+            ? new Date(a.published_at).toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })
+            : "Terbaru",
+          views: "120x",
+          category: a.category_name || "Destinasi Wisata Banyuwangi",
+          excerpt:
+            a.excerpt ||
+            (Array.isArray(a.content) && a.content[0]?.text
+              ? a.content[0].text.slice(0, 200) + "..."
+              : "Baca cerita dan panduan lengkap liburan di Banyuwangi bersama kami."),
+          image: a.cover_image_url || fallbackImages[idx % fallbackImages.length],
+        }))
+      : landingArticles;
+
   return (
     <section className="py-14 md:py-20 bg-white relative font-sans border-b border-[#e4ebef]">
       <div className="container-app">
@@ -67,7 +102,7 @@ export function ArticleSection() {
 
         {/* 3 Horizontal Article Cards */}
         <div className="space-y-6 md:space-y-8 max-w-5xl mx-auto">
-          {landingArticles.map((art) => (
+          {displayedArticles.map((art) => (
             <div
               key={art.id}
               className="flex flex-col sm:flex-row gap-5 md:gap-7 items-start sm:items-center bg-white p-2 rounded-2xl hover:bg-[#f4f9fb] transition group"

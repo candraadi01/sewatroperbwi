@@ -3,16 +3,25 @@
 import { useState, useRef } from "react";
 import { SAMPLE_PRODUCTS } from "@/lib/services/products-data";
 import { ProductCard } from "@/components/ProductCard";
+import type { Product } from "@/types/database";
+import { useLanguage } from "@/lib/i18n/context";
 
-export function JeepExperience() {
+interface JeepExperienceProps {
+  products?: Product[];
+}
+
+export function JeepExperience({ products }: JeepExperienceProps) {
+  const { t } = useLanguage();
   const [activeSlide, setActiveSlide] = useState(0);
   const touchStartX = useRef<number | null>(null);
 
-  // Group produk ke dalam 2 slide (masing-masing 3 produk unggulan)
+  const sourceProducts = products && products.length > 0 ? products : SAMPLE_PRODUCTS;
+
+  // Group produk ke dalam slide (masing-masing 3 produk unggulan)
   const slides = [
-    SAMPLE_PRODUCTS.slice(0, 3), // Slide 1: Sukamade, Baluran + Fotografer, De Djawatan
-    SAMPLE_PRODUCTS.slice(3, 6), // Slide 2: Kawah Ijen + Wurung, Kawah Ijen + Baluran, De Djawatan + Sukamade
-  ];
+    sourceProducts.slice(0, 3),
+    sourceProducts.slice(3, 6),
+  ].filter((s) => s.length > 0);
 
   function handleTouchStart(e: React.TouchEvent) {
     touchStartX.current = e.touches[0].clientX;
@@ -35,10 +44,10 @@ export function JeepExperience() {
         {/* Heading Section */}
         <div className="text-center max-w-2xl mx-auto mb-10 md:mb-12">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#263b46] tracking-tight">
-            Paket Jeep Experience
+            {t("jeep_experience_title", "Paket Jeep Experience")}
           </h2>
           <p className="mt-2.5 text-[#53636d] text-xs sm:text-sm md:text-base leading-relaxed">
-            Paling banyak diminati, paket tour paling hemat di Banyuwangi raya. Cek aja disini!
+            {t("jeep_experience_subtitle", "Paling banyak diminati, paket tour paling hemat di Banyuwangi raya. Cek aja disini!")}
           </p>
         </div>
 

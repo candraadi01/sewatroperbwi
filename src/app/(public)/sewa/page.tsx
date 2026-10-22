@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getProducts } from "@/lib/services/catalog";
 import { ProductCard, serviceLabels } from "@/components/ProductCard";
+import { Calendar, MapPin } from "lucide-react";
 
 export default async function Catalog({
   searchParams,
@@ -9,6 +10,7 @@ export default async function Catalog({
 }) {
   const params = await searchParams;
   const q = typeof params.q === "string" ? params.q.slice(0, 100) : "";
+  const date = typeof params.date === "string" ? params.date : "";
   const kategori =
     typeof params.kategori === "string"
       ? params.kategori
@@ -62,6 +64,24 @@ export default async function Catalog({
           <p className="mt-3 text-[#53636d] text-xs sm:text-sm md:text-base leading-relaxed">
             Temukan pilihan paket tour terlengkap mulai dari Kawah Ijen, Baluran, Sukamade, hingga De Djawatan dengan armada 4x4 prima dan driver lokal berpengalaman.
           </p>
+
+          {/* Banner Filter Tanggal Aktif */}
+          {date && (
+            <div className="mt-4 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs sm:text-sm font-bold flex items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-center gap-2">
+                <Calendar size={16} className="text-emerald-700 shrink-0" />
+                <span>
+                  Jadwal Keberangkatan Terpilih: <strong>{new Date(date + "T00:00:00Z").toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</strong> (Ready Siap Booking)
+                </span>
+              </div>
+              <Link
+                href="/sewa"
+                className="text-xs font-extrabold underline text-emerald-800 hover:text-emerald-950 shrink-0"
+              >
+                Ganti Jadwal
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Search & Filter Bar */}
@@ -70,6 +90,7 @@ export default async function Catalog({
           action="/sewa"
           method="GET"
         >
+          {date && <input type="hidden" name="date" value={date} />}
           <div>
             <label htmlFor="cari" className="block text-xs font-bold text-[#263b46] mb-1">
               Cari Kata Kunci
@@ -162,6 +183,45 @@ export default async function Catalog({
           </div>
         </form>
 
+        {/* Quick Destination Shortcut Tags */}
+        <div className="mt-3.5 flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          <span className="text-[11px] font-extrabold text-[#697780] shrink-0 mr-1 flex items-center gap-1">
+            <MapPin size={12} className="text-[#327691]" /> Titik Destinasi:
+          </span>
+          {[
+            { slug: "", label: "Semua Destinasi" },
+            { slug: "djawatan", label: "🌳 Hutan De Djawatan" },
+            { slug: "sukamade", label: "🐢 Pantai Sukamade" },
+            { slug: "ijen", label: "🌋 Kawah Ijen" },
+            { slug: "baluran", label: "🦏 TN Baluran" },
+            { slug: "kawah-wurung", label: "🌄 Kawah Wurung" },
+          ].map((d) => {
+            const isSelected = destinasi === d.slug || (!destinasi && !d.slug);
+            const params = new URLSearchParams();
+            if (date) params.set("date", date);
+            if (kategori) params.set("kategori", kategori);
+            if (d.slug) params.set("destinasi", d.slug);
+            if (durasi) params.set("durasi", durasi);
+            if (sort && sort !== "popular") params.set("sort", sort);
+            const queryStr = params.toString();
+            const href = `/sewa${queryStr ? "?" + queryStr : ""}`;
+
+            return (
+              <Link
+                key={d.slug}
+                href={href}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer shadow-2xs ${
+                  isSelected
+                    ? "bg-[#327691] text-white shadow-xs"
+                    : "bg-white border border-[#ccd8de] text-[#263b46] hover:border-[#327691] hover:text-[#327691]"
+                }`}
+              >
+                {d.label}
+              </Link>
+            );
+          })}
+        </div>
+
         {/* Filter Count & Reset */}
         <div className="my-6 flex flex-wrap justify-between items-center gap-3 text-xs text-[#53636d]">
           <div className="flex items-center gap-2 flex-wrap">
@@ -195,7 +255,7 @@ export default async function Catalog({
         {products.length ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7">
             {products.map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <ProductCard key={p.id} product={p} date={date} />
             ))}
           </div>
         ) : (

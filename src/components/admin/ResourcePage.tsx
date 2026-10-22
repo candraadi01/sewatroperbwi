@@ -67,11 +67,17 @@ export async function ResourcePage({
     options[table] = data ?? [];
   }
   return (
-    <div className="space-y-7">
-      <header>
-        <p className="eyebrow">PENGELOLAAN USAHA</p>
-        <h1 className="heading-1 mt-3">{config.title}</h1>
-        <p className="text-neutral-500 mt-3 max-w-2xl">{config.description}</p>
+    <div className="space-y-6">
+      <header className="pb-5 border-b border-[#e4ebef] dark:border-neutral-800">
+        <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#327691] dark:text-[#8abbd0]">
+          Pengelolaan Usaha
+        </span>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1e293b] dark:text-neutral-100 tracking-tight mt-1">
+          {config.title}
+        </h1>
+        <p className="text-xs sm:text-sm text-[#64748b] dark:text-neutral-400 mt-1 max-w-2xl leading-relaxed">
+          {config.description}
+        </p>
       </header>
       {errorMessage ? (
         <div className="notice-error" role="alert">

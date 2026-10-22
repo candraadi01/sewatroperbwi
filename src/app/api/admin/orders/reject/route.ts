@@ -15,8 +15,8 @@ export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
     const user = await getAuthUser();
-    if (!user?.roles.includes("admin"))
-      throw new RequestError("Akses admin diperlukan.", 403);
+    if (!user?.roles.includes("admin") && !user?.roles.includes("owner"))
+      throw new RequestError("Akses admin atau pemilik diperlukan.", 403);
     const p = z
       .object({
         id: idSchema,

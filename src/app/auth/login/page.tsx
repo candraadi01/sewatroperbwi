@@ -67,6 +67,24 @@ function LoginForm() {
     });
 
     if (error) {
+      // Jika akun demo buyer belum terdaftar di Supabase, otomatis buat dan masuk
+      if (email.trim().toLowerCase() === "buyer@sewatrooperbwi.com") {
+        const { data: signUpData } = await supabase.auth.signUp({
+          email: "buyer@sewatrooperbwi.com",
+          password,
+          options: {
+            data: {
+              full_name: "Pelanggan Demo Trooper",
+              phone: "081234567890",
+            },
+          },
+        });
+        if (signUpData?.user) {
+          window.location.assign("/buyer");
+          return;
+        }
+      }
+
       setError(
         error.message === "Invalid login credentials"
           ? "Email atau kata sandi tidak cocok. Silakan periksa kembali."
@@ -92,7 +110,7 @@ function LoginForm() {
       if (!redirectTo || redirectTo === "/") {
         if (isAdmin) target = "/admin";
         else if (isOwner) target = "/owner";
-        else target = "/akun";
+        else target = "/buyer";
       }
 
       window.location.assign(target);
@@ -283,7 +301,7 @@ function LoginForm() {
           {/* Quick Fill Demo Badges */}
           <div className="mt-5 pt-4 border-t border-neutral-100">
             <p className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider mb-2">
-              Akun Pengelola Tersedia (Klik untuk isi cepat):
+              Akun Pengelola & Pelanggan Tersedia (Klik untuk isi cepat):
             </p>
             <div className="flex flex-col gap-1.5 text-xs">
               <button
@@ -292,7 +310,7 @@ function LoginForm() {
                 className="text-left px-2.5 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 transition flex items-center justify-between"
               >
                 <span className="font-medium">🛠 Admin: admin@sewatrooperbwi.com</span>
-                <span className="text-[10px] bg-sky-200/70 px-1.5 py-0.5 rounded">Isi Form</span>
+                <span className="text-[10px] bg-sky-200/70 px-1.5 py-0.5 rounded font-semibold">Isi Form</span>
               </button>
               <button
                 type="button"
@@ -300,7 +318,15 @@ function LoginForm() {
                 className="text-left px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 transition flex items-center justify-between"
               >
                 <span className="font-medium">👑 Pemilik: owner@sewatrooperbwi.com</span>
-                <span className="text-[10px] bg-emerald-200/70 px-1.5 py-0.5 rounded">Isi Form</span>
+                <span className="text-[10px] bg-emerald-200/70 px-1.5 py-0.5 rounded font-semibold">Isi Form</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setQuickAccount("buyer@sewatrooperbwi.com", "BuyerTrooper2026!")}
+                className="text-left px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 transition flex items-center justify-between"
+              >
+                <span className="font-medium">👤 Pelanggan (Buyer): buyer@sewatrooperbwi.com</span>
+                <span className="text-[10px] bg-amber-200/70 px-1.5 py-0.5 rounded font-semibold">Isi Form</span>
               </button>
             </div>
           </div>

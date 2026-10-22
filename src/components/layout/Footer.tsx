@@ -4,7 +4,12 @@ import { getSiteSettings } from "@/lib/services/settings";
 
 export async function Footer() {
   const settings = await getSiteSettings();
-  const email = settings.contact_email || "info@sewajeepbanyuwangi.com";
+  const email = settings.contact_email || "info@kulinosewatroper.com";
+  const phone = settings.contact_phone || settings.contact_whatsapp || "62812345678";
+  const bri = (settings as any).bank_bri_account || "000000";
+  const bca = (settings as any).bank_bca_account || "000000";
+  const accountHolder = (settings as any).bank_account_holder || "PT. SEWA JEEP BANYUWANGI";
+  const devCredit = (settings as any).developer_credit || "candra";
   const address =
     settings.contact_address ||
     "Jl. Raya Jember - Banyuwangi, Dusun Krajan, Dadapan, Kec. Kabat, Kabupaten Banyuwangi, Jawa Timur 68461";
@@ -54,8 +59,9 @@ export async function Footer() {
               <div className="text-xs text-[#ccd8de] space-y-2 pt-1">
                 <div>
                   <span className="font-semibold text-white block">Hotline Kantor:</span>
-                  <p className="mt-0.5">0851-8681-5863</p>
-                  <p>0822-1000-7144</p>
+                  <a href={`tel:${phone}`} className="mt-0.5 text-[#ccd8de] hover:text-white transition block">
+                    {phone}
+                  </a>
                 </div>
 
                 <div>
@@ -67,7 +73,7 @@ export async function Footer() {
 
                 <div>
                   <span className="font-semibold text-white block">Jam Layanan :</span>
-                  <p>24 Jam Setiap Hari</p>
+                  <p>{settings.office_hours || "24 Jam Setiap Hari"}</p>
                 </div>
               </div>
             </div>
@@ -146,13 +152,13 @@ export async function Footer() {
               <div className="pt-2 border-t border-white/10 text-xs text-[#ccd8de]">
                 <p className="font-bold text-white mb-1">Rekening Bank Resmi</p>
                 <p className="text-[11px] text-[#8abbd0]">
-                  BRI: 0553 – 01 – 000769 – 30 – 6
+                  BRI: {bri}
                 </p>
                 <p className="text-[11px] font-semibold text-white">
-                  PT. SEWA JEEP BANYUWANGI
+                  {accountHolder}
                 </p>
                 <p className="text-[11px] text-[#8abbd0] mt-1">
-                  BCA: 1800 – 9988 – 77
+                  BCA: {bca}
                 </p>
               </div>
             </div>
@@ -161,7 +167,7 @@ export async function Footer() {
           {/* 3. Bottom Copyright Bar */}
           <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-[#8abbd0] gap-3 text-center sm:text-left">
             <p>
-              Copyright © 2026 Sewa Jeep Banyuwangi. All rights reserved. Developed with ❤️ by JMW
+              Copyright © 2026 Sewa Jeep Banyuwangi. All rights reserved. Developed with ❤️ by {devCredit}
             </p>
             <div className="flex items-center gap-4 text-xs text-[#8abbd0]">
               <Link href="/syarat-ketentuan" className="hover:text-white transition">

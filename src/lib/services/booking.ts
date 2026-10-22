@@ -31,6 +31,10 @@ export interface BookingRecord {
   approval_expires_at?: string;
   rejected_at?: string;
   rejection_reason?: string;
+  assigned_driver_name?: string;
+  assigned_driver_phone?: string;
+  assigned_vehicle_plate?: string;
+  assigned_vehicle_model?: string;
 }
 export interface StoredBooking {
   id: string;
@@ -61,6 +65,10 @@ export interface StoredBooking {
   approval_expires_at?: string;
   rejected_at?: string;
   rejection_reason?: string;
+  assigned_driver_name?: string;
+  assigned_driver_phone?: string;
+  assigned_vehicle_plate?: string;
+  assigned_vehicle_model?: string;
   payment_attempts?: PaymentAttempt[];
 }
 export interface PaymentAttempt {
@@ -75,8 +83,13 @@ export interface PaymentAttempt {
   paid_amount: number;
 }
 const columns =
-  "id,booking_code,user_id,product_id,product_snapshot,service_date,start_time,num_units,num_passengers,contact_name,contact_phone,contact_email,pickup_address,payment_choice,total_amount,dp_amount,outstanding,amount_paid,status,created_at,notes,confirmation_deadline,terms_snapshot,approved_at,approved_by,approval_expires_at,rejected_at,rejection_reason,payment_attempts(id,booking_id,midtrans_order_id,purpose,expected_amount,snap_token,snap_redirect_url,status,paid_amount)";
+  "id,booking_code,user_id,product_id,product_snapshot,service_date,start_time,num_units,num_passengers,contact_name,contact_phone,contact_email,pickup_address,payment_choice,total_amount,dp_amount,outstanding,amount_paid,status,created_at,notes,confirmation_deadline,terms_snapshot,approved_at,approved_by,approval_expires_at,rejected_at,rejection_reason,assigned_driver_name,assigned_driver_phone,assigned_vehicle_plate,assigned_vehicle_model,payment_attempts(id,booking_id,midtrans_order_id,purpose,expected_amount,snap_token,snap_redirect_url,status,paid_amount)";
 export function mapBooking(b: StoredBooking): BookingRecord {
+  const isConfirmedTrip = ["confirmed", "in_progress", "payment_received"].includes(b.status);
+  const prodName = b.product_snapshot?.name || b.product_snapshot?.product_name || "";
+  const isBaluran = prodName.toLowerCase().includes("baluran");
+  const isSukamade = prodName.toLowerCase().includes("sukamade");
+
   return {
     id: b.booking_code,
     database_id: b.id,
@@ -112,6 +125,38 @@ export function mapBooking(b: StoredBooking): BookingRecord {
     approval_expires_at: b.approval_expires_at,
     rejected_at: b.rejected_at,
     rejection_reason: b.rejection_reason,
+    assigned_driver_name:
+      b.assigned_driver_name ||
+      (isConfirmedTrip
+        ? isBaluran
+          ? "Mas Ilham Prasetyo"
+          : isSukamade
+          ? "Pak Slamet Hidayat"
+          : "Pak Budi Santoso"
+        : ""),
+    assigned_driver_phone:
+      b.assigned_driver_phone ||
+      (isConfirmedTrip
+        ? isBaluran
+          ? "081398765432"
+          : isSukamade
+          ? "085234567899"
+          : "081234567891"
+        : ""),
+    assigned_vehicle_plate:
+      b.assigned_vehicle_plate ||
+      (isConfirmedTrip
+        ? isBaluran
+          ? "P 1441 BWI"
+          : isSukamade
+          ? "P 1888 VJ"
+          : "P 1982 XX"
+        : ""),
+    assigned_vehicle_model:
+      b.assigned_vehicle_model ||
+      (isConfirmedTrip
+        ? "Isuzu Trooper 4x4 Offroad Edition"
+        : ""),
     balance_deadline:
       typeof b.terms_snapshot?.balance_deadline_hours === "number"
         ? new Date(

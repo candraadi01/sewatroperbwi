@@ -7,7 +7,7 @@ interface LanguageContextType {
   language: Language;
   currentLanguage: LanguageOption;
   setLanguage: (lang: Language) => void;
-  t: (key: keyof typeof translations.id) => string;
+  t: (key: string, fallback?: string) => string;
   allLanguages: LanguageOption[];
 }
 
@@ -31,9 +31,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const currentLanguage =
     languages.find((l) => l.code === language) || languages[languages.length - 1];
 
-  const t = (key: keyof typeof translations.id): string => {
-    const currentDict = translations[language] || translations.id;
-    return (currentDict as Record<string, string>)[key] || translations.id[key] || key;
+  const t = (key: string, fallback?: string): string => {
+    const currentDict = (translations as any)[language] || translations.id;
+    return currentDict?.[key] || (translations.id as any)?.[key] || fallback || key;
   };
 
   return (
@@ -59,7 +59,7 @@ export function useLanguage() {
       language: "id" as Language,
       currentLanguage: languages[languages.length - 1],
       setLanguage: () => {},
-      t: (key: keyof typeof translations.id) => translations.id[key] || key,
+      t: (key: string, fallback?: string) => (translations.id as any)?.[key] || fallback || key,
       allLanguages: languages,
     };
   }

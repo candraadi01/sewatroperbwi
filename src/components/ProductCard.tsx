@@ -3,10 +3,12 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Clock, Check, Car } from "lucide-react";
+import { MapPin, Clock, Check, Car, Sparkles } from "lucide-react";
 import type { Product } from "@/types/database";
 import { formatIDR } from "@/lib/utils/currency";
 import { useCart } from "@/lib/cart/context";
+import { getProductDestinationPoints } from "@/lib/utils/destinations";
+import { useLanguage } from "@/lib/i18n/context";
 
 export const serviceLabels = {
   paket_rute: "Paket Rute",
@@ -14,9 +16,19 @@ export const serviceLabels = {
   harian_lepas_kunci: "Lepas Kunci",
 };
 
-export function ProductCard({ product: p }: { product: Product }) {
+export function ProductCard({
+  product: p,
+  date,
+}: {
+  product: Product;
+  date?: string;
+}) {
   const { addItem, setIsCartOpen } = useCart();
+  const { t } = useLanguage();
   const [isAdded, setIsAdded] = useState(false);
+  const productUrl = date
+    ? `/sewa/${p.slug}?date=${encodeURIComponent(date)}`
+    : `/sewa/${p.slug}`;
 
   const mainImage = p.images?.[0] || "/images/landing/tour-baluran.jpg";
   const gallery =
@@ -34,11 +46,9 @@ export function ProductCard({ product: p }: { product: Product }) {
     (p.duration_minutes
       ? `${Math.round(p.duration_minutes / 60)} Jam`
       : "1 Hari");
-  const capacityDisplay = `Max ${p.passenger_capacity || 6} Orang`;
-  const destinationList =
-    p.destinations && p.destinations.length > 0
-      ? p.destinations
-      : [p.short_description || p.route_name || p.name];
+  const capacityDisplay = t("guest_capacity", "Max {n} Orang").replace("{n}", String(p.passenger_capacity || 6));
+  const destinationPoints = getProductDestinationPoints(p);
+  const finalPrice = p.base_price && p.base_price > 0 ? p.base_price : 750000;
 
   const handleBooking = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -47,7 +57,7 @@ export function ProductCard({ product: p }: { product: Product }) {
       slug: p.slug,
       title: p.name,
       image: mainImage,
-      price: p.base_price || 0,
+      price: finalPrice,
       duration: durationDisplay,
       capacity: capacityDisplay,
     });
@@ -72,12 +82,13 @@ export function ProductCard({ product: p }: { product: Product }) {
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/30" />
 
-        {/* BEST SELLER Ribbon jika ada */}
+        {/* BEST SELLER Ribbon Merah jika ditandai */}
         {p.is_best_seller && (
-          <div className="absolute top-0 left-0 overflow-hidden w-28 h-28 pointer-events-none z-30">
-            <div className="absolute top-5 -left-8 w-34 bg-gradient-to-r from-red-600 via-rose-600 to-red-600 text-white text-[9.5px] font-black uppercase tracking-wider text-center py-1 -rotate-45 shadow-md border-y border-white/25">
+          <div className="absolute top-2.5 left-2.5 z-30">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-600 text-white text-[10px] font-black uppercase tracking-wider shadow-lg border border-red-400/50">
+              <Sparkles size={11} className="fill-white" />
               BEST SELLER
-            </div>
+            </span>
           </div>
         )}
 
@@ -118,7 +129,7 @@ export function ProductCard({ product: p }: { product: Product }) {
       {/* 2. Isi Badan Kartu */}
       <div className="pt-6 pb-2 px-4 sm:px-5 flex-1 flex flex-col justify-between">
         <div>
-          <Link href={`/sewa/${p.slug}`}>
+          <Link href={productUrl}>
             <h3 className="text-center font-black text-sm sm:text-[15px] text-[#263b46] uppercase tracking-tight leading-snug group-hover:text-[#327691] transition-colors">
               {p.name}
             </h3>
@@ -135,21 +146,38 @@ export function ProductCard({ product: p }: { product: Product }) {
           <div className="border-b border-dashed border-[#e4ebef] my-2.5" />
 
           <div className="space-y-1.5 py-0.5 min-h-[46px]">
-            {destinationList.slice(0, 2).map((dest, i) => (
-              <div key={i} className="flex items-start gap-1.5 text-[11px] text-[#53636d] font-medium leading-tight">
-                <MapPin size={12} className="text-[#327691] shrink-0 mt-0.5" />
-                <span className="line-clamp-1">{dest}</span>
-              </div>
-            ))}
+            {destinationPoints.slice(0, 2).map((dest, i) => {
+              const filterUrl = dest.slug
+                ? `/sewa?destinasi=${encodeURIComponent(dest.slug)}${date ? `&date=${encodeURIComponent(date)}` : ""}`
+                : undefined;
+
+              return (
+                <div key={i} className="flex items-start gap-1.5 text-[11px] font-medium leading-tight text-[#53636d]">
+                  <MapPin size={12} className="text-[#327691] shrink-0 mt-0.5" />
+                  {filterUrl ? (
+                    <Link
+                      href={filterUrl}
+                      onClick={(e) => e.stopPropagation()}
+                      title={`Klik untuk mencari paket destinasi ${dest.name}`}
+                      className="line-clamp-1 hover:text-[#327691] hover:underline font-semibold transition-colors cursor-pointer"
+                    >
+                      {dest.name}
+                    </Link>
+                  ) : (
+                    <span className="line-clamp-1">{dest.name}</span>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           <div className="border-b border-dashed border-[#e4ebef] my-2.5" />
 
           <div className="text-center py-1">
             <span className="text-base sm:text-lg font-black text-[#2c6881] tracking-tight">
-              {p.base_price ? formatIDR(p.base_price) : "Hubungi Admin"}
+              {formatIDR(finalPrice)}
             </span>
-            <span className="text-xs text-[#697780] font-semibold"> / Jeep</span>
+            <span className="text-xs text-[#697780] font-semibold">{t("per_jeep", " / Jeep")}</span>
           </div>
         </div>
       </div>
@@ -157,10 +185,10 @@ export function ProductCard({ product: p }: { product: Product }) {
       {/* 3. Tombol Booking Sekarang Full Width */}
       <div className="p-3 pt-0">
         <Link
-          href={`/sewa/${p.slug}`}
+          href={productUrl}
           className="w-full bg-[#327691] hover:bg-[#2c6881] active:scale-[0.99] text-white font-extrabold text-xs sm:text-sm py-2.5 rounded-xl transition duration-200 flex items-center justify-center gap-1.5 shadow-xs uppercase tracking-wider cursor-pointer"
         >
-          <span>Booking Sekarang</span>
+          <span>{t("btn_book_now", "Booking Sekarang")}</span>
         </Link>
       </div>
     </div>

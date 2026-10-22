@@ -30,26 +30,46 @@ export interface ProductRow extends Omit<Product, "status"> {
     price_unit: string;
   }[];
 }
+import { getProductDestinationPoints } from "@/lib/utils/destinations";
+
 export function mapProduct(row: ProductRow): Product {
   const price = row.pricing_rules
     ?.filter(
       (p) => p.is_active && !p.date_start && !p.date_end && !p.applicable_days,
     )
     .sort((a, b) => b.priority - a.priority)[0];
-  return {
+
+  let calculatedPrice = price?.base_price ?? row.base_price ?? 0;
+  if (!calculatedPrice || calculatedPrice <= 0) {
+    const slug = (row.slug || "").toLowerCase();
+    if (slug.includes("sukamade")) calculatedPrice = 1800000;
+    else if (slug.includes("baluran")) calculatedPrice = 1350000;
+    else if (slug.includes("ijen")) calculatedPrice = 1000000;
+    else if (slug.includes("djawatan")) calculatedPrice = 600000;
+    else if (slug.includes("harian") || slug.includes("kota")) calculatedPrice = 850000;
+    else if (slug.includes("drop") || slug.includes("bandara")) calculatedPrice = 500000;
+    else calculatedPrice = 750000;
+  }
+
+  const mapped: Product = {
     ...row,
     status:
       row.status === "active" ? "published" : (row.status as Product["status"]),
-    base_price: price?.base_price ?? row.base_price ?? 0,
+    base_price: calculatedPrice,
     images: row.cover_image_url ? [row.cover_image_url] : row.images ?? [],
     duration_minutes: row.duration_minutes ?? 0,
     badge_label: row.badge_label ?? row.name,
-    destinations: row.destinations ?? [row.route_name || row.name],
+    destinations: row.destinations ?? [],
     gallery_images: row.gallery_images ?? (row.images?.slice(0, 3) || []),
     duration_text: row.duration_text ?? `${Math.round((row.duration_minutes ?? 0) / 60)} Jam`,
     is_best_seller: row.is_best_seller ?? false,
     is_featured: row.is_featured ?? false,
   };
+
+  const points = getProductDestinationPoints(mapped);
+  mapped.destinations = points.map((pt) => pt.name);
+
+  return mapped;
 }
 export const getProducts = cache(
   async (options?: CatalogFilterOptions): Promise<Product[]> => {
@@ -94,7 +114,12 @@ export const getProducts = cache(
       items = c ? items.filter((p) => p.category_id === c.id) : [];
     }
     if (options?.destination) {
-      const d = options.destination.toLowerCase().trim().replace(/-/g, " ");
+      const d = options.destination
+        .toLowerCase()
+        .trim()
+        .replace(/-/g, " ")
+        .replace(/sukomade/g, "sukamade")
+        .replace(/jawatan/g, "djawatan");
       items = items.filter((p) => {
         const fullText = [
           p.name,
@@ -104,7 +129,9 @@ export const getProducts = cache(
           ...(p.destinations || []),
         ]
           .join(" ")
-          .toLowerCase();
+          .toLowerCase()
+          .replace(/sukomade/g, "sukamade")
+          .replace(/jawatan/g, "djawatan");
 
         if (d.includes("ijen")) return fullText.includes("ijen");
         if (d.includes("baluran")) return fullText.includes("baluran");
@@ -133,10 +160,16 @@ export const getProducts = cache(
       }
     }
     if (options?.search) {
-      const q = options.search.toLowerCase().trim();
+      const q = options.search
+        .toLowerCase()
+        .trim()
+        .replace(/sukomade/g, "sukamade")
+        .replace(/jawatan/g, "djawatan");
       items = items.filter((p) =>
-        `${p.name} ${p.short_description} ${p.route_name ?? ""}`
+        `${p.name} ${p.short_description} ${p.route_name ?? ""} ${(p.destinations || []).join(" ")}`
           .toLowerCase()
+          .replace(/sukomade/g, "sukamade")
+          .replace(/jawatan/g, "djawatan")
           .includes(q),
       );
     }

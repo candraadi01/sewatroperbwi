@@ -34,7 +34,7 @@ export default async function Orders({
             </p>
           </div>
           {pendingCount > 0 && (
-            <div className="px-4 py-2.5 rounded-xl bg-amber-50 border-2 border-amber-400 text-amber-900 text-xs sm:text-sm font-bold flex items-center gap-2 shadow-xs animate-pulse">
+            <div className="px-4 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 border-2 border-amber-400 dark:border-amber-600 text-amber-900 dark:text-amber-200 text-xs sm:text-sm font-bold flex items-center gap-2 shadow-xs animate-pulse">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
               <span>{pendingCount} Pesanan Baru Menunggu Konfirmasi!</span>
             </div>
@@ -46,7 +46,9 @@ export default async function Orders({
           <Link
             href="/admin/pesanan"
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-              !q.status ? "bg-primary-700 text-white shadow-xs" : "bg-neutral-100 hover:bg-neutral-200 text-neutral-700"
+              !q.status
+                ? "bg-[#327691] text-white shadow-xs"
+                : "bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
             }`}
           >
             Semua ({bookings.length})
@@ -56,7 +58,7 @@ export default async function Orders({
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
               q.status === "pending_review"
                 ? "bg-amber-500 text-white shadow-xs"
-                : "bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100"
+                : "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-950/60"
             }`}
           >
             <span>⏳ Menunggu Persetujuan ({pendingCount})</span>
@@ -66,7 +68,7 @@ export default async function Orders({
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
               q.status === "approved"
                 ? "bg-emerald-600 text-white shadow-xs"
-                : "bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100"
+                : "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-950/60"
             }`}
           >
             ✓ Disetujui ({approvedCount})
@@ -76,7 +78,7 @@ export default async function Orders({
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
               q.status === "confirmed"
                 ? "bg-sky-600 text-white shadow-xs"
-                : "bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100"
+                : "bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300 border border-sky-200 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-sky-950/60"
             }`}
           >
             🚗 Terkonfirmasi ({confirmedCount})

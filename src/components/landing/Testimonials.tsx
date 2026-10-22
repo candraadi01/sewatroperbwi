@@ -51,13 +51,16 @@ const reviewsData: Review[] = [
   },
 ];
 
-export function Testimonials() {
+import type { TestimonialItem } from "@/lib/services/testimonials";
+
+export function Testimonials({ items }: { items?: TestimonialItem[] }) {
+  const reviews = items && items.length > 0 ? items : reviewsData;
   const [activeReviewIndex, setActiveReviewIndex] = useState(0);
   const [modalSubmitOpen, setModalSubmitOpen] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
-  const activeReview = reviewsData[activeReviewIndex];
+  const activeReview = reviews[activeReviewIndex] || reviews[0] || reviewsData[0];
 
   function handleTouchStart(e: React.TouchEvent) {
     setTouchStartX(e.touches[0].clientX);
@@ -66,7 +69,7 @@ export function Testimonials() {
   function handleTouchEnd(e: React.TouchEvent) {
     if (touchStartX === null) return;
     const deltaX = e.changedTouches[0].clientX - touchStartX;
-    if (deltaX < -40 && activeReviewIndex < reviewsData.length - 1) {
+    if (deltaX < -40 && activeReviewIndex < reviews.length - 1) {
       setActiveReviewIndex((prev) => prev + 1);
     } else if (deltaX > 40 && activeReviewIndex > 0) {
       setActiveReviewIndex((prev) => prev - 1);
@@ -170,7 +173,7 @@ export function Testimonials() {
 
             {/* Pagination Dots Berpusat di Tengah: Lingkaran Kecil & Rapi Sesuai Permintaan */}
             <div className="flex items-center justify-center gap-2.5 pt-4">
-              {reviewsData.map((_, idx) => (
+              {reviews.map((_, idx) => (
                 <button
                   key={idx}
                   type="button"

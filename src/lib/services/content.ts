@@ -7,6 +7,8 @@ export interface ContentRow {
   slug: string;
   title: string;
   excerpt?: string;
+  cover_image_url?: string;
+  category_name?: string;
   content: ContentBlock[];
   published_at?: string;
 }
@@ -23,7 +25,7 @@ export const getContent = cache(
       .from(table)
       .select(
         "id,slug,title,content,published_at" +
-          (table === "articles" ? ",excerpt" : ""),
+          (table === "articles" ? ",excerpt,cover_image_url,category_name" : ""),
       )
       .eq("status", "published");
     if (slug) query = query.eq("slug", slug);

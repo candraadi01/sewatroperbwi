@@ -50,6 +50,8 @@ export const viewport: Viewport = {
   themeColor: "#15673e",
 };
 
+import { LanguageProvider } from "@/lib/i18n/context";
+
 export default function RootLayout({
   children,
 }: {
@@ -62,11 +64,13 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className={`${urbanist.className} min-h-full flex flex-col font-sans antialiased`}>
-        {/* Skip link for keyboard navigation */}
-        <a href="#main-content" className="skip-link">
-          Langsung ke konten utama
-        </a>
-        {children}
+        <LanguageProvider>
+          {/* Skip link for keyboard navigation */}
+          <a href="#main-content" className="skip-link">
+            Langsung ke konten utama
+          </a>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );

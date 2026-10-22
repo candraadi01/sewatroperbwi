@@ -1,13 +1,22 @@
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
-import { assertSameOrigin, errorResponse } from "@/lib/security/http";
+import { NextResponse } from "next/server";
+
 export async function POST(request: Request) {
   try {
-    assertSameOrigin(request);
     const db = await createClient();
     await db.auth.signOut();
   } catch (e) {
-    return errorResponse(e);
+    console.error("[signout] error signing out:", e);
   }
-  redirect("/");
+  return NextResponse.redirect(new URL("/", request.url), 303);
+}
+
+export async function GET(request: Request) {
+  try {
+    const db = await createClient();
+    await db.auth.signOut();
+  } catch (e) {
+    console.error("[signout] error signing out:", e);
+  }
+  return NextResponse.redirect(new URL("/", request.url), 303);
 }

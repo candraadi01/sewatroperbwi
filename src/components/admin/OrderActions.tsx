@@ -121,7 +121,7 @@ export function OrderActions({ id, status }: { id: string; status: string }) {
           </button>
         </div>
         {mode === "approve" && (
-          <form onSubmit={approve} className="space-y-3 bg-green-50 border border-green-200 rounded-lg p-3">
+          <form onSubmit={approve} className="space-y-3 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-lg p-3">
             <label className="admin-field">
               Catatan untuk buyer (opsional)
               <input name="note" maxLength={1000} placeholder="Kendaraan tersedia. Silakan lanjutkan pembayaran." />
@@ -137,7 +137,7 @@ export function OrderActions({ id, status }: { id: string; status: string }) {
           </form>
         )}
         {mode === "reject" && (
-          <form onSubmit={reject} className="space-y-3 bg-red-50 border border-red-200 rounded-lg p-3">
+          <form onSubmit={reject} className="space-y-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg p-3">
             <label className="admin-field">
               Alasan penolakan (wajib)
               <input name="reason" required maxLength={1000} placeholder="Kendaraan tidak tersedia untuk tanggal yang dipilih." />
@@ -156,18 +156,18 @@ export function OrderActions({ id, status }: { id: string; status: string }) {
   if (status === "approved") {
     return (
       <div className="space-y-4">
-        <p className="text-sm font-semibold text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+        <p className="text-sm font-semibold text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-lg px-3 py-2">
           ✓ Disetujui — menunggu pembayaran buyer.
         </p>
         <button
-          className="text-sm text-red-600 underline"
+          className="text-sm text-red-600 dark:text-red-400 underline"
           onClick={() => setMode(mode === "reject" ? "status" : "reject")}
           type="button"
         >
           Batalkan persetujuan
         </button>
         {mode === "reject" && (
-          <form onSubmit={reject} className="space-y-3 bg-red-50 border border-red-200 rounded-lg p-3">
+          <form onSubmit={reject} className="space-y-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg p-3">
             <label className="admin-field">
               Alasan pembatalan
               <input name="reason" required maxLength={1000} />

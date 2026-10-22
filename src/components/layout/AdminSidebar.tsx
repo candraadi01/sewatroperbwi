@@ -9,33 +9,26 @@ import {
   ShoppingBag,
   Package,
   CreditCard,
-  Tag,
-  Calendar,
   Users,
-  FileText,
-  Image,
   Settings,
   BarChart3,
-  Bell,
-  History,
   Globe,
   Menu,
   X,
   LogOut,
   Newspaper,
-  HelpCircle,
+  Shield,
+  Compass,
+  Calendar,
+  Search,
 } from "lucide-react";
 import { cn } from "@/components/ui";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 interface AdminUser {
   id: string;
   fullName: string;
   email: string;
-}
-
-interface NavGroup {
-  label: string;
-  items: NavItem[];
 }
 
 interface NavItem {
@@ -45,32 +38,16 @@ interface NavItem {
   badge?: string;
 }
 
-const navGroups: NavGroup[] = [
-  {
-    label: "Menu Utama Admin",
-    items: [
-      { label: "1. Dashboard", href: "/admin", icon: LayoutDashboard },
-      { label: "2. Manajemen Users", href: "/admin/users", icon: Users },
-      { label: "3. Manajemen Tour & Armada", href: "/admin/produk", icon: Package },
-      { label: "4. History Transaksi", href: "/admin/pesanan", icon: ShoppingBag },
-      { label: "5. Kelola Artikel", href: "/admin/artikel", icon: Newspaper },
-      { label: "6. Kelola Tim Driver", href: "/admin/tim", icon: Users },
-      { label: "7. Kelola FAQ", href: "/admin/faq", icon: HelpCircle },
-      { label: "8. Penarikan Dana", href: "/admin/penarikan", icon: CreditCard },
-      { label: "9. Pengaturan Aplikasi", href: "/admin/pengaturan", icon: Settings },
-    ],
-  },
-  {
-    label: "Konfigurasi Lain",
-    items: [
-      { label: "Kategori Layanan", href: "/admin/kategori", icon: Tag },
-      { label: "Area Penjemputan", href: "/admin/penjemputan", icon: Calendar },
-      { label: "Kalender & Kuota", href: "/admin/kalender", icon: Calendar },
-      { label: "Kode Promo", href: "/admin/promo", icon: Tag },
-      { label: "Laporan Finansial", href: "/admin/laporan", icon: BarChart3 },
-      { label: "Ketentuan Bisnis", href: "/admin/bisnis", icon: FileText },
-    ],
-  },
+// 7 Menu Inti Operasional Admin — Ukuran Font Jelas (text-sm), Proporsional & Rapi
+const adminNavItems: NavItem[] = [
+  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { label: "Transaksi & Pesanan", href: "/admin/pesanan", icon: ShoppingBag },
+  { label: "Jadwal & Kuota", href: "/admin/jadwal", icon: Calendar },
+  { label: "Tour & Armada", href: "/admin/produk", icon: Package },
+  { label: "Tim Driver", href: "/admin/tim", icon: Users },
+  { label: "Kelola Artikel", href: "/admin/artikel", icon: Newspaper },
+  { label: "Laporan Finansial", href: "/admin/laporan", icon: BarChart3 },
+  { label: "Pengaturan Sistem", href: "/admin/pengaturan", icon: Settings },
 ];
 
 export function AdminSidebar({ user }: { user: AdminUser }) {
@@ -79,129 +56,154 @@ export function AdminSidebar({ user }: { user: AdminUser }) {
 
   function isActive(href: string) {
     if (href === "/admin") return pathname === "/admin";
+    if (href === "/admin/pengaturan") {
+      return (
+        pathname.startsWith("/admin/pengaturan") ||
+        pathname.startsWith("/admin/bisnis") ||
+        pathname.startsWith("/admin/promo") ||
+        pathname.startsWith("/admin/penjemputan") ||
+        pathname.startsWith("/admin/kalender") ||
+        pathname.startsWith("/admin/kategori") ||
+        pathname.startsWith("/admin/tampilan") ||
+        pathname.startsWith("/admin/menu") ||
+        pathname.startsWith("/admin/faq") ||
+        pathname.startsWith("/admin/testimoni") ||
+        pathname.startsWith("/admin/destinasi")
+      );
+    }
     return pathname.startsWith(href);
   }
 
   const sidebarContent = (
-    <>
-      {/* Logo */}
-      <div className="p-5 border-b border-[#e4ebef] bg-white">
-        <Link href="/admin" className="flex items-center gap-2.5 text-[#263b46]">
-          <div className="w-9 h-9 rounded-xl bg-[#e9f3f7] text-[#327691] flex items-center justify-center shrink-0">
-            <Mountain size={20} strokeWidth={2.5} />
-          </div>
-          <div className="flex flex-col leading-tight">
-            <span className="font-extrabold text-base tracking-tight text-[#263b46]">Admin Panel</span>
-            <span className="text-[11px] font-semibold text-[#327691] tracking-wider uppercase">Sewa Trooper</span>
-          </div>
-        </Link>
+    <div className="flex flex-col h-full bg-white dark:bg-neutral-900 select-none">
+      {/* User Profile Card (Matches Homestay Concept) */}
+      <div className="p-4 border-b border-[#e4ebef] dark:border-neutral-800 bg-white dark:bg-neutral-900 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-full bg-[#5d7d8c] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-2xs">
+          {user.fullName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "A"}
+        </div>
+        <div className="min-w-0 flex-1">
+          <span className="font-bold text-sm text-[#263b46] dark:text-neutral-100 block truncate">
+            {user.fullName || "Administrator"}
+          </span>
+          <span className="text-[11px] text-[#8e9da5] dark:text-neutral-400 block truncate">
+            {user.email}
+          </span>
+        </div>
       </div>
 
-      {/* Navigation */}
+      {/* Navigation Links — Ukuran Font Nyaman & Mudah Dibaca */}
       <nav
-        className="flex-1 overflow-y-auto py-4 px-3 bg-white"
-        aria-label="Admin navigation"
+        className="flex-1 overflow-y-auto py-5 px-3.5 space-y-1.5 bg-white dark:bg-neutral-900"
+        aria-label="Navigasi Admin"
       >
-        {navGroups.map((group) => (
-          <div key={group.label} className="mb-5">
-            <p className="px-3 mb-2 text-[10px] font-bold text-[#8b9ba5] uppercase tracking-wider">
-              {group.label}
-            </p>
-            <ul className="space-y-0.5">
-              {group.items.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
+        <p className="px-3 mb-2.5 text-[11px] font-bold text-[#8e9da5] dark:text-neutral-500 uppercase tracking-wider">
+          Menu Operasional
+        </p>
+        <ul className="space-y-1">
+          {adminNavItems.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-bold transition-all",
+                    active
+                      ? "bg-[#e9f3f7] dark:bg-neutral-800 text-[#2c6881] dark:text-[#8abbd0] shadow-2xs"
+                      : "text-[#53636d] dark:text-neutral-400 hover:text-[#263b46] dark:hover:text-white hover:bg-[#f8fafc] dark:hover:bg-neutral-800/60",
+                  )}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <item.icon
+                    size={19}
+                    strokeWidth={2.2}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all",
-                      isActive(item.href)
-                        ? "bg-[#e8f3f7] text-[#327691]"
-                        : "text-[#53636d] hover:text-[#263b46] hover:bg-[#f8fafc]",
+                      "shrink-0",
+                      active ? "text-[#327691] dark:text-[#8abbd0]" : "text-[#7b8a94]",
                     )}
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    <item.icon size={16} className={cn("shrink-0", isActive(item.href) ? "text-[#327691]" : "text-[#7b8a94]")} />
-                    <span>{item.label}</span>
-                    {item.badge && (
-                      <span className="ml-auto bg-[#327691] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                        {item.badge}
-                      </span>
-                    )}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+                  />
+                  <span className="truncate">{item.label}</span>
+                  {item.badge && (
+                    <span className="ml-auto bg-[#327691] text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </nav>
 
-      {/* User info + links */}
-      <div className="p-4 border-t border-[#e4ebef] bg-[#fafbfc]">
+      {/* Footer Navigasi Cepat & Keluar: 2 Tombol Bersih seperti Konsep Homestay */}
+      <div className="p-4 border-t border-[#e4ebef] dark:border-neutral-800 bg-white dark:bg-neutral-900 space-y-2.5">
         <Link
-          href="/"
-          className="flex items-center gap-2 px-3 py-2 mb-2 text-xs font-semibold text-[#53636d] hover:text-[#263b46] hover:bg-white rounded-xl border border-transparent hover:border-[#e4ebef] transition-colors"
+          href="/sewa"
+          className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-[#327691] hover:bg-[#2c6881] text-white font-bold text-sm rounded-2xl shadow-xs transition cursor-pointer"
         >
-          <Globe size={15} className="text-[#327691]" />
-          <span>Lihat Website</span>
+          <Search size={16} />
+          <span>Jelajahi Tour & Sewa</span>
         </Link>
-        <div className="flex items-center gap-2.5 px-3 py-2 bg-white rounded-xl border border-[#e4ebef]">
-          <div className="w-8 h-8 rounded-full bg-[#5d7d8c] flex items-center justify-center text-white font-bold text-xs shrink-0">
-            {user.fullName?.[0]?.toUpperCase() || "A"}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-[#263b46] truncate">
-              {user.fullName}
-            </p>
-            <p className="text-[10px] text-[#8b9ba5] truncate">{user.email}</p>
-          </div>
-        </div>
+
         <form action="/auth/signout" method="POST">
           <button
             type="submit"
-            className="flex items-center justify-center gap-2 w-full py-2 px-3 mt-2 bg-[#fff1f2] hover:bg-[#ffe4e6] text-[#e11d48] font-bold text-xs rounded-xl border border-rose-100 transition-colors cursor-pointer"
+            className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-[#fff1f2] dark:bg-rose-950/20 hover:bg-[#ffe4e6] dark:hover:bg-rose-950/40 text-[#e11d48] dark:text-rose-400 font-bold text-sm rounded-2xl border border-rose-200 dark:border-rose-900/50 transition cursor-pointer"
           >
-            <LogOut size={14} />
-            <span>Keluar Akun</span>
+            <LogOut size={16} />
+            <span>Keluar</span>
           </button>
         </form>
       </div>
-    </>
+    </div>
   );
 
   return (
     <>
-      {/* Mobile header bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-[#e4ebef] px-4 h-14 flex items-center justify-between">
-        <Link href="/admin" className="flex items-center gap-2 text-[#263b46]">
-          <Mountain size={20} className="text-[#327691]" />
-          <span className="font-bold text-sm">Admin Panel</span>
-        </Link>
+      {/* Mobile Sub Bar */}
+      <div className="md:hidden flex items-center justify-between px-4 py-2.5 bg-white dark:bg-neutral-900 border-b border-[#e4ebef] dark:border-neutral-800">
+        <span className="font-extrabold text-xs uppercase tracking-wider text-[#327691] dark:text-[#8abbd0]">
+          Menu Navigasi Admin
+        </span>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="p-2 text-[#263b46] hover:bg-[#f8fafc] rounded-lg"
-          aria-label={mobileOpen ? "Tutup menu" : "Buka menu"}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#e9f3f7] dark:bg-neutral-800 text-[#327691] dark:text-[#8abbd0] font-bold text-xs transition cursor-pointer"
+          aria-label="Buka menu navigasi"
         >
-          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          {mobileOpen ? <X size={15} /> : <Menu size={15} />}
+          <span>{mobileOpen ? "Tutup" : "Daftar Menu"}</span>
         </button>
       </div>
 
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 bg-white border-r border-[#e4ebef] z-40">
+      {/* Mobile Drawer Overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 md:hidden animate-in fade-in"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Mobile Drawer */}
+      <div
+        className={cn(
+          "fixed top-0 bottom-0 left-0 w-72 bg-white dark:bg-neutral-900 z-50 shadow-2xl transition-transform duration-200 md:hidden flex flex-col",
+          mobileOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="absolute top-4 right-4 p-2 text-neutral-500 hover:text-neutral-900 dark:hover:text-white z-10"
+          aria-label="Tutup menu"
+        >
+          <X size={20} />
+        </button>
+        {sidebarContent}
+      </div>
+
+      {/* Desktop Persistent Sidebar (Lebar Pas w-[268px], Sticky di bawah Navbar) */}
+      <aside className="hidden md:flex flex-col w-[268px] shrink-0 border-r border-[#e4ebef] dark:border-neutral-800 bg-white dark:bg-neutral-900 sticky top-16 h-[calc(100vh-64px)] z-20">
         {sidebarContent}
       </aside>
-
-      {/* Mobile drawer */}
-      {mobileOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-2xs lg:hidden"
-            onClick={() => setMobileOpen(false)}
-          />
-          <aside className="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-[#e4ebef] flex flex-col lg:hidden overflow-hidden shadow-2xl">
-            {sidebarContent}
-          </aside>
-        </>
-      )}
     </>
   );
 }

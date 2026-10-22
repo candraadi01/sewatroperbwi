@@ -67,7 +67,13 @@ const values = [
   },
 ];
 
-export default function TentangPage() {
+import { getSiteSettings, whatsappLink } from "@/lib/services/settings";
+
+export const revalidate = 0; // Pastikan data real-time langsung terambil
+
+export default async function TentangPage() {
+  const settings = await getSiteSettings();
+
   return (
     <div className="bg-[#f7f8f9] min-h-screen font-sans pb-16">
       {/* 1. Header Hero Section */}
@@ -78,12 +84,11 @@ export default function TentangPage() {
               Tentang Kami
             </span>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#263b46] tracking-tight leading-tight">
-              Menghadirkan Petualangan 4x4 Terbaik di Banyuwangi
+              {settings.about_title || "Menghadirkan Petualangan 4x4 Terbaik di Banyuwangi"}
             </h1>
             <p className="mt-4 text-xs sm:text-sm md:text-base text-[#53636d] leading-relaxed">
-              Sewa Jeep Trooper Banyuwangi adalah platform dan paguyuban pengemudi Jeep 4x4 lokal
-              yang berdedikasi mengantarkan Anda menjelajahi keajaiban alam ujung timur Pulau Jawa —
-              mulai dari kawah api biru Ijen, savana liar Baluran, hingga surga penyu Sukamade.
+              {settings.about_description ||
+                `${settings.site_name} adalah platform dan paguyuban pengemudi Jeep 4x4 lokal yang berdedikasi mengantarkan Anda menjelajahi keajaiban alam ujung timur Pulau Jawa — mulai dari kawah api biru Ijen, savana liar Baluran, hingga surga penyu Sukamade.`}
             </p>
           </div>
 
@@ -94,12 +99,16 @@ export default function TentangPage() {
               <p className="text-xs sm:text-sm text-[#53636d] font-semibold mt-1">Trip Sukses</p>
             </div>
             <div>
-              <p className="text-2xl sm:text-3xl md:text-4xl font-black text-[#2c6881]">15+</p>
+              <p className="text-2xl sm:text-3xl md:text-4xl font-black text-[#2c6881]">
+                {settings.about_fleet_info || "15+ Unit"}
+              </p>
               <p className="text-xs sm:text-sm text-[#53636d] font-semibold mt-1">Armada 4x4 Siap Jalan</p>
             </div>
             <div>
-              <p className="text-2xl sm:text-3xl md:text-4xl font-black text-[#254958]">9+</p>
-              <p className="text-xs sm:text-sm text-[#53636d] font-semibold mt-1">Destinasi Utama</p>
+              <p className="text-2xl sm:text-3xl md:text-4xl font-black text-[#254958]">
+                {settings.about_experience_years || "8+ Tahun"}
+              </p>
+              <p className="text-xs sm:text-sm text-[#53636d] font-semibold mt-1">Pengalaman Layanan</p>
             </div>
             <div>
               <p className="text-2xl sm:text-3xl md:text-4xl font-black text-amber-500">4.9 / 5</p>
@@ -142,9 +151,8 @@ export default function TentangPage() {
                 Tumbuh Bersama Komunitas Warga & Penggiat Wisata Lokal
               </h2>
               <p className="text-xs sm:text-sm text-[#53636d] leading-relaxed">
-                Bermula dari kecintaan mendalam terhadap alam Banyuwangi dan keinginan memberdayakan
-                ekonomi lokal, kami membentuk jaringan pengemudi dan mekanik Jeep 4x4 yang
-                mengedepankan standar keselamatan tinggi, kenyamanan berkendara, dan etika ramah lingkungan.
+                {settings.about_story ||
+                  "Bermula dari kecintaan mendalam terhadap alam Banyuwangi dan keinginan memberdayakan ekonomi lokal, kami membentuk jaringan pengemudi dan mekanik Jeep 4x4 yang mengedepankan standar keselamatan tinggi, kenyamanan berkendara, dan etika ramah lingkungan."}
               </p>
               <p className="text-xs sm:text-sm text-[#53636d] leading-relaxed">
                 Bagi kami, setiap perjalanan bukan sekadar mengantar dari titik A ke titik B,

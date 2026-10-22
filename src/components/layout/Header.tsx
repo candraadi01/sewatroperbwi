@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -20,11 +20,11 @@ import {
   LayoutDashboard,
   ShoppingBag,
   Heart,
-  Search,
   Bell,
 } from "lucide-react";
 import type { SiteSettings } from "@/lib/services/settings";
 import { useLanguage } from "@/lib/i18n/context";
+import { createClient } from "@/lib/supabase/client";
 
 export interface HeaderUser {
   fullName?: string;
@@ -57,6 +57,7 @@ export function Header({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [artikelDropdownOpen, setArtikelDropdownOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const userDropdownRef = useRef<HTMLDivElement>(null);
   const path = usePathname();
   const { t } = useLanguage();
 
@@ -68,9 +69,39 @@ export function Header({
         setUserDropdownOpen(false);
       }
     }
+    function handleClickOutside(event: MouseEvent) {
+      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
+        setUserDropdownOpen(false);
+      }
+    }
     document.addEventListener("keydown", close);
-    return () => document.removeEventListener("keydown", close);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("keydown", close);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
+
+  const handleLogout = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setUserDropdownOpen(false);
+    setMobileMenuOpen(false);
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("[signout client error]", err);
+    }
+    try {
+      await fetch("/auth/signout", { method: "POST" });
+    } catch (err) {
+      console.error("[signout server error]", err);
+    }
+    window.location.assign("/");
+  };
 
   return (
     <header className="sticky top-0 z-40 shadow-xs font-sans">
@@ -237,30 +268,16 @@ export function Header({
               </div>
             </nav>
 
-            {/* Top Right Actions (Exact Foto 1): Search + Bell + User Pill */}
+            {/* Subtle Divider between Nav Links & User Actions on Desktop */}
+            <div className="hidden lg:block h-5 w-px bg-[#e4ebef] mx-1" aria-hidden="true" />
+
+            {/* Top Right Actions: User Account & Auth Buttons */}
             <div className="flex items-center gap-2 sm:gap-2.5">
-              {/* Search Circle Button */}
-              <Link
-                href="/sewa"
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-[#dce6eb] bg-white flex items-center justify-center text-[#527484] hover:bg-[#f4f9fb] hover:text-[#263b46] transition cursor-pointer shadow-2xs"
-                aria-label="Cari Paket Tour"
-              >
-                <Search size={17} />
-              </Link>
 
               {user ? (
                 <>
-                  {/* Bell Notification Circle Button */}
-                  <Link
-                    href="/pesanan"
-                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-[#dce6eb] bg-white flex items-center justify-center text-[#527484] hover:bg-[#f4f9fb] hover:text-[#263b46] transition cursor-pointer shadow-2xs relative"
-                    aria-label="Notifikasi Pesanan"
-                  >
-                    <Bell size={17} />
-                  </Link>
-
                   {/* User Pill Button (Matches Foto 1) */}
-                  <div className="relative">
+                  <div className="relative" ref={userDropdownRef}>
                     <button
                       onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                       className="flex items-center gap-2 sm:gap-2.5 pl-1.5 pr-3 py-1 rounded-full border border-[#dce6eb] bg-white hover:bg-[#f4f9fb] text-[#263b46] transition cursor-pointer shadow-2xs"
@@ -277,7 +294,7 @@ export function Header({
 
                       {/* Role Tag 'User' */}
                       <span className="border border-[#cddae1] bg-white text-[#55717f] text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-md leading-tight">
-                        {user.isAdmin ? "Admin" : user.isOwner ? "Owner" : "User"}
+                        {user.isAdmin ? "Admin" : user.isOwner ? "Owner" : "Buyer"}
                       </span>
 
                       {/* Chevron Down */}
@@ -293,7 +310,6 @@ export function Header({
                     {userDropdownOpen && (
                       <div 
                         className="absolute right-0 top-full mt-2 w-56 bg-white text-[#263b46] rounded-2xl shadow-xl py-2 z-50 border border-[#e4ebef] text-xs animate-in fade-in zoom-in-95"
-                        onClick={() => setUserDropdownOpen(false)}
                       >
                         <div className="px-4 py-2.5 border-b border-[#e4ebef]">
                           <p className="font-bold text-neutral-900 truncate">{user.fullName}</p>
@@ -301,32 +317,73 @@ export function Header({
                         </div>
 
                         <div className="py-1">
+                          {user.isAdmin && (
+                            <>
+                              <Link
+                                href="/admin"
+                                onClick={() => setUserDropdownOpen(false)}
+                                className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
+                              >
+                                <LayoutDashboard size={14} className="text-[#327691]" />
+                                <span>Dashboard Admin</span>
+                              </Link>
+                              <Link
+                                href="/admin/pesanan"
+                                onClick={() => setUserDropdownOpen(false)}
+                                className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
+                              >
+                                <ShoppingBag size={14} className="text-[#327691]" />
+                                <span>Kelola Pesanan (Admin)</span>
+                              </Link>
+                            </>
+                          )}
+
+                          {user.isOwner && (
+                            <>
+                              <Link
+                                href="/owner"
+                                onClick={() => setUserDropdownOpen(false)}
+                                className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
+                              >
+                                <Car size={14} className="text-[#327691]" />
+                                <span>Portal Pemilik</span>
+                              </Link>
+                              <Link
+                                href="/owner/transaksi"
+                                onClick={() => setUserDropdownOpen(false)}
+                                className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
+                              >
+                                <ShoppingBag size={14} className="text-[#327691]" />
+                                <span>Transaksi Armada</span>
+                              </Link>
+                            </>
+                          )}
+
+                          {(user.isAdmin || user.isOwner) && (
+                            <div className="my-1 border-t border-[#f0f4f6]" />
+                          )}
+
                           <Link
-                            href={user.isAdmin ? "/admin" : user.isOwner ? "/owner" : "/akun"}
+                            href="/buyer"
+                            onClick={() => setUserDropdownOpen(false)}
                             className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
                           >
-                            <LayoutDashboard size={14} />
-                            <span>{user.isAdmin ? "Dashboard Admin" : user.isOwner ? "Portal Pemilik" : "Beranda Saya"}</span>
+                            <User size={14} />
+                            <span>{user.isAdmin || user.isOwner ? "Mode Buyer (Pelanggan)" : "Menu Pelanggan (Buyer)"}</span>
                           </Link>
 
                           <Link
-                            href="/pesanan"
+                            href="/buyer/pesanan"
+                            onClick={() => setUserDropdownOpen(false)}
                             className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
                           >
                             <ShoppingBag size={14} />
-                            <span>Pesanan Saya</span>
+                            <span>Riwayat Booking Saya</span>
                           </Link>
 
                           <Link
-                            href="/akun/favorit"
-                            className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
-                          >
-                            <Heart size={14} />
-                            <span>Disukai</span>
-                          </Link>
-
-                          <Link
-                            href="/akun/profil"
+                            href="/buyer/profil"
+                            onClick={() => setUserDropdownOpen(false)}
                             className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] font-semibold transition"
                           >
                             <User size={14} />
@@ -335,15 +392,14 @@ export function Header({
                         </div>
 
                         <div className="pt-1 border-t border-[#e4ebef]">
-                          <form action="/auth/signout" method="POST">
-                            <button
-                              type="submit"
-                              className="flex items-center gap-2.5 w-full px-4 py-2 text-red-600 hover:bg-red-50 font-semibold transition text-left cursor-pointer"
-                            >
-                              <LogOut size={14} />
-                              <span>Keluar</span>
-                            </button>
-                          </form>
+                          <button
+                            type="button"
+                            onClick={handleLogout}
+                            className="flex items-center gap-2.5 w-full px-4 py-2 text-red-600 hover:bg-red-50 font-semibold transition text-left cursor-pointer"
+                          >
+                            <LogOut size={14} />
+                            <span>{t("buyer_menu_keluar", "Keluar")}</span>
+                          </button>
                         </div>
                       </div>
                     )}
@@ -352,14 +408,14 @@ export function Header({
               ) : (
                 <div className="flex items-center gap-1 sm:gap-2">
                   <Link
-                    href="/login"
+                    href="/auth/login"
                     className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-[#53636d] hover:text-[#263b46] hover:bg-[#f4f9fb] transition flex items-center gap-1"
                   >
                     <LogIn size={14} className="text-[#327691]" />
                     <span>Masuk</span>
                   </Link>
                   <Link
-                    href="/daftar"
+                    href="/auth/register"
                     className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#327691] hover:bg-[#2c6881] text-white shadow-xs transition"
                   >
                     <UserPlus size={13} />
@@ -484,31 +540,31 @@ export function Header({
 
                   <div className="grid grid-cols-2 gap-1.5 text-xs font-bold">
                     <Link
-                      href={user.isAdmin ? "/admin" : user.isOwner ? "/owner" : "/akun"}
+                      href={user.isAdmin ? "/admin" : user.isOwner ? "/owner" : "/buyer"}
                       onClick={() => setMobileMenuOpen(false)}
                       className="py-2 px-2 bg-white rounded-xl border border-[#e4ebef] text-center text-[#327691] hover:bg-[#e9f3f7] flex items-center justify-center gap-1.5"
                     >
                       <LayoutDashboard size={14} />
-                      <span>Dashboard</span>
+                      <span>{user.isAdmin ? "Dashboard Admin" : user.isOwner ? "Portal Owner" : "Beranda Buyer"}</span>
                     </Link>
                     <Link
-                      href="/pesanan"
+                      href={user.isAdmin ? "/admin/pesanan" : user.isOwner ? "/owner/transaksi" : "/buyer/pesanan"}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="py-2 px-2 bg-white rounded-xl border border-[#e4ebef] text-center text-neutral-700 hover:bg-neutral-100 flex items-center justify-center gap-1.5"
+                      className="py-2 px-2 bg-white rounded-xl border border-[#e4ebef] text-center text-[#327691] hover:bg-[#e9f3f7] flex items-center justify-center gap-1.5"
                     >
                       <ShoppingBag size={14} />
-                      <span>Pesanan</span>
+                      <span>{user.isAdmin ? "Pesanan Admin" : user.isOwner ? "Transaksi" : "Pesanan Saya"}</span>
                     </Link>
                     <Link
-                      href="/akun/favorit"
+                      href="/buyer"
                       onClick={() => setMobileMenuOpen(false)}
                       className="py-2 px-2 bg-white rounded-xl border border-[#e4ebef] text-center text-neutral-700 hover:bg-neutral-100 flex items-center justify-center gap-1.5"
                     >
-                      <Heart size={14} />
-                      <span>Favorit</span>
+                      <User size={14} />
+                      <span>Mode Buyer</span>
                     </Link>
                     <Link
-                      href="/akun/profil"
+                      href="/buyer/profil"
                       onClick={() => setMobileMenuOpen(false)}
                       className="py-2 px-2 bg-white rounded-xl border border-[#e4ebef] text-center text-neutral-700 hover:bg-neutral-100 flex items-center justify-center gap-1.5"
                     >
@@ -517,20 +573,21 @@ export function Header({
                     </Link>
                   </div>
 
-                  <form action="/auth/signout" method="POST" className="pt-1">
+                  <div className="pt-1 border-t border-[#e4ebef]">
                     <button
-                      type="submit"
-                      className="w-full py-1.5 text-center text-xs font-bold text-red-600 hover:text-red-700 flex items-center justify-center gap-1.5 cursor-pointer"
+                      type="button"
+                      onClick={handleLogout}
+                      className="w-full py-2 text-center text-xs font-bold text-red-600 hover:text-red-700 flex items-center justify-center gap-1.5 cursor-pointer hover:bg-red-50 rounded-xl transition"
                     >
                       <LogOut size={13} />
-                      <span>Keluar Akun</span>
+                      <span>{t("buyer_menu_keluar", "Keluar Akun")}</span>
                     </button>
-                  </form>
+                  </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <Link
-                    href="/login"
+                    href="/auth/login"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center justify-center gap-1.5 py-2.5 px-3 border border-[#327691] text-[#327691] hover:bg-[#f4f9fb] font-bold text-xs rounded-xl transition"
                   >
@@ -538,7 +595,7 @@ export function Header({
                     <span>Masuk</span>
                   </Link>
                   <Link
-                    href="/daftar"
+                    href="/auth/register"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-[#327691] hover:bg-[#2c6881] text-white font-bold text-xs rounded-xl shadow-xs transition"
                   >

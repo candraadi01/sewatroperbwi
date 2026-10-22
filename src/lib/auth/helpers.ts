@@ -85,15 +85,15 @@ export async function requireAdmin(): Promise<AuthUser> {
 
   if (!user || !user.roles.includes("admin")) {
     if (user) redirect("/akses-ditolak");
-    redirect("/login?redirectTo=%2Fadmin");
+    redirect("/auth/login?redirectTo=%2Fadmin");
   }
 
   return user;
 }
 
-export async function requireBuyer(returnTo = "/akun/pesanan") {
+export async function requireBuyer(returnTo = "/buyer/pesanan") {
   const user = await getAuthUser();
-  if (!user) redirect(`/login?redirectTo=${encodeURIComponent(returnTo)}`);
+  if (!user) redirect(`/auth/login?redirectTo=${encodeURIComponent(returnTo)}`);
   return user;
 }
 
@@ -105,7 +105,7 @@ export async function requireOwner(returnTo = "/owner"): Promise<AuthUser> {
   const user = await getAuthUser();
   if (!user || (!user.roles.includes("owner") && !user.roles.includes("admin"))) {
     if (user) redirect("/akses-ditolak");
-    redirect(`/login?redirectTo=${encodeURIComponent(returnTo)}`);
+    redirect(`/auth/login?redirectTo=${encodeURIComponent(returnTo)}`);
   }
   return user;
 }

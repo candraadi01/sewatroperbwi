@@ -79,9 +79,9 @@ export default async function Dashboard() {
             <div className="divide-y divide-neutral-200 mt-5">
               {results[4].data?.map((b) => (
                 <Link
-                  className="block py-4"
+                  className="block py-4 hover:bg-neutral-50 px-2 rounded-lg transition"
                   key={b.booking_code}
-                  href={"/pesanan/" + b.booking_code}
+                  href={"/admin/pesanan?q=" + encodeURIComponent(b.booking_code)}
                 >
                   <p className="text-sm font-semibold">
                     {b.booking_code} · {b.contact_name}

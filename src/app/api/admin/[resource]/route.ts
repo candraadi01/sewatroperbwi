@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getAuthUser } from "@/lib/auth/helpers";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { resources, resourceSchema } from "@/lib/admin/resources";
 import { idSchema } from "@/lib/validations/requests";
 import {
@@ -44,7 +44,7 @@ export async function POST(
       id = resource === "site" ? undefined : payload.data.id;
     if (id && !idSchema.safeParse(id).success)
       throw new RequestError("ID tidak valid.");
-    const db = await createClient();
+    const db = await createAdminClient();
     if (resource === "site") {
       if (
         values.contact_whatsapp &&
@@ -53,7 +53,7 @@ export async function POST(
         throw new RequestError("Nomor WhatsApp tidak valid.");
       if (
         values.contact_email &&
-        !z.email().safeParse(values.contact_email).success
+        !z.string().email().safeParse(values.contact_email).success
       )
         throw new RequestError("Email tidak valid.");
       const rows = Object.entries(values).map(([key, value]) => ({
@@ -146,6 +146,9 @@ export async function POST(
         );
     }
     revalidatePath("/", "layout");
+    revalidatePath("/sewa");
+    revalidatePath("/artikel");
+    revalidatePath(`/admin/${resource}`);
     return NextResponse.json({ success: true });
   } catch (e) {
     return errorResponse(e);

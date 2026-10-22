@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* ============================================================
    SEWA TROOPER BWI — Design System
@@ -1063,3 +1064,134 @@ button.carousel-dot,
   border-radius: 9999px !important;
   display: inline-block !important;
 }
+
+/* ============================================================
+   PORTAL DARK THEME (Admin, Owner, Buyer Only)
+   Does not affect public landing page.
+   ============================================================ */
+
+.dark {
+  color-scheme: dark;
+}
+
+.dark,
+.dark body {
+  background-color: #0f171c;
+  color: #f1f5f9;
+}
+
+.dark .bg-white,
+.dark .admin-panel {
+  background-color: #172228 !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .bg-\[\#f8fafc\],
+.dark .bg-\[\#fafbfc\],
+.dark .bg-neutral-50,
+.dark .bg-\[\#f7f8f9\] {
+  background-color: #0f171c !important;
+}
+
+.dark .bg-\[\#f4f7f9\],
+.dark .bg-\[\#f0f4f6\],
+.dark .bg-\[\#eef4f7\],
+.dark .bg-neutral-100 {
+  background-color: #1f2d36 !important;
+}
+
+.dark .border-\[\#e4ebef\],
+.dark .border-neutral-200,
+.dark .border-\[\#ccd8de\],
+.dark .border-\[\#dce6eb\],
+.dark .border-neutral-100 {
+  border-color: #273742 !important;
+}
+
+/* Bright Headings & Primary Text in Dark Mode (High Contrast, No Dark Text on Dark Background) */
+.dark .text-\[\#263b46\],
+.dark .text-\[\#1e293b\],
+.dark .text-\[\#0f172a\],
+.dark .text-\[\#334155\],
+.dark .text-neutral-900,
+.dark .text-neutral-800,
+.dark .text-neutral-700,
+.dark .heading-1,
+.dark .heading-2,
+.dark .heading-3,
+.dark h1,
+.dark h2,
+.dark h3 {
+  color: #f1f5f9 !important;
+}
+
+/* Secondary & Muted Labels in Dark Mode */
+.dark .text-\[\#53636d\],
+.dark .text-\[\#64748b\],
+.dark .text-\[\#697780\],
+.dark .text-\[\#73848e\],
+.dark .text-\[\#475569\],
+.dark .text-neutral-500,
+.dark .text-neutral-600 {
+  color: #94a3b8 !important;
+}
+
+.dark .text-\[\#8b9ba5\],
+.dark .text-\[\#8e9da5\],
+.dark .text-neutral-400 {
+  color: #cbd5e1 !important;
+}
+
+.dark .eyebrow {
+  color: #8abbd0 !important;
+}
+
+/* Tables in Dark Mode */
+.dark table {
+  color: #f1f5f9 !important;
+}
+.dark table thead tr {
+  background-color: #141f25 !important;
+  border-color: #273742 !important;
+}
+.dark table thead th {
+  color: #94a3b8 !important;
+}
+.dark table tbody td {
+  color: #f1f5f9 !important;
+}
+.dark table tbody tr {
+  border-color: #273742 !important;
+}
+.dark table tbody tr:hover {
+  background-color: #1d2a33 !important;
+}
+
+.dark .admin-field {
+  color: #cbd5e1 !important;
+}
+
+.dark .admin-field input:not([type="checkbox"]),
+.dark .admin-field select,
+.dark .admin-field textarea,
+.dark input:not([type="checkbox"]):not([type="radio"]),
+.dark select,
+.dark textarea {
+  background-color: #121c22 !important;
+  color: #f1f5f9 !important;
+  border-color: #2e414e !important;
+}
+
+.dark select option {
+  background-color: #172228 !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .action-link {
+  background-color: #327691 !important;
+  color: #ffffff !important;
+  border-color: #327691 !important;
+}
+
+
+

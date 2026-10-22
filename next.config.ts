@@ -54,6 +54,32 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
+  // Redirect legacy auth URLs to new consolidated /auth/ folder
+  async redirects() {
+    return [
+      {
+        source: '/login',
+        destination: '/auth/login',
+        permanent: false,
+      },
+      {
+        source: '/masuk',
+        destination: '/auth/login',
+        permanent: false,
+      },
+      {
+        source: '/register',
+        destination: '/auth/register',
+        permanent: false,
+      },
+      {
+        source: '/daftar',
+        destination: '/auth/register',
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
