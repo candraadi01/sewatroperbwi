@@ -121,19 +121,6 @@ export function PayoutAdminClient({ initialRequests }: { initialRequests: Payout
 
   return (
     <div className="space-y-7 font-sans">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#e4ebef]">
-        <div>
-          <span className="text-xs font-bold text-[#327691] tracking-wider uppercase">
-            Keuangan & Mitra
-          </span>
-          <h1 className="heading-1 mt-1">Penarikan Dana Pemilik</h1>
-          <p className="text-sm text-neutral-500 mt-1">
-            Verifikasi dan selesaikan pencairan dana saldo komisi pemilik armada Jeep Trooper Banyuwangi.
-          </p>
-        </div>
-      </div>
-
       {/* Summary Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         <div className="bg-white p-5 rounded-2xl border border-[#e4ebef] shadow-xs flex items-center gap-4">

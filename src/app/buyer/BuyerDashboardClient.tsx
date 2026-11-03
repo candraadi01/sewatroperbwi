@@ -97,7 +97,7 @@ export function BuyerDashboardClient({ user, orders }: BuyerDashboardClientProps
           </div>
 
           <Link
-            href="/sewa"
+            href="/buyer/katalog"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#327691] hover:bg-[#2c6881] text-white text-xs sm:text-sm font-bold shadow-xs transition shrink-0"
           >
             <Search size={15} />
@@ -343,11 +343,11 @@ export function BuyerDashboardClient({ user, orders }: BuyerDashboardClientProps
               </p>
             </div>
             <Link
-              href="/sewa"
+              href="/buyer/katalog"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#327691] hover:bg-[#2c6881] text-white text-xs sm:text-sm font-bold shadow-xs transition shrink-0"
             >
               <Compass size={17} />
-              <span>{t("buyer_view_catalog", "Lihat Katalog Tour Trooper")}</span>
+              <span>{t("buyer_view_catalog", "Lihat Katalog Jeep Trooper")}</span>
             </Link>
           </div>
         )}

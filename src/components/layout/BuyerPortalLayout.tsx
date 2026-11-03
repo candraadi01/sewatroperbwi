@@ -15,7 +15,9 @@ import {
   ShoppingBag,
   Globe,
   Menu,
-  X
+  X,
+  RotateCw,
+  LayoutGrid,
 } from "lucide-react";
 import { cn } from "@/components/ui";
 import { PortalThemeProvider } from "@/components/theme/PortalThemeContext";
@@ -23,6 +25,7 @@ import { PortalNavbar } from "./PortalNavbar";
 import { useLanguage } from "@/lib/i18n/context";
 import { LanguageSelector } from "@/components/common/LanguageSelector";
 import { createClient } from "@/lib/supabase/client";
+import { DemoAccountSwitcher } from "./DemoAccountSwitcher";
 
 export interface BuyerPortalUser {
   id?: string;
@@ -44,6 +47,7 @@ export function BuyerPortalLayout({
 }: BuyerPortalLayoutProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showSwitcher, setShowSwitcher] = useState(false);
   const { t } = useLanguage();
 
   const handleLogout = async (e?: React.MouseEvent) => {
@@ -67,8 +71,8 @@ export function BuyerPortalLayout({
 
   const menuItems = [
     { id: "beranda", label: t("buyer_menu_beranda", "Beranda"), href: "/buyer", icon: Home },
+    { id: "katalog", label: "Katalog Jeep Trooper", href: "/buyer/katalog", icon: LayoutGrid },
     { id: "pesanan", label: t("buyer_menu_pesanan", "Pesanan Saya"), href: "/buyer/pesanan", icon: ReceiptText },
-    { id: "katalog", label: t("buyer_menu_katalog", "Katalog Tour 4x4"), href: "/sewa", icon: Compass },
     { id: "profil", label: t("buyer_menu_profil", "Profil Akun"), href: "/buyer/profil", icon: User },
   ];
 
@@ -81,19 +85,47 @@ export function BuyerPortalLayout({
   const sidebarContent = (
     <div className="flex flex-col h-full bg-white dark:bg-neutral-900 select-none">
       {/* User Profile Card (Samakan dengan Admin & Owner) */}
-      <div className="p-4 border-b border-[#e4ebef] dark:border-neutral-800 bg-white dark:bg-neutral-900 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-[#327691] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-2xs">
-          {user.fullName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "P"}
+      <div className="p-4 border-b border-[#e4ebef] dark:border-neutral-800 bg-white dark:bg-neutral-900 flex items-center justify-between gap-2.5">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="w-10 h-10 rounded-full bg-[#327691] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-2xs">
+            {user.fullName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "P"}
+          </div>
+          <div className="min-w-0 flex-1">
+            <span className="font-bold text-sm text-[#263b46] dark:text-neutral-100 block truncate">
+              {user.fullName || "Pelanggan"}
+            </span>
+            <span className="text-[11px] text-[#8e9da5] dark:text-neutral-400 block truncate">
+              {user.email}
+            </span>
+          </div>
         </div>
-        <div className="min-w-0 flex-1">
-          <span className="font-bold text-sm text-[#263b46] dark:text-neutral-100 block truncate">
-            {user.fullName || "Pelanggan"}
-          </span>
-          <span className="text-[11px] text-[#8e9da5] dark:text-neutral-400 block truncate">
-            {user.email}
-          </span>
-        </div>
+
+        {/* Tombol Toggle Switch Akun Demo (Persis Foto Homestay) */}
+        <button
+          type="button"
+          onClick={() => setShowSwitcher((prev) => !prev)}
+          className={cn(
+            "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border transition-all cursor-pointer",
+            showSwitcher
+              ? "bg-[#e9f3f7] dark:bg-neutral-800 text-[#327691] border-[#327691]/40 shadow-2xs"
+              : "bg-neutral-100/90 dark:bg-neutral-800 hover:bg-[#e9f3f7] dark:hover:bg-neutral-700 text-neutral-500 hover:text-[#327691] border-neutral-200/80 dark:border-neutral-700"
+          )}
+          title="Buka / Tutup Switch Akun Demo"
+          aria-label="Toggle Switch Akun Demo"
+        >
+          <RotateCw
+            size={14}
+            className={cn("transition-transform duration-300", showSwitcher && "rotate-180 text-[#327691]")}
+          />
+        </button>
       </div>
+
+      {/* Switch Akun Demo (Hanya Muncul Jika Tombol Diklik — Persis Homestay) */}
+      {showSwitcher && (
+        <div className="p-3 border-b border-[#e4ebef] dark:border-neutral-800 bg-[#f8fafc]/80 dark:bg-neutral-900/40 animate-in fade-in slide-in-from-top-2 duration-200">
+          <DemoAccountSwitcher currentRole="buyer" />
+        </div>
+      )}
 
       {/* Navigation Links (Ukuran Font text-sm font-bold, Proporsional & Jelas) */}
       <nav
@@ -192,11 +224,11 @@ export function BuyerPortalLayout({
       {/* Footer Navigasi Cepat & Keluar: 2 Tombol Bersih seperti Konsep Homestay */}
       <div className="p-4 border-t border-[#e4ebef] dark:border-neutral-800 bg-white dark:bg-neutral-900 space-y-2.5">
         <Link
-          href="/sewa"
+          href="/buyer/katalog"
           className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-[#327691] hover:bg-[#2c6881] text-white font-bold text-sm rounded-2xl shadow-xs transition cursor-pointer"
         >
           <Search size={16} />
-          <span>{t("buyer_menu_jelajahi", "Jelajahi Tour & Sewa")}</span>
+          <span>Jelajahi Katalog Trooper</span>
         </Link>
 
         <button

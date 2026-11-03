@@ -16,7 +16,8 @@ import {
   Phone, 
   Printer, 
   MapPin,
-  Lock
+  Lock,
+  Receipt
 } from "lucide-react";
 import { BuyerPortalLayout } from "@/components/layout/BuyerPortalLayout";
 
@@ -250,6 +251,17 @@ export default async function BuyerPesananPage() {
                           >
                             <Printer size={14} />
                             <span>E-Tiket</span>
+                          </Link>
+                        )}
+
+                        {/* TOMBOL NOTA / KWITANSI */}
+                        {(isConfirmed || (order.amount_paid ?? 0) > 0) && (
+                          <Link
+                            href={`/buyer/pesanan/${order.id}/nota`}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-neutral-800 border border-emerald-600 dark:border-emerald-500 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-xs font-bold transition shadow-2xs"
+                          >
+                            <Receipt size={14} />
+                            <span>Kwitansi / Nota</span>
                           </Link>
                         )}
 

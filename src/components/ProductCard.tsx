@@ -97,23 +97,18 @@ export function ProductCard({
           SEWA JEEP BWI
         </div>
 
-        {/* Kolase 3 Foto Polaroid Menumpuk */}
-        <div className="absolute top-3 left-0 right-0 flex items-center justify-center gap-1.5 z-10 pointer-events-none">
-          <div className="w-13 h-9 sm:w-15 sm:h-10 rounded-xs bg-white p-0.5 shadow-md -rotate-6 transform transition-transform group-hover:-translate-x-1">
-            <div className="relative w-full h-full rounded-2xs overflow-hidden">
-              <Image src={gallery[0]} alt="Preview 1" fill className="object-cover" sizes="60px" />
+        {/* Strip 3 Foto Thumbnail Rapi di Pojok Kanan Bawah */}
+        <div className="absolute bottom-5 right-2.5 flex items-center gap-1 z-20 pointer-events-none">
+          {gallery.slice(0, 3).map((src, i) => (
+            <div
+              key={i}
+              className="w-10 h-7 sm:w-11 sm:h-8 rounded-md bg-white p-[2px] shadow-lg ring-1 ring-white/80 transition-transform duration-300 group-hover:scale-105"
+            >
+              <div className="relative w-full h-full rounded-sm overflow-hidden">
+                <Image src={src} alt={`Preview ${i + 1}`} fill className="object-cover" sizes="48px" />
+              </div>
             </div>
-          </div>
-          <div className="w-18 h-12 sm:w-20 sm:h-13 rounded-xs bg-white p-0.5 shadow-xl z-10 transform scale-105 transition-transform group-hover:scale-110">
-            <div className="relative w-full h-full rounded-2xs overflow-hidden">
-              <Image src={gallery[1]} alt="Preview 2" fill className="object-cover" sizes="80px" />
-            </div>
-          </div>
-          <div className="w-13 h-9 sm:w-15 sm:h-10 rounded-xs bg-white p-0.5 shadow-md rotate-6 transform transition-transform group-hover:translate-x-1">
-            <div className="relative w-full h-full rounded-2xs overflow-hidden">
-              <Image src={gallery[2]} alt="Preview 3" fill className="object-cover" sizes="60px" />
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* Badge Bookmark Ribbon Lipat di Bawah Gambar */}

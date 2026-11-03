@@ -7,6 +7,7 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { PortalNotification } from "./PortalNotification";
 import { useLanguage } from "@/lib/i18n/context";
 import { createClient } from "@/lib/supabase/client";
+import { DemoAccountSwitcher } from "./DemoAccountSwitcher";
 
 interface PortalNavbarUser {
   id?: string;
@@ -120,7 +121,7 @@ export function PortalNavbar({ user, portalType, badgeLabel }: PortalNavbarProps
 
             {/* User Dropdown Menu */}
             {dropdownOpen && (
-              <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white dark:bg-neutral-900 border border-[#e4ebef] dark:border-neutral-800 shadow-xl py-2 z-50 text-xs animate-in fade-in zoom-in-95">
+              <div className="absolute right-0 top-full mt-2 w-72 rounded-2xl bg-white dark:bg-neutral-900 border border-[#e4ebef] dark:border-neutral-800 shadow-xl py-2 z-50 text-xs animate-in fade-in zoom-in-95">
                 <div className="px-4 py-2.5 border-b border-[#e4ebef] dark:border-neutral-800">
                   <p className="font-bold text-neutral-900 dark:text-neutral-100 truncate">
                     {user.fullName || "Pengguna"}
@@ -128,6 +129,14 @@ export function PortalNavbar({ user, portalType, badgeLabel }: PortalNavbarProps
                   <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
                     {user.email}
                   </p>
+                </div>
+
+                {/* Fast Role Switcher */}
+                <div className="p-2 border-b border-[#e4ebef] dark:border-neutral-800 bg-[#f8fafc]/50 dark:bg-neutral-900/50">
+                  <DemoAccountSwitcher
+                    currentRole={portalType}
+                    onSwitchStart={() => setDropdownOpen(false)}
+                  />
                 </div>
 
                 <div className="py-1">
@@ -139,39 +148,6 @@ export function PortalNavbar({ user, portalType, badgeLabel }: PortalNavbarProps
                     <Globe size={14} />
                     <span>{t("portal_view_web", "Lihat Website Publik")}</span>
                   </Link>
-
-                  {portalType !== "admin" && user.roles?.includes("admin") && (
-                    <Link
-                      href="/admin"
-                      onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] dark:text-neutral-300 hover:bg-[#e9f3f7] dark:hover:bg-neutral-800 hover:text-[#327691] font-semibold transition"
-                    >
-                      <Shield size={14} className="text-[#327691]" />
-                      <span>{t("portal_mode_admin", "Portal Admin")}</span>
-                    </Link>
-                  )}
-
-                  {portalType !== "buyer" && (
-                    <Link
-                      href="/buyer"
-                      onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] dark:text-neutral-300 hover:bg-[#e9f3f7] dark:hover:bg-neutral-800 hover:text-[#327691] font-semibold transition"
-                    >
-                      <User size={14} />
-                      <span>{t("portal_mode_buyer", "Mode Buyer (Pelanggan)")}</span>
-                    </Link>
-                  )}
-
-                  {portalType !== "owner" && user.roles?.includes("owner") && (
-                    <Link
-                      href="/owner"
-                      onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2 text-[#53636d] dark:text-neutral-300 hover:bg-[#e9f3f7] dark:hover:bg-neutral-800 hover:text-[#327691] font-semibold transition"
-                    >
-                      <Car size={14} />
-                      <span>{t("portal_mode_owner", "Portal Pemilik Armada")}</span>
-                    </Link>
-                  )}
                 </div>
 
                 <div className="pt-1 border-t border-[#e4ebef] dark:border-neutral-800">

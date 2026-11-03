@@ -1,13 +1,14 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 type ActionMode = "status" | "approve" | "reject";
 
 export function OrderActions({ id, status }: { id: string; status: string }) {
-  const [busy, setBusy] = useState(false),
-    [error, setError] = useState(""),
-    [mode, setMode] = useState<ActionMode>("status");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [mode, setMode] = useState<ActionMode>("status");
   const router = useRouter();
 
   // Standard admin status transitions (post-approval flow)
@@ -39,8 +40,9 @@ export function OrderActions({ id, status }: { id: string; status: string }) {
         }),
       });
       const d = await r.json();
-      if (!r.ok) throw new Error(d.error);
+      if (!r.ok) throw new Error(d.error || "Gagal mengubah status.");
       router.refresh();
+      window.location.reload();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Gagal mengubah status.");
     } finally {
@@ -64,8 +66,9 @@ export function OrderActions({ id, status }: { id: string; status: string }) {
         }),
       });
       const d = await r.json();
-      if (!r.ok) throw new Error(d.error);
+      if (!r.ok) throw new Error(d.error || "Gagal menyetujui pesanan.");
       router.refresh();
+      window.location.reload();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Gagal menyetujui pesanan.");
     } finally {
@@ -88,8 +91,9 @@ export function OrderActions({ id, status }: { id: string; status: string }) {
         }),
       });
       const d = await r.json();
-      if (!r.ok) throw new Error(d.error);
+      if (!r.ok) throw new Error(d.error || "Gagal menolak pesanan.");
       router.refresh();
+      window.location.reload();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Gagal menolak pesanan.");
     } finally {
@@ -106,14 +110,14 @@ export function OrderActions({ id, status }: { id: string; status: string }) {
         </p>
         <div className="flex gap-3">
           <button
-            className="flex-1 action-link text-center justify-center"
+            className="flex-1 action-link text-center justify-center cursor-pointer"
             onClick={() => setMode(mode === "approve" ? "status" : "approve")}
             type="button"
           >
             ✓ Setujui
           </button>
           <button
-            className="flex-1 px-4 py-2 rounded-lg border border-red-300 bg-red-50 text-red-700 text-sm font-medium hover:bg-red-100 transition-colors"
+            className="flex-1 px-4 py-2 rounded-lg border border-red-300 bg-red-50 text-red-700 text-sm font-medium hover:bg-red-100 transition-colors cursor-pointer"
             onClick={() => setMode(mode === "reject" ? "status" : "reject")}
             type="button"
           >
@@ -121,29 +125,65 @@ export function OrderActions({ id, status }: { id: string; status: string }) {
           </button>
         </div>
         {mode === "approve" && (
-          <form onSubmit={approve} className="space-y-3 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-lg p-3">
+          <form
+            onSubmit={approve}
+            className="space-y-3 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-lg p-3"
+          >
             <label className="admin-field">
               Catatan untuk buyer (opsional)
-              <input name="note" maxLength={1000} placeholder="Kendaraan tersedia. Silakan lanjutkan pembayaran." />
+              <input
+                name="note"
+                maxLength={1000}
+                placeholder="Kendaraan tersedia. Silakan lanjutkan pembayaran."
+              />
             </label>
             <label className="admin-field">
               Batas waktu pembayaran (jam)
-              <input name="expiresHours" type="number" min={1} max={720} defaultValue={48} required />
+              <input
+                name="expiresHours"
+                type="number"
+                min={1}
+                max={720}
+                defaultValue={48}
+                required
+              />
             </label>
-            {error && <p role="alert" className="notice-error">{error}</p>}
-            <button className="action-link w-full justify-center" disabled={busy}>
+            {error && (
+              <p role="alert" className="notice-error">
+                {error}
+              </p>
+            )}
+            <button
+              className="action-link w-full justify-center cursor-pointer"
+              disabled={busy}
+            >
               {busy ? "Menyetujui…" : "Konfirmasi Persetujuan"}
             </button>
           </form>
         )}
         {mode === "reject" && (
-          <form onSubmit={reject} className="space-y-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg p-3">
+          <form
+            onSubmit={reject}
+            className="space-y-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg p-3"
+          >
             <label className="admin-field">
               Alasan penolakan (wajib)
-              <input name="reason" required maxLength={1000} placeholder="Kendaraan tidak tersedia untuk tanggal yang dipilih." />
+              <input
+                name="reason"
+                required
+                maxLength={1000}
+                placeholder="Kendaraan tidak tersedia untuk tanggal yang dipilih."
+              />
             </label>
-            {error && <p role="alert" className="notice-error">{error}</p>}
-            <button className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium w-full hover:bg-red-700 transition-colors" disabled={busy}>
+            {error && (
+              <p role="alert" className="notice-error">
+                {error}
+              </p>
+            )}
+            <button
+              className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium w-full hover:bg-red-700 transition-colors cursor-pointer"
+              disabled={busy}
+            >
               {busy ? "Menolak…" : "Konfirmasi Penolakan"}
             </button>
           </form>
@@ -160,20 +200,30 @@ export function OrderActions({ id, status }: { id: string; status: string }) {
           ✓ Disetujui — menunggu pembayaran buyer.
         </p>
         <button
-          className="text-sm text-red-600 dark:text-red-400 underline"
+          className="text-sm text-red-600 dark:text-red-400 underline cursor-pointer"
           onClick={() => setMode(mode === "reject" ? "status" : "reject")}
           type="button"
         >
           Batalkan persetujuan
         </button>
         {mode === "reject" && (
-          <form onSubmit={reject} className="space-y-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg p-3">
+          <form
+            onSubmit={reject}
+            className="space-y-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg p-3"
+          >
             <label className="admin-field">
               Alasan pembatalan
               <input name="reason" required maxLength={1000} />
             </label>
-            {error && <p role="alert" className="notice-error">{error}</p>}
-            <button className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium w-full hover:bg-red-700 transition-colors" disabled={busy}>
+            {error && (
+              <p role="alert" className="notice-error">
+                {error}
+              </p>
+            )}
+            <button
+              className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium w-full hover:bg-red-700 transition-colors cursor-pointer"
+              disabled={busy}
+            >
               {busy ? "Membatalkan…" : "Konfirmasi Pembatalan"}
             </button>
           </form>
@@ -189,6 +239,7 @@ export function OrderActions({ id, status }: { id: string; status: string }) {
         Tidak ada perubahan status yang tersedia.
       </p>
     );
+
   return (
     <form onSubmit={change} className="space-y-3">
       <label className="admin-field">
@@ -210,7 +261,7 @@ export function OrderActions({ id, status }: { id: string; status: string }) {
           {error}
         </p>
       )}
-      <button className="action-link" disabled={busy}>
+      <button className="action-link cursor-pointer" disabled={busy}>
         {busy ? "Menyimpan…" : "Simpan status"}
       </button>
     </form>

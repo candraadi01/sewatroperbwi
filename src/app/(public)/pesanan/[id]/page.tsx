@@ -6,6 +6,7 @@ import { getSiteSettings, whatsappLink } from "@/lib/services/settings";
 import { formatIDR } from "@/lib/utils/currency";
 import { bookingStatus } from "@/lib/utils/booking-status";
 import { PaymentButton } from "@/components/PaymentButton";
+
 export default async function Order({
   params,
 }: {
@@ -32,6 +33,9 @@ export default async function Order({
     b.booking_status === "approved" &&
     !!b.approval_expires_at &&
     new Date(b.approval_expires_at) < new Date();
+  
+  const isPaid = (b.amount_paid > 0) || ["confirmed", "payment_received", "in_progress"].includes(b.booking_status);
+
   return (
     <div className="container-app py-10 md:py-14 max-w-4xl font-sans">
       <Link href="/pesanan" className="text-sm font-semibold text-[#327691] hover:underline flex items-center gap-1">
@@ -70,6 +74,50 @@ export default async function Order({
                 code={b.id}
                 label={b.payment_choice === "dp" ? "Bayar DP Sekarang" : "Bayar Lunas Sekarang"}
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* NOTIFIKASI PEMBAYARAN BERHASIL & AKSES KWITANSI / NOTA & E-TIKET */}
+      {isPaid && (
+        <div className="mt-6 p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border-2 border-emerald-500 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+            <div className="flex items-start gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold text-2xl shrink-0 shadow-xs">
+                ✓
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-200 text-emerald-950 text-[11px] font-black uppercase tracking-wide">
+                    {b.remaining_amount <= 0 ? "Pembayaran Lunas" : "DP Diterima"}
+                  </span>
+                  <span className="text-xs text-emerald-800 font-bold">
+                    Terverifikasi Midtrans
+                  </span>
+                </div>
+                <h2 className="text-lg sm:text-xl font-black text-emerald-950 mt-1">
+                  Pembayaran Berhasil! Jadwal Resmi Terkunci
+                </h2>
+                <p className="text-xs sm:text-sm text-emerald-800 mt-1 leading-relaxed">
+                  Terima kasih, pembayaran sebesar <strong>{formatIDR(b.amount_paid)}</strong> telah kami terima. Anda dapat mencetak / mengunduh <strong>Kwitansi Resmi</strong> untuk arsip administrasi dan membuka <strong>E-Tiket</strong> untuk ditunjukkan kepada Driver.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 shrink-0 sm:self-center flex-wrap">
+              <Link
+                href={`/pesanan/${b.id}/nota`}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white border-2 border-emerald-600 text-emerald-800 hover:bg-emerald-50 text-xs sm:text-sm font-bold shadow-xs transition"
+              >
+                <span>📄 Kwitansi / Nota</span>
+              </Link>
+              <Link
+                href={`/buyer/pesanan/${b.id}/tiket`}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold shadow-xs transition"
+              >
+                <span>🎟️ E-Tiket Wisata</span>
+              </Link>
             </div>
           </div>
         </div>
@@ -181,13 +229,42 @@ export default async function Order({
             Batas waktu pembayaran telah berakhir. Hubungi admin untuk tindak lanjut.
           </p>
         )}
+
+        {/* DOKUMEN RESMI SETELAH BAYAR */}
+        {isPaid && (
+          <div className="mt-7 p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100 block">
+                Dokumen Resmi Pemesanan
+              </span>
+              <span className="text-xs text-neutral-500">
+                Akses kwitansi pembayaran dan e-tiket perjalanan Anda kapan saja:
+              </span>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Link
+                href={`/pesanan/${b.id}/nota`}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-neutral-300 hover:bg-neutral-100 text-xs font-bold text-neutral-800 transition shadow-2xs"
+              >
+                <span>📄 Buka Kwitansi</span>
+              </Link>
+              <Link
+                href={`/buyer/pesanan/${b.id}/tiket`}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#e9f3f7] text-[#327691] hover:bg-[#d5e9f1] text-xs font-bold transition shadow-2xs"
+              >
+                <span>🎟️ Buka E-Tiket</span>
+              </Link>
+            </div>
+          </div>
+        )}
+
         <p className="mt-5 text-xs text-neutral-500">
           Status diperbarui setelah notifikasi Midtrans diverifikasi. Muat ulang
           halaman ini setelah membayar.
         </p>
         <a
           href={"/pesanan/" + encodeURIComponent(b.id)}
-          className="action-link-secondary mt-4"
+          className="action-link-secondary mt-4 inline-block"
         >
           Perbarui status
         </a>

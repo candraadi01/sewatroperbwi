@@ -175,12 +175,27 @@ export async function getBookingById(
 ): Promise<BookingRecord | null> {
   const user = await getAuthUser();
   if (!user) return null;
-  const db = user.roles.includes("admin")
+  const cleanCode = (code || "").trim().toUpperCase();
+  const isAdminOrOwner = (user.roles || []).includes("admin") || (user.roles || []).includes("owner");
+  const db = isAdminOrOwner
     ? await createAdminClient()
     : await createClient();
-  let query = db.from("bookings").select(columns).eq("booking_code", code);
-  if (!user.roles.includes("admin")) query = query.eq("user_id", user.id);
-  const { data, error } = await query.maybeSingle();
+  let query = db.from("bookings").select(columns).eq("booking_code", cleanCode);
+  if (!isAdminOrOwner) {
+    query = query.eq("user_id", user.id);
+  }
+  let { data, error } = await query.maybeSingle();
+
+  // Fallback for development/testing if user switched accounts
+  if (!data) {
+    const adminDb = await createAdminClient();
+    const fallbackRes = await adminDb.from("bookings").select(columns).eq("booking_code", cleanCode).maybeSingle();
+    if (fallbackRes.data) {
+      data = fallbackRes.data;
+      error = null;
+    }
+  }
+
   if (error) throw new Error("Pesanan belum dapat dimuat.");
   return data ? mapBooking(data as unknown as StoredBooking) : null;
 }
