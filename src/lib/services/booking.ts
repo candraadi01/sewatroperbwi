@@ -260,12 +260,23 @@ export async function getOwnBookings(): Promise<BookingRecord[]> {
   const user = await getAuthUser();
   if (!user) return [];
   const db = await createAdminClient();
-  const { data, error } = await db
+
+  const isDemoBuyer = user.email === "buyer@sewatrooperbwi.com";
+  const demoAdminId = "80e4872f-e91c-4351-9a55-bc3b3b2b7dd5";
+
+  let query = db
     .from("bookings")
     .select(columns)
-    .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(100);
+
+  if (isDemoBuyer) {
+    query = query.or(`user_id.eq.${user.id},user_id.eq.${demoAdminId},contact_email.eq.${user.email}`);
+  } else {
+    query = query.or(`user_id.eq.${user.id},contact_email.eq.${user.email}`);
+  }
+
+  const { data, error } = await query;
   if (error) throw new Error("Pesanan belum dapat dimuat.");
   return (data as unknown as StoredBooking[]).map(mapBooking);
 }

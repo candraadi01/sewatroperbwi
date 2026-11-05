@@ -28,6 +28,7 @@ export function parseIDR(value: string): number {
   return isNaN(parsed) ? 0 : parsed;
 }
 
+
 /**
  * Konversi angka ke kalimat terbilang bahasa Indonesia.
  * Contoh: 14700000 -> "Empat Belas Juta Tujuh Ratus Ribu"
