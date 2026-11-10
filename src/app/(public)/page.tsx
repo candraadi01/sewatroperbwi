@@ -1,4 +1,3 @@
-import { NewsTicker } from "@/components/landing/NewsTicker";
 import { HeroSearch } from "@/components/landing/HeroSearch";
 import { WhyChooseUs } from "@/components/landing/WhyChooseUs";
 import { JeepExperience } from "@/components/landing/JeepExperience";
@@ -9,13 +8,10 @@ import { ArticleSection } from "@/components/landing/ArticleSection";
 export default function Home() {
   return (
     <div className="min-h-screen">
-      {/* 1. News Ticker Marquee Bar */}
-      <NewsTicker />
-
-      {/* 2. Fullscreen Hero Section + Search Form */}
+      {/* 1. Fullscreen Hero Section + Integrated Transparant News Ticker + Search Form */}
       <HeroSearch />
 
-      {/* 3. Why Choose Us (4 Value Proposition Columns) */}
+      {/* 2. Kenapa Memilih Kami (3 Kolom Sesuai Konsep Brand) */}
       <WhyChooseUs />
 
       {/* 4. Foto 1: Paket Jeep Experience */}

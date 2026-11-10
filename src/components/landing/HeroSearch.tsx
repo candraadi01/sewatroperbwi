@@ -14,6 +14,7 @@ import {
 import { useLanguage } from "@/lib/i18n/context";
 import type { DateScheduleItem } from "@/lib/services/schedule";
 import { HeroDatePicker } from "./HeroDatePicker";
+import { NewsTicker } from "./NewsTicker";
 
 type OptionItem = {
   value: string;
@@ -89,8 +90,8 @@ export function HeroSearch() {
   }
 
   return (
-    <section id="cari-trip" className="relative min-h-[580px] md:min-h-[640px] lg:min-h-[680px] flex items-center pt-14 pb-20 sm:pt-16 sm:pb-24 md:pt-20 md:pb-28 font-sans border-b border-[#1f3039]">
-      {/* Background Image: Foto Asli Jeep Trooper 4x4 Banyuwangi HD Jernih */}
+    <section id="cari-trip" className="relative min-h-[580px] md:min-h-[640px] lg:min-h-[680px] flex items-center pt-16 pb-20 sm:pt-20 sm:pb-24 md:pt-24 md:pb-28 font-sans border-b border-[#1f3039]">
+      {/* Background Image: Foto Asli Jeep Trooper 4x4 Banyuwangi HD Jernih — Posisi Presisi Sesuai Awal */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <Image
           src="/images/landing/hero-trooper-baluran-hd.webp"
@@ -98,32 +99,38 @@ export function HeroSearch() {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[center_60%] md:object-[center_50%]"
+          className="object-cover object-[center_42%] md:object-[center_36%]"
         />
 
         {/* Overlay Gradien Sinematik Halus agar Foto Mobil & Alam Tetap Jernih & Terang */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-black/65" />
       </div>
 
+      {/* Bar Informasi Terbaru — 100% Transparan Melayang di Atas Foto (Tanpa Menggeser Posisi Gambar) */}
+      <div className="absolute top-0 left-0 right-0 z-20">
+        <NewsTicker />
+      </div>
+
+      {/* Konten Utama Hero: Judul & Form Pencarian */}
       <div className="container-app relative z-10 max-w-5xl mx-auto px-4 sm:px-6">
-        {/* Eyebrow Badge */}
+        {/* Eyebrow Badge — Serasi & Transparan Elegan */}
         <div className="flex justify-center mb-3 sm:mb-4">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/45 backdrop-blur-md border border-white/25 text-[#f1f5f9] text-xs sm:text-[13px] font-bold shadow-lg">
-            <span className="flex h-2 w-2 rounded-full bg-[#fbbf24] animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/30 backdrop-blur-xs border border-white/35 text-white text-xs sm:text-[13px] font-bold shadow-md">
+            <span className="flex h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
             <span>{t("hero_badge", "Sewa Jeep Trooper 4x4 Banyuwangi")}</span>
           </div>
         </div>
 
-        {/* Hero Title & Subtitle — Kontras Kuat & Aksen Kuning Serasi dengan Mobil */}
+        {/* Hero Title & Subtitle — Kontras Halus & Teks Tajam */}
         <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12 md:mb-14">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[52px] font-black text-white tracking-tight leading-[1.16] drop-shadow-[0_2px_14px_rgba(0,0,0,0.85)]">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[52px] font-black text-white tracking-tight leading-[1.16] drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
             {t("hero_title_1", "Jelajahi Banyuwangi")}{" "}
-            <span className="text-[#fbbf24] drop-shadow-[0_2px_14px_rgba(0,0,0,0.9)]">
+            <span className="text-[#fbbf24] drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)]">
               {t("hero_title_2", "Tanpa Batas")}
             </span>
           </h1>
 
-          <p className="mt-3 text-xs sm:text-sm md:text-base text-slate-100 max-w-2xl mx-auto font-medium leading-relaxed drop-shadow-[0_1px_8px_rgba(0,0,0,0.9)]">
+          <p className="mt-3 text-xs sm:text-sm md:text-base text-white/95 max-w-2xl mx-auto font-medium leading-relaxed drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)]">
             {t("hero_subtitle", "Nikmati sensasi petualangan offroad Kawah Ijen, Baluran, Sukamade & De Djawatan bersama armada tangguh dan driver profesional terpercaya.")}
           </p>
         </div>
@@ -132,10 +139,10 @@ export function HeroSearch() {
         <div className="w-full max-w-4xl mx-auto">
           <form onSubmit={handleSearch}>
             <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1.1fr_auto] gap-3 items-stretch">
-              {/* Field 1: Kategori — 100% Transparan dengan Border Putih Bersih */}
+              {/* Field 1: Kategori — 100% Transparan dengan Ikon Amber Serasi */}
               <div className="relative group bg-transparent border border-white/80 hover:border-white focus-within:border-white rounded-lg sm:rounded-xl p-2.5 sm:p-3 transition">
                 <div className="flex items-center gap-2 mb-1">
-                  <Compass size={15} className="text-[#38bdf8] shrink-0" />
+                  <Compass size={15} className="text-amber-400 shrink-0" />
                   <label
                     htmlFor="hero-kategori"
                     className="text-[10px] sm:text-[11px] font-bold text-white tracking-wider uppercase cursor-pointer drop-shadow-md"
@@ -163,10 +170,10 @@ export function HeroSearch() {
                 </div>
               </div>
 
-              {/* Field 2: Destinasi — 100% Transparan dengan Border Putih Bersih */}
+              {/* Field 2: Destinasi — 100% Transparan dengan Ikon Amber Serasi */}
               <div className="relative group bg-transparent border border-white/80 hover:border-white focus-within:border-white rounded-lg sm:rounded-xl p-2.5 sm:p-3 transition">
                 <div className="flex items-center gap-2 mb-1">
-                  <MapPin size={15} className="text-[#38bdf8] shrink-0" />
+                  <MapPin size={15} className="text-amber-400 shrink-0" />
                   <label
                     htmlFor="hero-destinasi"
                     className="text-[10px] sm:text-[11px] font-bold text-white tracking-wider uppercase cursor-pointer drop-shadow-md"
@@ -194,11 +201,11 @@ export function HeroSearch() {
                 </div>
               </div>
 
-              {/* Field 3: Jadwal Keberangkatan — 100% Transparan dengan Border Putih Bersih */}
+              {/* Field 3: Jadwal Keberangkatan — 100% Transparan dengan Ikon Amber Serasi */}
               <div className="relative group bg-transparent border border-white/80 hover:border-white focus-within:border-white rounded-lg sm:rounded-xl p-2.5 sm:p-3 transition">
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
-                    <Calendar size={15} className="text-[#38bdf8] shrink-0" />
+                    <Calendar size={15} className="text-amber-400 shrink-0" />
                     <label className="text-[10px] sm:text-[11px] font-bold text-white tracking-wider uppercase cursor-pointer drop-shadow-md">
                       {t("search_jadwal", "Jadwal Trip (Ready)")}
                     </label>
