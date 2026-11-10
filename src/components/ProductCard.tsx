@@ -122,40 +122,40 @@ export function ProductCard({
           title={`Lihat detail ${p.name}`}
         >
           <div className="inline-flex items-stretch rounded-lg shadow-2xl overflow-hidden border border-white/20 transform scale-95 group-hover:scale-100 transition-transform duration-300">
-            <span className="bg-[#e11d48] text-white px-3 py-2 flex items-center justify-center">
+            <span className="bg-[#327691] text-white px-3 py-2 flex items-center justify-center">
               <Check size={16} strokeWidth={3} />
             </span>
-            <span className="bg-[#0284c7] hover:bg-[#0369a1] text-white px-4 py-2 text-xs font-bold tracking-wide flex items-center transition-colors">
+            <span className="bg-[#263b46] hover:bg-[#1a2931] text-white px-4 py-2 text-xs font-bold tracking-wide flex items-center transition-colors">
               Lihat Detail
             </span>
           </div>
         </Link>
       </div>
 
-      {/* 2. Isi Badan Kartu yang Terstruktur Rapi */}
+      {/* 2. Isi Badan Kartu yang Terstruktur Rapi Sesuai Konsep Web (#327691 & #263b46) */}
       <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
         <div>
-          {/* Judul Paket Wisata — Biru Elegan Sesuai Foto Referensi */}
+          {/* Judul Paket Wisata — Brand Coastal Theme */}
           <Link href={productUrl}>
-            <h3 className="font-bold text-sm sm:text-base text-[#0284c7] hover:text-[#0369a1] leading-snug transition-colors line-clamp-2 min-h-[40px] sm:min-h-[44px]">
+            <h3 className="font-bold text-sm sm:text-base text-[#263b46] hover:text-[#327691] leading-snug transition-colors line-clamp-2 min-h-[40px] sm:min-h-[44px]">
               {p.name}
             </h3>
           </Link>
 
-          {/* Info Durasi & Kapasitas Tamu — Icon Pink/Rose Sesuai Foto Referensi */}
+          {/* Info Durasi & Kapasitas Tamu — Warna Ikon #327691 Sesuai Konsep Web */}
           <div className="flex items-center gap-2.5 text-xs text-[#64748b] mt-2 mb-3 font-medium">
             <span className="inline-flex items-center gap-1">
-              <Clock size={13} className="text-[#e11d48]" />
+              <Clock size={13} className="text-[#327691]" />
               {durationDisplay}
             </span>
             <span className="text-slate-300">•</span>
             <span className="inline-flex items-center gap-1 text-[#475569]">
-              <Users size={13} className="text-[#e11d48]" />
+              <Users size={13} className="text-[#327691]" />
               {capacityDisplay}
             </span>
           </div>
 
-          {/* Titik Destinasi Unggulan — Icon Pink/Rose Sesuai Foto Referensi */}
+          {/* Titik Destinasi Unggulan — Warna Ikon #327691 Sesuai Konsep Web */}
           <div className="space-y-1.5 min-h-[44px] mb-3 text-xs text-[#64748b]">
             {destinationPoints.slice(0, 2).map((dest, i) => {
               const filterUrl = dest.slug
@@ -164,13 +164,13 @@ export function ProductCard({
 
               return (
                 <div key={i} className="flex items-center gap-1.5 leading-tight">
-                  <MapPin size={13} className="text-[#e11d48] shrink-0" />
+                  <MapPin size={13} className="text-[#327691] shrink-0" />
                   {filterUrl ? (
                     <Link
                       href={filterUrl}
                       onClick={(e) => e.stopPropagation()}
                       title={`Filter paket ${dest.name}`}
-                      className="truncate hover:text-[#0284c7] hover:underline transition-colors"
+                      className="truncate hover:text-[#327691] hover:underline transition-colors"
                     >
                       {dest.name}
                     </Link>
@@ -184,11 +184,11 @@ export function ProductCard({
 
           <div className="border-t border-slate-100 my-3" />
 
-          {/* Tarif Paket — Format Sesuai Foto Referensi */}
+          {/* Tarif Paket — Sesuai Konsep Warna Web */}
           <div className="flex items-baseline justify-between mb-4">
-            <span className="text-xs text-[#0284c7] font-bold">*Mulai</span>
+            <span className="text-xs text-[#327691] font-bold">*Mulai</span>
             <div className="text-right">
-              <span className="text-base sm:text-lg font-black text-[#0f172a] tracking-tight">
+              <span className="text-base sm:text-lg font-black text-[#263b46] tracking-tight">
                 {formatIDR(finalPrice)}
               </span>
               <span className="text-xs text-[#64748b] font-bold uppercase">{t("per_jeep", " / JEEP")}</span>
