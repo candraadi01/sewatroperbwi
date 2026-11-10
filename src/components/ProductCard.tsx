@@ -38,22 +38,67 @@ export function ProductCard({
   const destinationPoints = getProductDestinationPoints(p);
   const finalPrice = p.base_price && p.base_price > 0 ? p.base_price : 750000;
 
+  // Ekstraksi nama rute untuk overlay branding brosur (sesuai referensi foto)
+  const upperName = (p.name || "").toUpperCase();
+  const cleanedRoute =
+    upperName.replace(/^(SEWA\s+)?(JEEP\s+)?(TROOPER\s+)?/i, "").trim() ||
+    p.route_name?.toUpperCase() ||
+    "BANYUWANGI TRIP";
+
   return (
     <div className="bg-white rounded-2xl overflow-hidden border border-[#e2e8f0] shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
-      {/* 1. Header Gambar Rapi & Proporsional */}
-      <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-900 select-none">
+      {/* 1. Header Gambar Produk Lebih Besar & Megah (Sesuai Referensi Foto) */}
+      <div className="relative h-60 sm:h-64 md:h-68 w-full overflow-hidden bg-slate-900 select-none">
         <Image
           src={mainImage}
           alt={p.name}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          className="object-cover group-hover:scale-105 group-hover:grayscale-[20%] transition-transform duration-500 opacity-95"
+          className="object-cover group-hover:scale-105 group-hover:grayscale-[15%] transition-transform duration-500 opacity-95"
         />
 
-        {/* Subtle Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/25 pointer-events-none" />
+        {/* Gradient Overlay Sinematik Menyeluruh untuk Keterbacaan Sempurna */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-black/20 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/25 pointer-events-none" />
 
-        {/* Hover Overlay: Tombol Lihat Detail Sesuai Contoh Foto */}
+        {/* 2. Banner Branding Ala Brosur Wisata Jeep — Posisi Tengah Vertikal (Persis Referensi Foto) */}
+        <div className="absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 z-10 flex items-stretch gap-2.5 max-w-[85%] pointer-events-none select-none">
+          {/* Garis Vertikal Putih Tebal */}
+          <div className="w-1.5 bg-white rounded-full shrink-0 shadow-md self-stretch" />
+
+          {/* Blok Teks Bertingkat */}
+          <div className="flex flex-col items-start justify-center gap-1.5">
+            {/* Tag Atas Oranye */}
+            <span className="inline-block bg-[#ea580c] text-white font-playful-block text-[9.5px] sm:text-[10.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-[4px] leading-tight shadow-md">
+              PAKET JEEP
+            </span>
+
+            {/* Judul Bold Bertingkat — Rounded Playful Sans / Handwritten Block (Sesuai Referensi Foto) */}
+            <div className="text-white font-playful-block leading-[1.12] drop-shadow-[0_2px_5px_rgba(0,0,0,0.95)]">
+              <span className="block text-[11.5px] sm:text-[13px] tracking-wide font-extrabold opacity-95">
+                SEWA JEEP
+              </span>
+              <span className="block text-[13px] sm:text-[15px] md:text-[16px] tracking-normal uppercase line-clamp-2 font-black">
+                {cleanedRoute}
+              </span>
+            </div>
+
+            {/* Tag Bawah Oranye */}
+            <span className="inline-block bg-[#ea580c] text-white font-playful-block text-[9.5px] sm:text-[10.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-[4px] leading-tight shadow-md">
+              START BANYUWANGI
+            </span>
+          </div>
+        </div>
+
+        {/* Watermark Mini Logo Sewa Jeep di Pojok Kanan Atas (Sesuai Referensi Foto) */}
+        <div className="absolute top-3 right-3 z-10 pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity">
+          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-black/40 backdrop-blur-xs border border-white/25 text-[9px] font-extrabold text-white tracking-wider uppercase shadow-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#38bdf8]" />
+            <span>SEWA JEEP BWI</span>
+          </div>
+        </div>
+
+        {/* Hover Overlay: Tombol Lihat Detail */}
         <Link
           href={productUrl}
           className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[1.5px] opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer"
@@ -68,23 +113,6 @@ export function ProductCard({
             </span>
           </div>
         </Link>
-
-        {/* Badges Atas Rapi: Best Seller & Kategori */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10 pointer-events-none">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {p.is_best_seller && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-600 text-white text-[10px] font-extrabold uppercase tracking-wider shadow-md">
-                <Sparkles size={11} className="fill-white" />
-                BEST SELLER
-              </span>
-            )}
-            {badgeText && (
-              <span className="inline-block px-2.5 py-1 rounded-full bg-black/55 backdrop-blur-xs text-white text-[10px] font-bold uppercase tracking-wider shadow-md">
-                {badgeText}
-              </span>
-            )}
-          </div>
-        </div>
       </div>
 
       {/* 2. Isi Badan Kartu yang Terstruktur Rapi */}

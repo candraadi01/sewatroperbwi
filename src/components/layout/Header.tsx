@@ -130,54 +130,90 @@ export function Header({
             </button>
 
             <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group">
-              {/* Emblem Badge Lingkaran Petualang Rapi & Presisi */}
+              {/* Emblem Badge Ikonik Jeep Trooper 4x4 Banyuwangi Proper & Presisi */}
               <div className="relative w-10 h-10 sm:w-11 sm:h-11 shrink-0 transition-transform duration-300 group-hover:scale-105">
                 <svg
                   viewBox="0 0 120 120"
-                  className="w-full h-full drop-shadow-xs"
+                  className="w-full h-full drop-shadow-md"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  {/* Outer & Inner Clean Rings */}
-                  <circle cx="60" cy="60" r="57" stroke="#327691" strokeWidth="2.5" fill="#327691" />
-                  <circle cx="60" cy="60" r="51" stroke="#ffffff" strokeOpacity="0.4" strokeWidth="1.5" />
-                  {/* Warm Sun / Sunrise */}
-                  <circle cx="60" cy="40" r="14" fill="#f59e0b" />
-                  {/* Mountain Slopes (Ijen & Raung) */}
-                  <polygon points="16,84 46,38 70,72 88,46 104,84" fill="#254958" />
-                  {/* Snowy mountain caps */}
-                  <polygon points="46,38 39,49 46,45 53,49" fill="#ffffff" />
-                  <polygon points="88,46 82,55 88,52 94,55" fill="#ffffff" />
-                  {/* Ground Curve */}
-                  <path d="M12 84 Q60 88 108 84 L108 104 Q60 108 12 104 Z" fill="#1f3039" />
-                  {/* Jeep Front Body */}
-                  <rect x="38" y="68" width="44" height="22" rx="3" fill="#ffffff" />
-                  {/* Windshield */}
-                  <rect x="42" y="70" width="16" height="7" rx="1.5" fill="#327691" />
-                  <rect x="62" y="70" width="16" height="7" rx="1.5" fill="#327691" />
-                  {/* Classic Grille slats */}
-                  <line x1="52" y1="81" x2="52" y2="87" stroke="#327691" strokeWidth="1.8" strokeLinecap="round" />
-                  <line x1="56" y1="81" x2="56" y2="87" stroke="#327691" strokeWidth="1.8" strokeLinecap="round" />
-                  <line x1="60" y1="81" x2="60" y2="87" stroke="#327691" strokeWidth="1.8" strokeLinecap="round" />
-                  <line x1="64" y1="81" x2="64" y2="87" stroke="#327691" strokeWidth="1.8" strokeLinecap="round" />
-                  <line x1="68" y1="81" x2="68" y2="87" stroke="#327691" strokeWidth="1.8" strokeLinecap="round" />
-                  {/* Headlights */}
-                  <circle cx="45" cy="83" r="3.5" fill="#fef08a" stroke="#327691" strokeWidth="1.5" />
-                  <circle cx="75" cy="83" r="3.5" fill="#fef08a" stroke="#327691" strokeWidth="1.5" />
-                  {/* Front Bumper */}
-                  <rect x="34" y="88" width="52" height="4.5" rx="1.5" fill="#263b46" />
-                  {/* Off-road Tires */}
-                  <rect x="33" y="78" width="6" height="13" rx="2" fill="#1f3039" />
-                  <rect x="81" y="78" width="6" height="13" rx="2" fill="#1f3039" />
+                  {/* Lingkaran Luar & Ring Presisi */}
+                  <circle cx="60" cy="60" r="58" fill="#1e3a47" />
+                  <circle cx="60" cy="60" r="54" stroke="#327691" strokeWidth="2.5" />
+                  <circle cx="60" cy="60" r="50" stroke="#ffffff" strokeOpacity="0.25" strokeWidth="1" />
+
+                  {/* Siluet Matahari Terbit Keemasan */}
+                  <circle cx="60" cy="38" r="16" fill="#f59e0b" opacity="0.9" />
+
+                  {/* Siluet Megah Puncak Gunung Ijen & Raung */}
+                  <polygon points="12,82 42,32 68,68 88,40 108,82" fill="#2d5263" />
+                  <polygon points="42,32 35,43 42,40 49,43" fill="#ffffff" opacity="0.8" />
+                  <polygon points="88,40 82,49 88,47 94,49" fill="#ffffff" opacity="0.8" />
+
+                  {/* Kontur Alam Tanah Savana */}
+                  <path d="M10 82 Q60 87 110 82 L110 110 L10 110 Z" fill="#162730" />
+
+                  {/* === ANATOMI OTENTIK JEEP TROOPER 4x4 === */}
+                  {/* Safari Roof Rack di Atas Atap Kotak Trooper */}
+                  <rect x="36" y="52" width="48" height="3" rx="1" fill="#0f172a" />
+                  <line x1="42" y1="49" x2="78" y2="49" stroke="#0f172a" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="44" y1="49" x2="44" y2="52" stroke="#0f172a" strokeWidth="1.5" />
+                  <line x1="52" y1="49" x2="52" y2="52" stroke="#0f172a" strokeWidth="1.5" />
+                  <line x1="60" y1="49" x2="60" y2="52" stroke="#0f172a" strokeWidth="1.5" />
+                  <line x1="68" y1="49" x2="68" y2="52" stroke="#0f172a" strokeWidth="1.5" />
+                  <line x1="76" y1="49" x2="76" y2="52" stroke="#0f172a" strokeWidth="1.5" />
+
+                  {/* Bodi Kotak Khas Trooper (Warna Kuning Explorer) */}
+                  <path d="M34 68 L36 55 L84 55 L86 68 Z" fill="#f59e0b" />
+                  {/* Kaca Depan Trooper Kembar */}
+                  <rect x="38" y="56.5" width="20" height="9.5" rx="1.5" fill="#e0f2fe" opacity="0.9" />
+                  <rect x="62" y="56.5" width="20" height="9.5" rx="1.5" fill="#e0f2fe" opacity="0.9" />
+
+                  {/* Kap Mesin & Grille Depan Kotak Trooper */}
+                  <rect x="30" y="68" width="60" height="24" rx="3" fill="#f59e0b" stroke="#d97706" strokeWidth="1" />
+                  <rect x="36" y="72" width="48" height="15" rx="2" fill="#1e293b" />
+
+                  {/* Kisi-kisi Grille Horisontal Trooper */}
+                  <line x1="46" y1="75" x2="74" y2="75" stroke="#64748b" strokeWidth="1.2" />
+                  <line x1="46" y1="78" x2="74" y2="78" stroke="#64748b" strokeWidth="1.2" />
+                  <line x1="46" y1="81" x2="74" y2="81" stroke="#64748b" strokeWidth="1.2" />
+                  <line x1="46" y1="84" x2="74" y2="84" stroke="#64748b" strokeWidth="1.2" />
+
+                  {/* Lampu Utama Bulat Khas Trooper */}
+                  <circle cx="41" cy="79.5" r="4.5" fill="#ffffff" stroke="#94a3b8" strokeWidth="1.2" />
+                  <circle cx="79" cy="79.5" r="4.5" fill="#ffffff" stroke="#94a3b8" strokeWidth="1.2" />
+                  <circle cx="41" cy="79.5" r="2.5" fill="#fef08a" />
+                  <circle cx="79" cy="79.5" r="2.5" fill="#fef08a" />
+
+                  {/* Lampu Sein Sudut Oranye Khas Trooper */}
+                  <rect x="32" y="76" width="3" height="7" rx="1" fill="#f97316" />
+                  <rect x="85" y="76" width="3" height="7" rx="1" fill="#f97316" />
+
+                  {/* Bumper Bull-Bar Pipa Offroad Baja Hitam */}
+                  <rect x="26" y="90" width="68" height="5" rx="2" fill="#0f172a" />
+                  <path d="M42 90 L45 84 L75 84 L78 90" stroke="#0f172a" strokeWidth="2.5" strokeLinecap="round" />
+                  {/* Foglamp Sorot Kuning di Bumper */}
+                  <circle cx="53" cy="87" r="2" fill="#facc15" />
+                  <circle cx="67" cy="87" r="2" fill="#facc15" />
+
+                  {/* Ban Pacul Offroad MT Lebar di Kiri & Kanan Bawah */}
+                  <rect x="25" y="78" width="6" height="20" rx="2" fill="#0f172a" />
+                  <rect x="89" y="78" width="6" height="20" rx="2" fill="#0f172a" />
                 </svg>
               </div>
 
-              {/* Brand Typography */}
+              {/* Brand Typography — Proporsional di Mobile & Desktop */}
               <div className="flex flex-col justify-center">
-                <span className="text-base sm:text-lg md:text-xl font-black text-[#263b46] tracking-tight leading-tight group-hover:text-[#327691] transition-colors">
-                  SEWA JEEP
-                </span>
-                <span className="text-[9px] sm:text-[10px] md:text-[11px] font-bold text-[#327691] tracking-[0.25em] uppercase leading-none mt-0.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm sm:text-lg md:text-xl font-black text-[#263b46] tracking-tight leading-tight group-hover:text-[#327691] transition-colors whitespace-nowrap">
+                    SEWA JEEP
+                  </span>
+                  <span className="hidden sm:inline-block px-1.5 py-0.2 rounded bg-[#f59e0b] text-white text-[9px] font-black uppercase tracking-wider">
+                    4X4
+                  </span>
+                </div>
+                <span className="text-[8.5px] sm:text-[10px] md:text-[11px] font-bold text-[#327691] tracking-[0.22em] uppercase leading-none mt-0.5 whitespace-nowrap">
                   BANYUWANGI
                 </span>
               </div>
@@ -460,19 +496,19 @@ export function Header({
                   </div>
                 </>
               ) : (
-                <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                   <Link
                     href="/auth/login"
-                    className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-[#53636d] hover:text-[#263b46] hover:bg-[#f4f9fb] transition flex items-center gap-1"
+                    className="px-2 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-[#53636d] hover:text-[#263b46] hover:bg-[#f4f9fb] transition flex items-center gap-1 whitespace-nowrap"
                   >
-                    <LogIn size={14} className="text-[#327691]" />
+                    <LogIn size={13} className="text-[#327691]" />
                     <span>Masuk</span>
                   </Link>
                   <Link
                     href="/auth/register"
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#327691] hover:bg-[#2c6881] text-white shadow-xs transition"
+                    className="flex items-center gap-1 px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#327691] hover:bg-[#2c6881] text-white shadow-xs transition whitespace-nowrap"
                   >
-                    <UserPlus size={13} />
+                    <UserPlus size={12} />
                     <span>Daftar</span>
                   </Link>
                 </div>

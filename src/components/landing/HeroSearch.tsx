@@ -90,7 +90,7 @@ export function HeroSearch() {
   }
 
   return (
-    <section id="cari-trip" className="relative min-h-[520px] sm:min-h-[580px] md:min-h-[640px] flex items-center pt-12 pb-10 sm:pt-16 sm:pb-16 md:pt-20 md:pb-24 font-sans border-b border-[#1f3039]">
+    <section id="cari-trip" className="relative min-h-[calc(100dvh-56px)] md:min-h-[calc(100dvh-64px)] flex items-center pt-10 pb-8 sm:pt-14 sm:pb-12 md:pt-18 md:pb-16 font-sans border-b border-[#1f3039]">
       {/* Background Image: Foto Asli Jeep Trooper 4x4 Banyuwangi HD Jernih */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <Image
