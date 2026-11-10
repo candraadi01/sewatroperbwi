@@ -1,92 +1,87 @@
 "use client";
 
-import { ShieldCheck, Users, Sparkles, Compass } from "lucide-react";
+import { Handshake, CalendarCheck2, Globe2, Heart, Plane, Luggage } from "lucide-react";
 
 export function WhyChooseUs() {
-  const highlights = [
+  const features = [
     {
-      stat: "4x4",
-      label: "TANGGUH SEGALA MEDAN",
-      desc: "Armada Jeep Trooper 4WD prima, siap menjelajahi rute pegunungan, hutan, hingga pesisir pantai.",
-      icon: Compass,
+      title: "Travel with Heart",
+      desc: "Kami bukan hanya menjual paket, tapi juga merawat setiap momen Anda. Liburan bukan sekadar pergi, tapi bagaimana Anda merasa selama di sana.",
+      // Icon Line-Art Komposisi Globe & Heart
+      icon: (
+        <div className="w-14 h-14 rounded-2xl bg-[#eef7f4] border border-[#d2ede3] flex items-center justify-center text-[#1b806a] group-hover:scale-105 group-hover:bg-[#1b806a] group-hover:text-white transition-all duration-300 shadow-xs">
+          <div className="relative">
+            <Globe2 size={28} strokeWidth={1.9} />
+            <span className="absolute -bottom-1 -right-1 bg-white text-[#1b806a] rounded-full p-0.5 shadow-xs">
+              <Heart size={13} fill="currentColor" strokeWidth={0} />
+            </span>
+          </div>
+        </div>
+      ),
     },
     {
-      stat: "6 SEAT",
-      label: "KAPASITAS LEGA",
-      desc: "Ruang kabin lapang dan bersih dengan suspensi nyaman, pas untuk keluarga hingga 6 penumpang.",
-      icon: Users,
+      title: "Smart Itinerary Planning",
+      desc: "Bukan hanya sekadar “ke sini lalu ke sana”. Kami susun rencana cerdas yang padat keseruan, minim waktu terbuang.",
+      // Icon Line-Art Komposisi Koper & Jadwal Cerdas
+      icon: (
+        <div className="w-14 h-14 rounded-2xl bg-[#eef7f4] border border-[#d2ede3] flex items-center justify-center text-[#1b806a] group-hover:scale-105 group-hover:bg-[#1b806a] group-hover:text-white transition-all duration-300 shadow-xs">
+          <div className="relative">
+            <Luggage size={28} strokeWidth={1.9} />
+            <span className="absolute -bottom-1 -right-1 bg-white text-[#1b806a] rounded-full p-0.5 shadow-xs">
+              <CalendarCheck2 size={13} strokeWidth={2.5} />
+            </span>
+          </div>
+        </div>
+      ),
     },
     {
-      stat: "100%",
-      label: "PERJALANAN PRIVAT",
-      desc: "Eksklusif untuk rombongan Anda tanpa digabung tamu lain. Jadwal dan ritme liburan sepenuhnya fleksibel.",
-      icon: ShieldCheck,
-    },
-    {
-      stat: "ALL-IN",
-      label: "TARIF TRANSPARAN",
-      desc: "Biaya sewa sudah mencakup unit Jeep Trooper, jasa sopir berpengalaman, dan bahan bakar selama perjalanan.",
-      icon: Sparkles,
+      title: "Local Partner",
+      desc: "Kami bekerja langsung dengan penduduk lokal di tiap destinasi. Hasilnya? Harga bersahabat, pengalaman autentik, dan dampak positif untuk komunitas.",
+      // Icon Line-Art Jabat Tangan Kemitraan Lokal
+      icon: (
+        <div className="w-14 h-14 rounded-2xl bg-[#eef7f4] border border-[#d2ede3] flex items-center justify-center text-[#1b806a] group-hover:scale-105 group-hover:bg-[#1b806a] group-hover:text-white transition-all duration-300 shadow-xs">
+          <Handshake size={30} strokeWidth={1.9} />
+        </div>
+      ),
     },
   ];
 
   return (
-    <section className="relative bg-[#fafcfd] text-[#263b46] py-9 sm:py-11 overflow-hidden border-y border-[#e4ebef] select-none">
-      {/* Background Blueprint Grid Arsitektural Halus */}
-      <div className="absolute inset-0 opacity-[0.035] pointer-events-none">
-        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="clean-spec-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#263b46" strokeWidth="0.75" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#clean-spec-grid)" />
-          <line x1="0" y1="50%" x2="100%" y2="50%" stroke="#263b46" strokeWidth="0.75" strokeDasharray="6 6" />
-        </svg>
-      </div>
-
-      <div className="container-app max-w-6xl mx-auto px-4 relative z-10">
-        {/* Header Elegan & Proporsional */}
-        <div className="text-center max-w-2xl mx-auto mb-7 sm:mb-8">
-          <span className="inline-block text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.22em] text-[#327691] mb-1.5">
-            Standar Kenyamanan Petualangan
-          </span>
-          <h2 className="font-extrabold text-lg sm:text-xl md:text-2xl text-[#263b46] tracking-tight uppercase">
-            Jelajahi Banyuwangi Bersama Jeep Trooper
+    <section className="relative bg-[#f8fafc] text-[#1e293b] py-14 sm:py-16 md:py-20 border-b border-[#e2e8f0]">
+      <div className="container-app max-w-6xl mx-auto px-4 sm:px-6">
+        {/* Header Section: Kenapa Memilih Kami? */}
+        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-12 md:mb-14">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#1b806a] tracking-tight">
+            Kenapa Memilih Kami?
           </h2>
+          <p className="mt-2.5 text-xs sm:text-sm md:text-base text-slate-600 font-normal leading-relaxed">
+            Kami memberikan pengalaman wisata yang nyaman, aman, dan terjangkau dengan layanan lokal terbaik.
+          </p>
         </div>
 
-        {/* 4 Pilar Pengalaman Wisata Universal (4x4, 6 Seat, 100% Privat, All-In) */}
-        <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-[#e2e8f0]">
-          {highlights.map((item, idx) => {
-            const Icon = item.icon;
-            return (
-              <div
-                key={idx}
-                className="group flex flex-col items-center justify-start py-4 sm:py-3 px-3 sm:px-4 text-center hover:bg-white/60 transition-colors"
-              >
-                {/* Ikon Garis Halus */}
-                <div className="w-8 h-8 rounded-lg bg-[#e9f3f7] text-[#327691] flex items-center justify-center mb-2 group-hover:bg-[#327691] group-hover:text-white transition-colors">
-                  <Icon size={16} strokeWidth={2} />
-                </div>
-
-                {/* Angka / Stat Besar & Tegas */}
-                <div className="font-sans font-black text-2xl sm:text-3xl lg:text-4xl text-[#263b46] tracking-tight leading-none my-1">
-                  {item.stat}
-                </div>
-
-                {/* Label Kapital Spaced */}
-                <h3 className="font-sans text-[11px] sm:text-xs font-extrabold tracking-[0.14em] text-[#327691] uppercase mt-1">
-                  {item.label}
-                </h3>
-
-                {/* Deskripsi Universal yang Berlaku untuk Seluruh Destinasi */}
-                <p className="text-[11px] text-[#64748b] leading-relaxed mt-1.5 max-w-[220px]">
-                  {item.desc}
-                </p>
+        {/* 3 Kartu Kenapa Memilih Kami (Tata Letak Sesuai Foto Referensi) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-7 lg:gap-8">
+          {features.map((item, idx) => (
+            <div
+              key={idx}
+              className="group bg-white rounded-3xl p-7 sm:p-8 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.09)] border border-slate-100 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-start text-left"
+            >
+              {/* Icon Container yang Rapi & Estetik */}
+              <div className="mb-6">
+                {item.icon}
               </div>
-            );
-          })}
+
+              {/* Judul Kartu */}
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight mb-2.5">
+                {item.title}
+              </h3>
+
+              {/* Deskripsi Kartu */}
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+                {item.desc}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </section>

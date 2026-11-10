@@ -187,15 +187,15 @@ export function HeroDatePicker({
               ? isSelectedAvailable
                 ? "text-white font-bold"
                 : "text-rose-300 font-bold"
-              : "text-white/85"
-          }`}
+              : "text-white"
+          } drop-shadow-sm`}
         >
           {value ? displayLabel : "Semua Jadwal Ready"}
         </span>
 
         <ChevronDown
           size={16}
-          className={`text-white/60 transition-transform ${
+          className={`text-white/80 transition-transform ${
             isOpen ? "rotate-180" : ""
           }`}
         />
