@@ -90,8 +90,8 @@ export function HeroSearch() {
   }
 
   return (
-    <section id="cari-trip" className="relative min-h-[580px] md:min-h-[640px] lg:min-h-[680px] flex items-center pt-16 pb-20 sm:pt-20 sm:pb-24 md:pt-24 md:pb-28 font-sans border-b border-[#1f3039]">
-      {/* Background Image: Foto Asli Jeep Trooper 4x4 Banyuwangi HD Jernih — Posisi Presisi Sesuai Awal */}
+    <section id="cari-trip" className="relative min-h-[520px] sm:min-h-[580px] md:min-h-[640px] flex items-center pt-12 pb-10 sm:pt-16 sm:pb-16 md:pt-20 md:pb-24 font-sans border-b border-[#1f3039]">
+      {/* Background Image: Foto Asli Jeep Trooper 4x4 Banyuwangi HD Jernih */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <Image
           src="/images/landing/hero-trooper-baluran-hd.webp"
@@ -99,53 +99,53 @@ export function HeroSearch() {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[center_42%] md:object-[center_36%]"
+          className="object-cover object-[center_38%] sm:object-[center_36%]"
         />
 
         {/* Overlay Gradien Sinematik Halus agar Foto Mobil & Alam Tetap Jernih & Terang */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-black/65" />
       </div>
 
-      {/* Bar Informasi Terbaru — 100% Transparan Melayang di Atas Foto (Tanpa Menggeser Posisi Gambar) */}
+      {/* Bar Informasi Terbaru — 100% Transparan Melayang di Atas Foto */}
       <div className="absolute top-0 left-0 right-0 z-20">
         <NewsTicker />
       </div>
 
       {/* Konten Utama Hero: Judul & Form Pencarian */}
       <div className="container-app relative z-10 max-w-5xl mx-auto px-4 sm:px-6">
-        {/* Eyebrow Badge — Serasi & Transparan Elegan */}
-        <div className="flex justify-center mb-3 sm:mb-4">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/30 backdrop-blur-xs border border-white/35 text-white text-xs sm:text-[13px] font-bold shadow-md">
-            <span className="flex h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+        {/* Eyebrow Badge — Ringkas & Transparan Elegan */}
+        <div className="flex justify-center mb-2.5 sm:mb-4">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full bg-black/30 backdrop-blur-xs border border-white/35 text-white text-[11px] sm:text-xs font-bold shadow-md">
+            <span className="flex h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-amber-400 animate-pulse" />
             <span>{t("hero_badge", "Sewa Jeep Trooper 4x4 Banyuwangi")}</span>
           </div>
         </div>
 
-        {/* Hero Title & Subtitle — Kontras Halus & Teks Tajam */}
-        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12 md:mb-14">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[52px] font-black text-white tracking-tight leading-[1.16] drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
+        {/* Hero Title & Subtitle — Proporsional di Mobile & Desktop */}
+        <div className="text-center max-w-3xl mx-auto mb-4 sm:mb-8 md:mb-12">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-[52px] font-black text-white tracking-tight leading-[1.18] sm:leading-[1.16] drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
             {t("hero_title_1", "Jelajahi Banyuwangi")}{" "}
             <span className="text-[#fbbf24] drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)]">
               {t("hero_title_2", "Tanpa Batas")}
             </span>
           </h1>
 
-          <p className="mt-3 text-xs sm:text-sm md:text-base text-white/95 max-w-2xl mx-auto font-medium leading-relaxed drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)]">
+          <p className="mt-2 sm:mt-3 text-[11.5px] sm:text-sm md:text-base text-white/95 max-w-2xl mx-auto font-medium leading-relaxed drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)]">
             {t("hero_subtitle", "Nikmati sensasi petualangan offroad Kawah Ijen, Baluran, Sukamade & De Djawatan bersama armada tangguh dan driver profesional terpercaya.")}
           </p>
         </div>
 
-        {/* Search Form — Benar-Benar Transparan Tanpa Box Hitam (Persis Referensi Bromo Foto 2) */}
+        {/* Search Form — Ringkas & Nyaman di Mobile (Tanpa Menutupi Seluruh Mobil) */}
         <div className="w-full max-w-4xl mx-auto">
           <form onSubmit={handleSearch}>
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1.1fr_auto] gap-3 items-stretch">
-              {/* Field 1: Kategori — 100% Transparan dengan Ikon Amber Serasi */}
-              <div className="relative group bg-transparent border border-white/80 hover:border-white focus-within:border-white rounded-lg sm:rounded-xl p-2.5 sm:p-3 transition">
-                <div className="flex items-center gap-2 mb-1">
-                  <Compass size={15} className="text-amber-400 shrink-0" />
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1.1fr_auto] gap-2 sm:gap-3 items-stretch">
+              {/* Field 1: Kategori */}
+              <div className="relative group bg-transparent border border-white/80 hover:border-white focus-within:border-white rounded-lg sm:rounded-xl p-2 sm:p-2.5 md:p-3 transition">
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
+                  <Compass size={14} className="text-white shrink-0" />
                   <label
                     htmlFor="hero-kategori"
-                    className="text-[10px] sm:text-[11px] font-bold text-white tracking-wider uppercase cursor-pointer drop-shadow-md"
+                    className="text-[9.5px] sm:text-[10px] md:text-[11px] font-bold text-white tracking-wider uppercase cursor-pointer drop-shadow-md"
                   >
                     {t("search_kategori", "Kategori")}
                   </label>
@@ -164,19 +164,19 @@ export function HeroSearch() {
                     ))}
                   </select>
                   <ChevronDown
-                    size={16}
+                    size={15}
                     className="absolute right-0 text-white/80 pointer-events-none"
                   />
                 </div>
               </div>
 
-              {/* Field 2: Destinasi — 100% Transparan dengan Ikon Amber Serasi */}
-              <div className="relative group bg-transparent border border-white/80 hover:border-white focus-within:border-white rounded-lg sm:rounded-xl p-2.5 sm:p-3 transition">
-                <div className="flex items-center gap-2 mb-1">
-                  <MapPin size={15} className="text-amber-400 shrink-0" />
+              {/* Field 2: Destinasi */}
+              <div className="relative group bg-transparent border border-white/80 hover:border-white focus-within:border-white rounded-lg sm:rounded-xl p-2 sm:p-2.5 md:p-3 transition">
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
+                  <MapPin size={14} className="text-white shrink-0" />
                   <label
                     htmlFor="hero-destinasi"
-                    className="text-[10px] sm:text-[11px] font-bold text-white tracking-wider uppercase cursor-pointer drop-shadow-md"
+                    className="text-[9.5px] sm:text-[10px] md:text-[11px] font-bold text-white tracking-wider uppercase cursor-pointer drop-shadow-md"
                   >
                     {t("search_destinasi", "Destinasi")}
                   </label>
@@ -195,23 +195,23 @@ export function HeroSearch() {
                     ))}
                   </select>
                   <ChevronDown
-                    size={16}
+                    size={15}
                     className="absolute right-0 text-white/80 pointer-events-none"
                   />
                 </div>
               </div>
 
-              {/* Field 3: Jadwal Keberangkatan — 100% Transparan dengan Ikon Amber Serasi */}
-              <div className="relative group bg-transparent border border-white/80 hover:border-white focus-within:border-white rounded-lg sm:rounded-xl p-2.5 sm:p-3 transition">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <Calendar size={15} className="text-amber-400 shrink-0" />
-                    <label className="text-[10px] sm:text-[11px] font-bold text-white tracking-wider uppercase cursor-pointer drop-shadow-md">
+              {/* Field 3: Jadwal Keberangkatan */}
+              <div className="relative group bg-transparent border border-white/80 hover:border-white focus-within:border-white rounded-lg sm:rounded-xl p-2 sm:p-2.5 md:p-3 transition">
+                <div className="flex items-center justify-between mb-0.5 sm:mb-1">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <Calendar size={14} className="text-white shrink-0" />
+                    <label className="text-[9.5px] sm:text-[10px] md:text-[11px] font-bold text-white tracking-wider uppercase cursor-pointer drop-shadow-md">
                       {t("search_jadwal", "Jadwal Trip (Ready)")}
                     </label>
                   </div>
                   {tanggalTrip && (
-                    <span className="text-[10px] font-extrabold text-emerald-300 bg-emerald-950/80 border border-emerald-400/50 px-2 py-0.5 rounded-full">
+                    <span className="text-[9.5px] sm:text-[10px] font-extrabold text-emerald-300 bg-emerald-950/80 border border-emerald-400/50 px-1.5 py-0.5 rounded-full">
                       Ready
                     </span>
                   )}
@@ -226,26 +226,26 @@ export function HeroSearch() {
                 </div>
               </div>
 
-              {/* Action Buttons — Tombol Search Oranye Eye-Catching Persis Contoh Foto 2 */}
-              <div className="flex items-center gap-2 pt-1 md:pt-0">
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2 pt-0.5 md:pt-0">
                 {hasFilter && (
                   <button
                     type="button"
                     onClick={handleReset}
                     title="Reset Filter"
-                    className="h-11 md:h-full px-3 text-white hover:text-white bg-transparent hover:bg-white/10 border border-white/80 rounded-lg sm:rounded-xl flex items-center justify-center transition cursor-pointer"
+                    className="h-10 sm:h-11 md:h-full px-3 text-white hover:text-white bg-transparent hover:bg-white/10 border border-white/80 rounded-lg sm:rounded-xl flex items-center justify-center transition cursor-pointer"
                     aria-label="Reset Filter"
                   >
-                    <RotateCcw size={16} />
+                    <RotateCcw size={15} />
                   </button>
                 )}
 
                 <button
                   type="submit"
-                  className="flex-1 md:flex-initial h-11 md:h-full min-h-[48px] px-7 sm:px-8 bg-[#f97316] hover:bg-[#ea580c] active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm rounded-lg sm:rounded-xl transition-all shadow-xl shadow-orange-500/35 flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap border border-orange-300/40 uppercase tracking-wide"
+                  className="flex-1 md:flex-initial h-10 sm:h-11 md:h-full min-h-[42px] sm:min-h-[46px] px-6 sm:px-8 bg-[#f97316] hover:bg-[#ea580c] active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm rounded-lg sm:rounded-xl transition-all shadow-lg shadow-orange-500/30 flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap border border-orange-300/40 uppercase tracking-wide"
                 >
-                  <Search size={16} strokeWidth={2.6} />
-                  <span>{t("search_btn_paket", "Search")}</span>
+                  <Search size={15} strokeWidth={2.6} />
+                  <span>{t("search_btn_paket", "Cari Paket")}</span>
                 </button>
               </div>
             </div>

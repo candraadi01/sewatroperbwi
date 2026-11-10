@@ -203,7 +203,7 @@ export function HeroDatePicker({
 
       {/* Popover Kalender Visual Kompak & Rapi (Membuka ke Atas agar Tidak Menabrak Section Bawah) */}
       {isOpen && (
-        <div className="absolute bottom-[calc(100%+8px)] left-0 sm:left-auto sm:right-0 z-50 bg-white rounded-2xl shadow-[0_20px_60px_-10px_rgba(0,0,0,0.45)] border border-[#d2e4ec] p-3 sm:p-3.5 w-[275px] sm:w-[285px] max-w-[calc(100vw-36px)] max-h-[85vh] overflow-y-auto font-sans animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 sm:left-auto sm:right-0 sm:translate-x-0 z-50 bg-white rounded-2xl shadow-[0_20px_60px_-10px_rgba(0,0,0,0.45)] border border-[#d2e4ec] p-3 sm:p-3.5 w-[275px] sm:w-[285px] max-w-[calc(100vw-36px)] max-h-[85vh] overflow-y-auto font-sans animate-in fade-in zoom-in-95 duration-150">
           {/* Header Kalender: Bulan, Tahun & Panah Navigasi */}
           <div className="flex items-center justify-between pb-2 border-b border-[#f0f4f6]">
             <div className="flex items-center gap-1.5 font-bold text-xs sm:text-[13px] text-[#1e293b]">
