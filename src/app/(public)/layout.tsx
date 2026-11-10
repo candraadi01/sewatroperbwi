@@ -3,19 +3,26 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { getAuthUser } from "@/lib/auth/helpers";
 import { getSiteSettings } from "@/lib/services/settings";
-import { getHeaderMenu } from "@/lib/services/content";
+import { getHeaderMenu, getContent } from "@/lib/services/content";
 import { AppProviders } from "@/components/providers/AppProviders";
 
 async function SiteHeader() {
-  const [u, settings, links] = await Promise.all([
+  const [u, settings, links, articles] = await Promise.all([
     getAuthUser(),
     getSiteSettings(),
     getHeaderMenu(),
+    getContent("articles"),
   ]);
   return (
     <Header
       settings={settings}
       links={links}
+      articles={articles.map((a) => ({
+        id: a.id,
+        title: a.title,
+        slug: a.slug,
+        category_name: a.category_name,
+      }))}
       user={
         u
           ? {

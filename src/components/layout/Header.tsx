@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -35,24 +35,22 @@ export interface HeaderUser {
   roles?: string[];
 }
 
-const artikelCategories = [
-  { label: "Destinasi Wisata Banyuwangi", href: "/artikel?kategori=destinasi" },
-  { label: "INFORMASI", href: "/artikel?kategori=informasi" },
-  { label: "Itinerary & Tips Wisata Banyuwangi", href: "/artikel?kategori=itinerary" },
-  { label: "Jeep Kawah Wurung", href: "/artikel?kategori=kawah-wurung" },
-  { label: "Jeep Sukamade", href: "/artikel?kategori=sukamade" },
-  { label: "Sewa Jeep Banyuwangi", href: "/artikel?kategori=sewa-jeep" },
-  { label: "Tips Sewa Jeep", href: "/artikel?kategori=tips" },
-  { label: "Wisata Jeep Banyuwangi", href: "/artikel?kategori=wisata" },
-];
+export interface HeaderArticleItem {
+  id: string;
+  title: string;
+  slug: string;
+  category_name?: string;
+}
 
 export function Header({
   settings: _settings,
   user,
+  articles = [],
 }: {
   settings?: SiteSettings;
   links?: { label: string; href: string }[];
   user?: HeaderUser | null;
+  articles?: HeaderArticleItem[];
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [artikelDropdownOpen, setArtikelDropdownOpen] = useState(false);
@@ -60,6 +58,18 @@ export function Header({
   const userDropdownRef = useRef<HTMLDivElement>(null);
   const path = usePathname();
   const { t } = useLanguage();
+
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    for (const a of articles) {
+      if (a.category_name) set.add(a.category_name);
+    }
+    return Array.from(set);
+  }, [articles]);
+
+  const latestArticles = useMemo(() => {
+    return articles.slice(0, 4);
+  }, [articles]);
 
   useEffect(() => {
     function close(e: KeyboardEvent) {
@@ -253,16 +263,60 @@ export function Header({
                 </Link>
 
                 {artikelDropdownOpen && (
-                  <div className="absolute right-0 top-full mt-1 w-64 bg-white text-[#263b46] rounded-xl shadow-xl py-2 z-50 border border-[#e4ebef] border-t-2 border-t-[#327691]">
-                    {artikelCategories.map((item) => (
+                  <div className="absolute right-0 top-full mt-1 w-72 bg-white text-[#263b46] rounded-2xl shadow-xl py-2 z-50 border border-[#e4ebef] border-t-2 border-t-[#327691] animate-in fade-in slide-in-from-top-1 duration-150">
+                    {/* Kategori dari Database */}
+                    {categories.length > 0 && (
+                      <div className="px-3 py-1.5 border-b border-[#f0f4f6]">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#8e9da5]">
+                          Kategori Artikel
+                        </span>
+                        <div className="mt-1 space-y-0.5">
+                          {categories.map((cat) => (
+                            <Link
+                              key={cat}
+                              href={`/artikel?kategori=${encodeURIComponent(cat)}`}
+                              className="block px-2.5 py-1.5 text-xs text-[#263b46] hover:bg-[#e9f3f7] hover:text-[#327691] rounded-lg transition font-semibold"
+                            >
+                              {cat}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Artikel dari Database */}
+                    <div className="px-3 py-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#8e9da5]">
+                        Artikel Wisata
+                      </span>
+                      <div className="mt-1 space-y-0.5">
+                        {latestArticles.length > 0 ? (
+                          latestArticles.map((a) => (
+                            <Link
+                              key={a.id}
+                              href={`/artikel/${a.slug}`}
+                              className="block px-2.5 py-1.5 text-xs text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] rounded-lg transition font-medium line-clamp-1"
+                              title={a.title}
+                            >
+                              {a.title}
+                            </Link>
+                          ))
+                        ) : (
+                          <span className="block px-2.5 py-1.5 text-xs text-neutral-400">
+                            Belum ada artikel.
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="pt-1.5 mt-1 border-t border-[#f0f4f6] px-3">
                       <Link
-                        key={item.label}
-                        href={item.href}
-                        className="block px-4 py-2 text-xs text-[#53636d] hover:bg-[#e9f3f7] hover:text-[#327691] transition font-medium"
+                        href="/artikel"
+                        className="block px-2.5 py-1.5 text-xs text-center font-bold text-[#327691] hover:bg-[#e9f3f7] rounded-lg transition"
                       >
-                        {item.label}
+                        Lihat Semua Artikel →
                       </Link>
-                    ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -508,17 +562,57 @@ export function Header({
                 />
               </button>
               {artikelDropdownOpen && (
-                <div className="pl-9 pr-2 py-1.5 space-y-1 bg-[#f4f9fb] rounded-xl my-1 text-xs">
-                  {artikelCategories.map((item) => (
+                <div className="pl-6 pr-2 py-2 space-y-2 bg-[#f4f9fb] rounded-xl my-1 text-xs">
+                  {categories.length > 0 && (
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#8e9da5] px-2">
+                        Kategori Artikel
+                      </span>
+                      {categories.map((cat) => (
+                        <Link
+                          key={cat}
+                          href={`/artikel?kategori=${encodeURIComponent(cat)}`}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="block py-1.5 px-2.5 hover:bg-[#e9f3f7] rounded-lg text-[#263b46] font-semibold hover:text-[#327691]"
+                        >
+                          {cat}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="space-y-1 pt-1 border-t border-[#e4ebef]">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#8e9da5] px-2">
+                      Artikel Wisata
+                    </span>
+                    {latestArticles.length > 0 ? (
+                      latestArticles.map((a) => (
+                        <Link
+                          key={a.id}
+                          href={`/artikel/${a.slug}`}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="block py-1.5 px-2.5 hover:bg-[#e9f3f7] rounded-lg text-[#53636d] hover:text-[#327691] truncate"
+                          title={a.title}
+                        >
+                          {a.title}
+                        </Link>
+                      ))
+                    ) : (
+                      <span className="block py-1.5 px-2.5 text-neutral-400">
+                        Belum ada artikel.
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="pt-1 border-t border-[#e4ebef]">
                     <Link
-                      key={item.label}
-                      href={item.href}
+                      href="/artikel"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="block py-2 px-2 hover:bg-[#e9f3f7] rounded-lg text-[#53636d] hover:text-[#327691]"
+                      className="block py-1.5 px-2.5 text-center font-bold text-[#327691]"
                     >
-                      {item.label}
+                      Lihat Semua Artikel →
                     </Link>
-                  ))}
+                  </div>
                 </div>
               )}
             </div>

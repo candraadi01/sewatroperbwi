@@ -5,10 +5,20 @@ import { useRouter } from "next/navigation";
 
 type ActionMode = "status" | "approve" | "reject";
 
-export function OrderActions({ id, status }: { id: string; status: string }) {
+export function OrderActions({
+  id,
+  status,
+  currentStartTime,
+}: {
+  id: string;
+  status: string;
+  currentStartTime?: string;
+}) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [mode, setMode] = useState<ActionMode>("status");
+  const [showTimeEdit, setShowTimeEdit] = useState(false);
+  const [timeSuccess, setTimeSuccess] = useState(false);
   const router = useRouter();
 
   // Standard admin status transitions (post-approval flow)
@@ -30,14 +40,18 @@ export function OrderActions({ id, status }: { id: string; status: string }) {
     setBusy(true);
     setError("");
     try {
+      const body: Record<string, unknown> = {
+        id,
+        status: form.get("status"),
+        reason: form.get("reason"),
+      };
+      const st = String(form.get("start_time") || "").trim();
+      if (st) body.start_time = st;
+
       const r = await fetch("/api/admin/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id,
-          status: form.get("status"),
-          reason: form.get("reason"),
-        }),
+        body: JSON.stringify(body),
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || "Gagal mengubah status.");
@@ -56,14 +70,18 @@ export function OrderActions({ id, status }: { id: string; status: string }) {
     setBusy(true);
     setError("");
     try {
+      const body: Record<string, unknown> = {
+        id,
+        note: String(form.get("note") || ""),
+        expiresHours: Number(form.get("expiresHours") || 48),
+      };
+      const st = String(form.get("start_time") || "").trim();
+      if (st) body.start_time = st;
+
       const r = await fetch("/api/admin/orders/approve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id,
-          note: String(form.get("note") || ""),
-          expiresHours: Number(form.get("expiresHours") || 48),
-        }),
+        body: JSON.stringify(body),
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || "Gagal menyetujui pesanan.");
@@ -101,6 +119,93 @@ export function OrderActions({ id, status }: { id: string; status: string }) {
     }
   }
 
+  async function updateStartTime(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    setBusy(true);
+    setError("");
+    setTimeSuccess(false);
+    try {
+      const st = String(form.get("start_time") || "").trim();
+      if (!st) throw new Error("Jam keberangkatan tidak boleh kosong.");
+
+      const r = await fetch("/api/admin/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id,
+          start_time: st,
+          reason: String(form.get("reason") || `Jam keberangkatan diatur ke ${st} WIB`),
+        }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || "Gagal mengubah jam keberangkatan.");
+      setTimeSuccess(true);
+      setShowTimeEdit(false);
+      router.refresh();
+      window.location.reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal mengubah jam.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Quick Time Editor widget available across all statuses
+  const timeEditorBlock = (
+    <div className="pt-2.5 mt-2 border-t border-neutral-200 dark:border-neutral-800">
+      <div className="flex items-center justify-between text-xs gap-2">
+        <span className="text-neutral-500 dark:text-neutral-400">
+          Jam Berangkat: <strong className="text-neutral-800 dark:text-neutral-200">{currentStartTime?.slice(0, 5) || "08:00"} WIB</strong>
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            setShowTimeEdit((prev) => !prev);
+            setError("");
+            setTimeSuccess(false);
+          }}
+          className="text-[#327691] dark:text-[#8abbd0] font-bold underline hover:no-underline cursor-pointer"
+        >
+          {showTimeEdit ? "Batal" : "🕒 Atur Jam"}
+        </button>
+      </div>
+
+      {timeSuccess && (
+        <p className="mt-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+          ✓ Jam keberangkatan berhasil disimpan!
+        </p>
+      )}
+
+      {showTimeEdit && (
+        <form onSubmit={updateStartTime} className="mt-2 p-3 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 space-y-2">
+          <label className="admin-field text-xs">
+            Jam Keberangkatan Baru
+            <input
+              name="start_time"
+              type="time"
+              defaultValue={currentStartTime?.slice(0, 5) || "08:00"}
+              required
+              className="text-xs font-mono"
+            />
+          </label>
+          <input
+            name="reason"
+            type="hidden"
+            value="Penyesuaian jam keberangkatan oleh pengelola"
+          />
+          <button
+            type="submit"
+            className="action-link w-full justify-center text-xs cursor-pointer py-1.5"
+            disabled={busy}
+          >
+            {busy ? "Menyimpan…" : "Simpan Jam Keberangkatan"}
+          </button>
+        </form>
+      )}
+    </div>
+  );
+
   // Pending review: show approve / reject buttons
   if (status === "pending_review") {
     return (
@@ -136,6 +241,18 @@ export function OrderActions({ id, status }: { id: string; status: string }) {
                 maxLength={1000}
                 placeholder="Kendaraan tersedia. Silakan lanjutkan pembayaran."
               />
+            </label>
+            <label className="admin-field">
+              🕐 Jam Keberangkatan
+              <input
+                name="start_time"
+                type="time"
+                defaultValue={currentStartTime?.slice(0, 5) || "08:00"}
+                required
+              />
+              <span className="text-[11px] text-green-700 dark:text-green-400">
+                Jam ini akan langsung tampil di menu/portal pesanan buyer.
+              </span>
             </label>
             <label className="admin-field">
               Batas waktu pembayaran (jam)
@@ -188,6 +305,8 @@ export function OrderActions({ id, status }: { id: string; status: string }) {
             </button>
           </form>
         )}
+
+        {timeEditorBlock}
       </div>
     );
   }
@@ -195,7 +314,7 @@ export function OrderActions({ id, status }: { id: string; status: string }) {
   // Approved: show reject option (buyer hasn't paid yet, admin can still cancel)
   if (status === "approved") {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
         <p className="text-sm font-semibold text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-lg px-3 py-2">
           ✓ Disetujui — menunggu pembayaran buyer.
         </p>
@@ -228,42 +347,60 @@ export function OrderActions({ id, status }: { id: string; status: string }) {
             </button>
           </form>
         )}
+
+        {timeEditorBlock}
       </div>
     );
   }
 
   // Standard status transitions
-  if (!next[status])
+  if (!next[status]) {
     return (
-      <p className="text-sm text-neutral-500">
-        Tidak ada perubahan status yang tersedia.
-      </p>
+      <div className="space-y-2">
+        <p className="text-sm text-neutral-500">
+          Tidak ada perubahan status yang tersedia.
+        </p>
+        {timeEditorBlock}
+      </div>
     );
+  }
 
   return (
-    <form onSubmit={change} className="space-y-3">
-      <label className="admin-field">
-        Tindakan
-        <select name="status">
-          {next[status].map((n) => (
-            <option key={n.value} value={n.value}>
-              {n.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="admin-field">
-        Alasan / catatan untuk riwayat buyer
-        <input name="reason" maxLength={1000} required />
-      </label>
-      {error && (
-        <p role="alert" className="notice-error">
-          {error}
-        </p>
-      )}
-      <button className="action-link cursor-pointer" disabled={busy}>
-        {busy ? "Menyimpan…" : "Simpan status"}
-      </button>
-    </form>
+    <div className="space-y-3">
+      <form onSubmit={change} className="space-y-3">
+        <label className="admin-field">
+          Tindakan
+          <select name="status">
+            {next[status].map((n) => (
+              <option key={n.value} value={n.value}>
+                {n.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="admin-field">
+          🕐 Jam Keberangkatan
+          <input
+            name="start_time"
+            type="time"
+            defaultValue={currentStartTime?.slice(0, 5) || "08:00"}
+          />
+        </label>
+        <label className="admin-field">
+          Alasan / catatan untuk riwayat buyer
+          <input name="reason" maxLength={1000} required />
+        </label>
+        {error && (
+          <p role="alert" className="notice-error">
+            {error}
+          </p>
+        )}
+        <button className="action-link cursor-pointer" disabled={busy}>
+          {busy ? "Menyimpan…" : "Simpan status"}
+        </button>
+      </form>
+
+      {timeEditorBlock}
+    </div>
   );
 }

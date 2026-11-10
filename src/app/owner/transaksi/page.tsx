@@ -158,10 +158,14 @@ export default async function OwnerTransaksiPage() {
                 </div>
               </div>
 
-              {/* FITUR AKSI ACC PEMILIK LANGSUNG */}
-              {isPending && (
+              {/* FITUR AKSI ACC PEMILIK LANGSUNG & PENGATURAN JAM BERANGKAT */}
+              {(isPending || isApproved || ["payment_received", "confirmed", "in_progress"].includes(b.booking_status)) && (
                 <div className="pt-3 border-t border-[#f0f4f6] dark:border-neutral-800">
-                  <OrderActions id={b.database_id} status={b.booking_status} />
+                  <OrderActions
+                    id={b.database_id}
+                    status={b.booking_status}
+                    currentStartTime={b.start_time}
+                  />
                 </div>
               )}
             </div>

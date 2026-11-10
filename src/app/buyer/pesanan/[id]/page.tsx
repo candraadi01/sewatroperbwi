@@ -159,75 +159,50 @@ export default async function BuyerOrderDetailPage({
 
           {/* NOTIFIKASI KHUSUS JIKA SUDAH DISETUJUI ADMIN */}
           {isApproved && !approvalExpired && (
-            <div className="mt-6 p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 dark:from-emerald-950/40 dark:via-teal-950/40 dark:to-emerald-950/40 border-2 border-emerald-500 shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold text-2xl shrink-0 shadow-xs">
-                    ✓
-                  </div>
-                  <div>
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-200 text-emerald-900 text-[11px] font-black uppercase tracking-wide">
-                      Persetujuan Admin Diterima
-                    </span>
-                    <h2 className="text-lg sm:text-xl font-extrabold text-emerald-950 dark:text-emerald-200 mt-1">
-                      Armada Siap! Segera Selesaikan Pembayaran
-                    </h2>
-                    <p className="text-xs sm:text-sm text-emerald-800/90 dark:text-emerald-300 mt-1 leading-relaxed">
-                      Jadwal dan unit Jeep Trooper Anda telah dikunci sementara. Selesaikan pembayaran{" "}
-                      <strong>{formatIDR(b.amount_to_pay)}</strong> ({b.payment_choice === "dp" ? "Uang Muka / DP" : "Tarif Penuh"}) melalui Midtrans.
+            <div className="mt-6 p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-400 dark:border-emerald-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 size={20} className="text-emerald-600 shrink-0 mt-0.5" />
+                <div>
+                  <h2 className="text-sm font-extrabold text-emerald-950 dark:text-emerald-200">
+                    Disetujui — Selesaikan Pembayaran
+                  </h2>
+                  <p className="text-xs text-emerald-800 dark:text-emerald-300 mt-0.5">
+                    Bayar <strong>{formatIDR(b.amount_to_pay)}</strong> ({b.payment_choice === "dp" ? "DP" : "Lunas"}) via Midtrans untuk mengunci jadwal.
+                  </p>
+                  {b.approval_expires_at && (
+                    <p className="text-xs text-emerald-700 dark:text-emerald-400 font-bold mt-1.5 flex items-center gap-1.5">
+                      <Clock size={13} />
+                      <span>Batas: {new Date(b.approval_expires_at).toLocaleString("id-ID")} WIB</span>
                     </p>
-                    {b.approval_expires_at && (
-                      <p className="text-xs text-emerald-700 dark:text-emerald-400 font-bold mt-2 flex items-center gap-1.5">
-                        <Clock size={14} />
-                        <span>Batas Waktu Bayar: {new Date(b.approval_expires_at).toLocaleString("id-ID")} WIB</span>
-                      </p>
-                    )}
-                  </div>
+                  )}
                 </div>
-
-                <div className="shrink-0">
-                  <PaymentButton
-                    code={b.id}
-                    label={`Bayar ${formatIDR(b.amount_to_pay)} Sekarang`}
-                  />
-                </div>
+              </div>
+              <div className="shrink-0">
+                <PaymentButton
+                  code={b.id}
+                  label={`Bayar ${formatIDR(b.amount_to_pay)}`}
+                />
               </div>
             </div>
           )}
 
           {/* NOTIFIKASI JIKA KENDARAAN SUDAH TERKONFIRMASI */}
           {isConfirmed && (
-            <div className="mt-6 p-5 sm:p-6 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800 shadow-2xs">
-              <div className="flex items-start gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
-                  <CheckCircle2 size={22} />
-                </div>
-                <div>
-                  <h3 className="text-base font-extrabold text-emerald-950 dark:text-emerald-200">
-                    Kendaraan Terkonfirmasi &amp; Jadwal Perjalanan Terkunci!
-                  </h3>
-                  <p className="text-xs sm:text-sm text-emerald-800 dark:text-emerald-300 mt-0.5">
-                    Pembayaran telah diverifikasi. Anda dapat mencetak <strong>E-Tiket Resmi</strong> atau menyimpan <strong>Kwitansi Pembayaran</strong>. Driver dan armada siap melayani petualangan Anda.
-                  </p>
-                </div>
-              </div>
+            <div className="mt-6 p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 flex items-center gap-3">
+              <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
+              <p className="text-xs font-semibold text-emerald-900 dark:text-emerald-300">
+                Pembayaran terverifikasi. Unduh <strong>E-Tiket</strong> atau simpan <strong>Kwitansi</strong> sebagai bukti reservasi.
+              </p>
             </div>
           )}
 
           {/* NOTIFIKASI MENUNGGU KONFIRMASI ADMIN */}
           {b.booking_status === "pending_payment" && (
-            <div className="mt-6 p-5 rounded-2xl bg-sky-50 dark:bg-sky-950/30 border border-sky-300 dark:border-sky-800">
-              <div className="flex items-start gap-3">
-                <Clock size={20} className="text-sky-600 shrink-0 mt-0.5" />
-                <div>
-                  <h3 className="text-sm font-extrabold text-sky-950 dark:text-sky-200">
-                    Menunggu Konfirmasi Admin
-                  </h3>
-                  <p className="text-xs text-sky-800 dark:text-sky-300 mt-0.5">
-                    Permintaan booking Anda sedang diperiksa ketersediaan armadanya oleh admin dan pemilik kendaraan. Anda akan menerima notifikasi segera setelah disetujui.
-                  </p>
-                </div>
-              </div>
+            <div className="mt-6 p-4 rounded-2xl bg-sky-50 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-800 flex items-center gap-3">
+              <Clock size={17} className="text-sky-600 shrink-0" />
+              <p className="text-xs font-semibold text-sky-900 dark:text-sky-300">
+                Permintaan booking sedang ditinjau admin. Anda akan dihubungi setelah disetujui.
+              </p>
             </div>
           )}
         </div>

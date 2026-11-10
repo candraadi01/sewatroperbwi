@@ -228,7 +228,7 @@ export function BuyerPortalLayout({
           className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-[#327691] hover:bg-[#2c6881] text-white font-bold text-sm rounded-2xl shadow-xs transition cursor-pointer"
         >
           <Search size={16} />
-          <span>Jelajahi Katalog Trooper</span>
+          <span>Pesan Trip Baru</span>
         </Link>
 
         <button
@@ -251,8 +251,8 @@ export function BuyerPortalLayout({
 
         {/* Mobile Sub Bar */}
         <div className="md:hidden flex items-center justify-between px-4 py-2.5 bg-white dark:bg-neutral-900 border-b border-[#e4ebef] dark:border-neutral-800">
-          <span className="font-extrabold text-xs uppercase tracking-wider text-[#327691] dark:text-[#8abbd0]">
-            Menu Navigasi Pelanggan
+          <span className="font-bold text-xs text-[#327691] dark:text-[#8abbd0]">
+            Portal Pelanggan
           </span>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}

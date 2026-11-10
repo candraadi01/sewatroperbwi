@@ -89,11 +89,9 @@ export function BuyerDashboardClient({ user, orders }: BuyerDashboardClientProps
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1e293b] dark:text-neutral-100 tracking-tight">
-              {t("buyer_menu_beranda", "Beranda Saya")}
+              {t("buyer_welcome", "Selamat datang,")}{" "}
+              <span className="text-[#327691] dark:text-[#8abbd0]">{user.fullName || "Pelanggan"}</span>
             </h1>
-            <p className="text-xs sm:text-sm text-[#64748b] dark:text-neutral-400 mt-1">
-              {t("buyer_welcome", "Selamat datang,")} <strong className="text-[#1e293b] dark:text-neutral-200">{user.fullName || "Pelanggan"}</strong>. {t("buyer_hero_desc", "Pantau jadwal reservasi dan armada Trooper Anda.")}
-            </p>
           </div>
 
           <Link
@@ -202,7 +200,7 @@ export function BuyerDashboardClient({ user, orders }: BuyerDashboardClientProps
                   </span>
                   <div>
                     <span className="text-[11px] font-bold uppercase tracking-wider text-[#327691] dark:text-[#8abbd0] block">
-                      {t("buyer_next_trip", "Perjalanan Terdekat Anda")}
+                      Trip Berikutnya
                     </span>
                     <h3 className="text-lg sm:text-xl font-extrabold text-[#1e293b] dark:text-neutral-100">
                       {nextTrip.product_name}
@@ -267,7 +265,7 @@ export function BuyerDashboardClient({ user, orders }: BuyerDashboardClientProps
                   </div>
                   <div>
                     <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#327691] dark:text-[#8abbd0] block">
-                      {t("buyer_driver_assigned", "Driver & Armada Ditugaskan")}
+                      Driver & Armada
                     </span>
                     <h4 className="text-sm sm:text-base font-extrabold text-[#1e293b] dark:text-neutral-100">
                       {nextTrip.assigned_driver_name || "Pak Budi Santoso"}
@@ -299,9 +297,9 @@ export function BuyerDashboardClient({ user, orders }: BuyerDashboardClientProps
                       <span>WhatsApp Driver</span>
                     </a>
                   ) : (
-                    <div className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-300 text-xs font-semibold">
-                      <Lock size={14} className="shrink-0 text-amber-600 dark:text-amber-400" />
-                      <span>{t("buyer_driver_locked", "WhatsApp Driver terbuka setelah pelunasan")}</span>
+                    <div className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs font-semibold">
+                      <Lock size={13} className="shrink-0 text-amber-500" />
+                      <span>Terbuka setelah pelunasan</span>
                     </div>
                   )}
 
@@ -331,15 +329,12 @@ export function BuyerDashboardClient({ user, orders }: BuyerDashboardClientProps
           </div>
         ) : (
           <div className="rounded-3xl bg-white dark:bg-neutral-900 border border-[#e4ebef] dark:border-neutral-800 p-6 sm:p-8 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-2 max-w-lg">
-              <span className="text-xs font-bold text-[#327691] dark:text-[#8abbd0] uppercase tracking-wider">
-                {t("buyer_empty_badge", "Petualangan 4x4 Menanti Anda")}
-              </span>
+            <div className="space-y-1 max-w-lg">
               <h3 className="text-xl sm:text-2xl font-black text-[#1e293b] dark:text-neutral-100">
-                {t("buyer_empty_title", "Jelajahi Banyuwangi dengan Jeep Trooper Prima")}
+                Jelajahi Destinasi Banyuwangi
               </h3>
-              <p className="text-xs sm:text-sm text-[#64748b] dark:text-neutral-400 leading-relaxed">
-                {t("buyer_empty_desc", "Pilih paket populer seperti Kawah Ijen Blue Fire, Safari Baluran Africa Van Java, atau Trek Offroad Sukamade Meru Betiri bersama sopir lokal berpengalaman.")}
+              <p className="text-xs sm:text-sm text-[#64748b] dark:text-neutral-400">
+                Kawah Ijen, Baluran, Sukamade, dan destinasi lainnya bersama driver berpengalaman.
               </p>
             </div>
             <Link
@@ -355,14 +350,9 @@ export function BuyerDashboardClient({ user, orders }: BuyerDashboardClientProps
         {/* 3. Daftar Pesanan Terkini */}
         <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-[#e4ebef] dark:border-neutral-800 p-6 sm:p-7 shadow-xs">
           <div className="flex items-center justify-between pb-4 border-b border-[#f0f4f6] dark:border-neutral-800">
-            <div>
-              <h3 className="text-base font-bold text-[#1e293b] dark:text-neutral-100">
-                {t("buyer_booking_history", "Daftar Riwayat Booking Anda")}
+            <h3 className="text-base font-bold text-[#1e293b] dark:text-neutral-100">
+                Pesanan Terbaru
               </h3>
-              <p className="text-xs text-[#64748b] dark:text-neutral-400 mt-0.5">
-                {t("buyer_booking_history_sub", "Kelola status pesanan, pembayaran, dan tiket perjalanan Anda.")}
-              </p>
-            </div>
             {orders.length > 0 && (
               <Link
                 href="/buyer/pesanan"

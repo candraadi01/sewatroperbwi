@@ -21,18 +21,62 @@ export async function POST(request: Request) {
     const p = z
       .object({
         id: idSchema,
-        status: z.enum([
-          "confirmed",
-          "in_progress",
-          "completed",
-          "cancelled_by_admin",
-        ]),
-        reason: z.string().trim().max(1000),
+        status: z
+          .enum([
+            "confirmed",
+            "in_progress",
+            "completed",
+            "cancelled_by_admin",
+          ])
+          .optional(),
+        reason: z.string().trim().max(1000).optional().default(""),
+        start_time: z.string().trim().max(20).optional(),
       })
       .strict()
       .safeParse(await readJson(request));
 
     if (!p.success) throw new RequestError("Data perubahan tidak valid.");
+    if (!p.data.status && !p.data.start_time) {
+      throw new RequestError("Status atau jam keberangkatan harus diisi.");
+    }
+
+    const adminDb = await createAdminClient();
+
+    // Jika hanya mengubah jam keberangkatan
+    if (!p.data.status && p.data.start_time) {
+      const { error: timeErr } = await adminDb
+        .from("bookings")
+        .update({ start_time: p.data.start_time })
+        .eq("id", p.data.id);
+
+      if (timeErr) {
+        throw new RequestError("Gagal mengubah jam keberangkatan: " + timeErr.message, 500);
+      }
+
+      try {
+        await adminDb.from("booking_status_history").insert({
+          booking_id: p.data.id,
+          old_status: "unchanged",
+          new_status: "time_updated",
+          changed_by: user.id,
+          reason: p.data.reason || `Jam keberangkatan diatur ke ${p.data.start_time} WIB`,
+        });
+      } catch (histErr) {
+        console.warn("[start_time history warning]:", histErr);
+      }
+
+      revalidatePath("/admin");
+      revalidatePath("/admin/pesanan");
+      revalidatePath("/akun/pesanan");
+      revalidatePath("/buyer");
+      revalidatePath("/buyer/pesanan");
+      revalidatePath("/pesanan", "layout");
+
+      return NextResponse.json({
+        success: true,
+        message: "Jam keberangkatan berhasil diperbarui.",
+      });
+    }
 
     let updatedSuccessfully = false;
 
@@ -41,12 +85,18 @@ export async function POST(request: Request) {
       const db = await createClient();
       const { error: rpcError } = await db.rpc("set_booking_status", {
         p_id: p.data.id,
-        p_status: p.data.status,
-        p_note: p.data.reason,
+        p_status: p.data.status!,
+        p_note: p.data.reason || "",
       });
 
       if (!rpcError) {
         updatedSuccessfully = true;
+        if (p.data.start_time) {
+          await adminDb
+            .from("bookings")
+            .update({ start_time: p.data.start_time })
+            .eq("id", p.data.id);
+        }
       } else {
         console.warn("[set_booking_status RPC returned error, executing fallback]:", rpcError.message);
       }
@@ -56,8 +106,6 @@ export async function POST(request: Request) {
 
     // 2. Fallback tangguh via createAdminClient
     if (!updatedSuccessfully) {
-      const adminDb = await createAdminClient();
-
       const { data: booking, error: bErr } = await adminDb
         .from("bookings")
         .select("id, status")
@@ -68,9 +116,14 @@ export async function POST(request: Request) {
         throw new RequestError("Pesanan tidak ditemukan.", 404);
       }
 
+      const updateData: Record<string, unknown> = { status: p.data.status! };
+      if (p.data.start_time) {
+        updateData.start_time = p.data.start_time;
+      }
+
       const { error: updateErr } = await adminDb
         .from("bookings")
-        .update({ status: p.data.status })
+        .update(updateData)
         .eq("id", p.data.id);
 
       if (updateErr) {
@@ -82,7 +135,7 @@ export async function POST(request: Request) {
         await adminDb.from("booking_status_history").insert({
           booking_id: booking.id,
           old_status: booking.status,
-          new_status: p.data.status,
+          new_status: p.data.status!,
           changed_by: user.id,
           reason: p.data.reason || "Status diperbarui oleh admin",
         });

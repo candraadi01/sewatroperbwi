@@ -23,6 +23,7 @@ export async function POST(request: Request) {
         id: idSchema,
         note: z.string().trim().max(1000).default(""),
         expiresHours: z.number().int().min(1).max(720).default(48),
+        start_time: z.string().trim().max(20).optional(),
       })
       .strict()
       .safeParse(await readJson(request));
@@ -42,6 +43,13 @@ export async function POST(request: Request) {
 
       if (!rpcError) {
         approvedSuccessfully = true;
+        if (p.data.start_time) {
+          const adminDb = await createAdminClient();
+          await adminDb
+            .from("bookings")
+            .update({ start_time: p.data.start_time })
+            .eq("id", p.data.id);
+        }
       } else {
         console.warn("[approve_booking RPC returned error, executing robust fallback]:", rpcError.message);
       }
@@ -78,14 +86,19 @@ export async function POST(request: Request) {
       const nowIso = new Date().toISOString();
 
       // Update status booking ke approved
+      const updateData: Record<string, unknown> = {
+        status: "approved",
+        approved_at: nowIso,
+        approved_by: user.id,
+        approval_expires_at: approvalExpiresAt,
+      };
+      if (p.data.start_time) {
+        updateData.start_time = p.data.start_time;
+      }
+
       const { error: updateErr } = await adminDb
         .from("bookings")
-        .update({
-          status: "approved",
-          approved_at: nowIso,
-          approved_by: user.id,
-          approval_expires_at: approvalExpiresAt,
-        })
+        .update(updateData)
         .eq("id", p.data.id);
 
       if (updateErr) {

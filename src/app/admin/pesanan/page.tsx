@@ -176,7 +176,11 @@ export default async function Orders({
                   Lihat rincian buyer
                 </Link>
               </div>
-              <OrderActions id={b.database_id} status={b.booking_status} />
+              <OrderActions
+                id={b.database_id}
+                status={b.booking_status}
+                currentStartTime={b.start_time}
+              />
             </div>
           </article>
         );

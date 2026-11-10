@@ -86,11 +86,8 @@ export function BuyerPesananClient({
             PANEL PEMESAN
           </span>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1e293b] dark:text-neutral-100 mt-1 tracking-tight">
-            Riwayat Booking Saya
+            Pesanan Saya
           </h1>
-          <p className="text-xs sm:text-sm text-[#64748b] dark:text-neutral-400 mt-1">
-            Pantau status persetujuan admin, penyelesaian pembayaran, dan tiket perjalanan resmi Anda.
-          </p>
         </div>
         <Link
           href="/sewa"
@@ -152,7 +149,7 @@ export function BuyerPesananClient({
                   : "bg-white dark:bg-neutral-800 text-[#64748b] dark:text-neutral-300 hover:bg-[#f1f5f9] border border-[#e4ebef] dark:border-neutral-700"
               }`}
             >
-              <span>Semua Pesanan</span>
+              <span>Semua</span>
               <span className={`px-2 py-0.2 rounded-full text-[10px] ${
                 activeTab === "semua" ? "bg-white/20 text-white" : "bg-[#e2e8f0] dark:bg-neutral-700 text-[#1e293b] dark:text-neutral-200"
               }`}>
@@ -186,7 +183,7 @@ export function BuyerPesananClient({
               }`}
             >
               <Sparkles size={13} />
-              <span>Siap Dibayar / Disetujui</span>
+              <span>Siap Dibayar</span>
               <span className={`px-2 py-0.2 rounded-full text-[10px] ${
                 activeTab === "siap_bayar" ? "bg-white/20 text-white" : "bg-amber-100 text-amber-900"
               }`}>
@@ -313,25 +310,25 @@ export function BuyerPesananClient({
                       #{order.id}
                     </span>
 
-                    {/* Distinct Status Badges */}
+                    {/* Badge tab: Kendaraan Terkonfirmasi → singkat */}
                     {isConfirmed && (
-                      <span className="inline-flex items-center gap-1.5 text-xs font-extrabold px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-900 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300">
-                        <Check size={14} className="text-emerald-700" />
-                        <span>Kendaraan Terkonfirmasi</span>
+                      <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200">
+                        <Check size={13} className="text-emerald-600" />
+                        Terkonfirmasi
                       </span>
                     )}
 
                     {isApproved && (
-                      <span className="inline-flex items-center gap-1.5 text-xs font-extrabold px-3.5 py-1 rounded-full bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 animate-pulse-subtle">
-                        <Sparkles size={14} className="text-amber-700" />
-                        <span>Disetujui Admin — Menunggu Pembayaran</span>
+                      <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-200">
+                        <Sparkles size={13} className="text-amber-600" />
+                        Siap Dibayar
                       </span>
                     )}
 
                     {isWaiting && (
-                      <span className="inline-flex items-center gap-1.5 text-xs font-extrabold px-3.5 py-1 rounded-full bg-sky-100 text-sky-900 dark:bg-sky-950/80 dark:text-sky-300 border border-sky-300">
-                        <Clock size={14} className="text-sky-700" />
-                        <span>Menunggu Konfirmasi Admin</span>
+                      <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-sky-100 text-sky-800 dark:bg-sky-950/80 dark:text-sky-300 border border-sky-200">
+                        <Clock size={13} className="text-sky-600" />
+                        Menunggu Konfirmasi
                       </span>
                     )}
 
@@ -391,17 +388,7 @@ export function BuyerPesananClient({
                       </p>
                     )}
 
-                    {/* Quick status message */}
-                    {isApproved && (
-                      <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200">
-                        ⚡ <strong>Persetujuan Diterima:</strong> Unit Jeep siap untuk jadwal Anda. Segera lakukan pembayaran agar jadwal tidak kadaluarsa.
-                      </div>
-                    )}
-                    {isWaiting && (
-                      <div className="p-3 rounded-xl bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800 text-xs text-sky-900 dark:text-sky-200">
-                        ⏳ <strong>Dalam Proses:</strong> Admin dan mitra pemilik armada sedang memverifikasi ketersediaan kendaraan untuk tanggal ini.
-                      </div>
-                    )}
+                    {/* pickup address */}
                   </div>
 
                   {/* Price & Action Buttons */}

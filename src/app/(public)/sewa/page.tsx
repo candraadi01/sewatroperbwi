@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getProducts } from "@/lib/services/catalog";
 import { ProductCard, serviceLabels } from "@/components/ProductCard";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar } from "lucide-react";
 
 export default async function Catalog({
   searchParams,
@@ -49,6 +49,7 @@ export default async function Catalog({
   });
 
   const hasActiveFilter = Boolean(q || kategori || destinasi || durasi || service || (sort && sort !== "popular"));
+  const isSearchFiltered = Boolean(date || hasActiveFilter);
 
   return (
     <div className="bg-[#f7f8f9] min-h-screen py-10 md:py-16 font-sans">
@@ -75,7 +76,7 @@ export default async function Catalog({
                 </span>
               </div>
               <Link
-                href="/sewa"
+                href="/#cari-trip"
                 className="text-xs font-extrabold underline text-emerald-800 hover:text-emerald-950 shrink-0"
               >
                 Ganti Jadwal
@@ -84,143 +85,108 @@ export default async function Catalog({
           )}
         </div>
 
-        {/* Search & Filter Bar */}
-        <form
-          className="mt-8 p-4 md:p-5 bg-white rounded-2xl border border-[#e4ebef] shadow-xs grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end"
-          action="/sewa"
-          method="GET"
-        >
-          {date && <input type="hidden" name="date" value={date} />}
-          <div>
-            <label htmlFor="cari" className="block text-xs font-bold text-[#263b46] mb-1">
-              Cari Kata Kunci
-            </label>
-            <input
-              id="cari"
-              name="q"
-              type="search"
-              placeholder="Ijen, Baluran, Sukamade…"
-              defaultValue={q}
-              maxLength={100}
-              className="w-full text-xs px-3 py-2.5 bg-[#f4f9fb] border border-[#ccd8de] rounded-xl focus:outline-hidden focus:border-[#327691] focus:bg-white transition text-[#263b46]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-[#263b46] mb-1">
-              Kategori
-            </label>
-            <select
-              name="kategori"
-              defaultValue={kategori}
-              className="w-full text-xs px-3 py-2.5 bg-[#f4f9fb] border border-[#ccd8de] rounded-xl focus:outline-hidden focus:border-[#327691] focus:bg-white transition cursor-pointer text-[#263b46]"
+        {/* Search & Filter Bar (Hanya tampil jika belum melakukan pencarian awal dari menu/hero) */}
+        {!isSearchFiltered && (
+          <>
+            <form
+              className="mt-8 p-4 md:p-5 bg-white rounded-2xl border border-[#e4ebef] shadow-xs grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end"
+              action="/sewa"
+              method="GET"
             >
-              <option value="">Semua Kategori</option>
-              <option value="jeep-experience">Paket Jeep Experience</option>
-              <option value="jeep-wisata">Jeep Wisata Banyuwangi</option>
-              <option value="harian-sopir">Sewa Harian + Sopir</option>
-            </select>
-          </div>
+              {date && <input type="hidden" name="date" value={date} />}
+              <div>
+                <label htmlFor="cari" className="block text-xs font-bold text-[#263b46] mb-1">
+                  Cari Kata Kunci
+                </label>
+                <input
+                  id="cari"
+                  name="q"
+                  type="search"
+                  placeholder="Ijen, Baluran, Sukamade…"
+                  defaultValue={q}
+                  maxLength={100}
+                  className="w-full text-xs px-3 py-2.5 bg-[#f4f9fb] border border-[#ccd8de] rounded-xl focus:outline-hidden focus:border-[#327691] focus:bg-white transition text-[#263b46]"
+                />
+              </div>
 
-          <div>
-            <label className="block text-xs font-bold text-[#263b46] mb-1">
-              Destinasi
-            </label>
-            <select
-              name="destinasi"
-              defaultValue={destinasi}
-              className="w-full text-xs px-3 py-2.5 bg-[#f4f9fb] border border-[#ccd8de] rounded-xl focus:outline-hidden focus:border-[#327691] focus:bg-white transition cursor-pointer text-[#263b46]"
-            >
-              <option value="">Semua Destinasi</option>
-              <option value="ijen">Kawah Ijen</option>
-              <option value="baluran">Taman Nasional Baluran</option>
-              <option value="djawatan">Hutan De Djawatan</option>
-              <option value="sukamade">Pantai Sukamade</option>
-              <option value="kawah-wurung">Kawah Wurung</option>
-              <option value="alas-purwo">Alas Purwo</option>
-              <option value="teluk-hijau">Teluk Hijau</option>
-            </select>
-          </div>
+              <div>
+                <label className="block text-xs font-bold text-[#263b46] mb-1">
+                  Kategori
+                </label>
+                <select
+                  name="kategori"
+                  defaultValue={kategori}
+                  className="w-full text-xs px-3 py-2.5 bg-[#f4f9fb] border border-[#ccd8de] rounded-xl focus:outline-hidden focus:border-[#327691] focus:bg-white transition cursor-pointer text-[#263b46]"
+                >
+                  <option value="">Semua Kategori</option>
+                  <option value="jeep-experience">Paket Jeep Experience</option>
+                  <option value="jeep-wisata">Jeep Wisata Banyuwangi</option>
+                  <option value="harian-sopir">Sewa Harian + Sopir</option>
+                </select>
+              </div>
 
-          <div>
-            <label className="block text-xs font-bold text-[#263b46] mb-1">
-              Durasi
-            </label>
-            <select
-              name="durasi"
-              defaultValue={durasi}
-              className="w-full text-xs px-3 py-2.5 bg-[#f4f9fb] border border-[#ccd8de] rounded-xl focus:outline-hidden focus:border-[#327691] focus:bg-white transition cursor-pointer text-[#263b46]"
-            >
-              <option value="">Semua Durasi</option>
-              <option value="half-day">Half Day (≤ 5 Jam)</option>
-              <option value="1-hari">1 Hari (6–14 Jam)</option>
-              <option value="2-day-1-night">2 Hari 1 Malam (2D1N)</option>
-            </select>
-          </div>
+              <div>
+                <label className="block text-xs font-bold text-[#263b46] mb-1">
+                  Destinasi
+                </label>
+                <select
+                  name="destinasi"
+                  defaultValue={destinasi}
+                  className="w-full text-xs px-3 py-2.5 bg-[#f4f9fb] border border-[#ccd8de] rounded-xl focus:outline-hidden focus:border-[#327691] focus:bg-white transition cursor-pointer text-[#263b46]"
+                >
+                  <option value="">Semua Destinasi</option>
+                  <option value="ijen">Kawah Ijen</option>
+                  <option value="baluran">Taman Nasional Baluran</option>
+                  <option value="djawatan">Hutan De Djawatan</option>
+                  <option value="sukamade">Pantai Sukamade</option>
+                  <option value="kawah-wurung">Kawah Wurung</option>
+                  <option value="alas-purwo">Alas Purwo</option>
+                  <option value="teluk-hijau">Teluk Hijau</option>
+                </select>
+              </div>
 
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <label className="block text-xs font-bold text-[#263b46] mb-1">
-                Urutkan
-              </label>
-              <select
-                name="sort"
-                defaultValue={sort}
-                className="w-full text-xs px-2.5 py-2.5 bg-[#f4f9fb] border border-[#ccd8de] rounded-xl focus:outline-hidden focus:border-[#327691] focus:bg-white transition cursor-pointer text-[#263b46]"
-              >
-                <option value="popular">Populer</option>
-                <option value="price_asc">Termurah</option>
-                <option value="price_desc">Termahal</option>
-                <option value="duration_asc">Tersingkat</option>
-              </select>
-            </div>
-            <button
-              type="submit"
-              className="px-5 py-2.5 bg-[#327691] hover:bg-[#2c6881] text-white text-xs font-extrabold rounded-xl transition shadow-xs cursor-pointer shrink-0 self-end"
-            >
-              Cari
-            </button>
-          </div>
-        </form>
+              <div>
+                <label className="block text-xs font-bold text-[#263b46] mb-1">
+                  Durasi
+                </label>
+                <select
+                  name="durasi"
+                  defaultValue={durasi}
+                  className="w-full text-xs px-3 py-2.5 bg-[#f4f9fb] border border-[#ccd8de] rounded-xl focus:outline-hidden focus:border-[#327691] focus:bg-white transition cursor-pointer text-[#263b46]"
+                >
+                  <option value="">Semua Durasi</option>
+                  <option value="half-day">Half Day (≤ 5 Jam)</option>
+                  <option value="1-hari">1 Hari (6–14 Jam)</option>
+                  <option value="2-day-1-night">2 Hari 1 Malam (2D1N)</option>
+                </select>
+              </div>
 
-        {/* Quick Destination Shortcut Tags */}
-        <div className="mt-3.5 flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-          <span className="text-[11px] font-extrabold text-[#697780] shrink-0 mr-1 flex items-center gap-1">
-            <MapPin size={12} className="text-[#327691]" /> Titik Destinasi:
-          </span>
-          {[
-            { slug: "", label: "Semua Destinasi" },
-            { slug: "djawatan", label: "🌳 Hutan De Djawatan" },
-            { slug: "sukamade", label: "🐢 Pantai Sukamade" },
-            { slug: "ijen", label: "🌋 Kawah Ijen" },
-            { slug: "baluran", label: "🦏 TN Baluran" },
-            { slug: "kawah-wurung", label: "🌄 Kawah Wurung" },
-          ].map((d) => {
-            const isSelected = destinasi === d.slug || (!destinasi && !d.slug);
-            const params = new URLSearchParams();
-            if (date) params.set("date", date);
-            if (kategori) params.set("kategori", kategori);
-            if (d.slug) params.set("destinasi", d.slug);
-            if (durasi) params.set("durasi", durasi);
-            if (sort && sort !== "popular") params.set("sort", sort);
-            const queryStr = params.toString();
-            const href = `/sewa${queryStr ? "?" + queryStr : ""}`;
-
-            return (
-              <Link
-                key={d.slug}
-                href={href}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer shadow-2xs ${
-                  isSelected
-                    ? "bg-[#327691] text-white shadow-xs"
-                    : "bg-white border border-[#ccd8de] text-[#263b46] hover:border-[#327691] hover:text-[#327691]"
-                }`}
-              >
-                {d.label}
-              </Link>
-            );
-          })}
-        </div>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label className="block text-xs font-bold text-[#263b46] mb-1">
+                    Urutkan
+                  </label>
+                  <select
+                    name="sort"
+                    defaultValue={sort}
+                    className="w-full text-xs px-2.5 py-2.5 bg-[#f4f9fb] border border-[#ccd8de] rounded-xl focus:outline-hidden focus:border-[#327691] focus:bg-white transition cursor-pointer text-[#263b46]"
+                  >
+                    <option value="popular">Populer</option>
+                    <option value="price_asc">Termurah</option>
+                    <option value="price_desc">Termahal</option>
+                    <option value="duration_asc">Tersingkat</option>
+                  </select>
+                </div>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 bg-[#327691] hover:bg-[#2c6881] text-white text-xs font-extrabold rounded-xl transition shadow-xs cursor-pointer shrink-0 self-end"
+                >
+                  Cari
+                </button>
+              </div>
+            </form>
+          </>
+        )}
 
         {/* Filter Count & Reset */}
         <div className="my-6 flex flex-wrap justify-between items-center gap-3 text-xs text-[#53636d]">
@@ -243,10 +209,15 @@ export default async function Catalog({
                 Durasi: {durasi}
               </span>
             )}
+            {q && (
+              <span className="px-2 py-0.5 bg-neutral-100 text-neutral-800 rounded-md font-medium text-[11px]">
+                Kata Kunci: &ldquo;{q}&rdquo;
+              </span>
+            )}
           </div>
-          {hasActiveFilter && (
+          {isSearchFiltered && (
             <Link href="/sewa" className="text-[#327691] hover:underline font-bold flex items-center gap-1">
-              ✕ Hapus Filter
+              ✕ Tampilkan Semua Paket
             </Link>
           )}
         </div>

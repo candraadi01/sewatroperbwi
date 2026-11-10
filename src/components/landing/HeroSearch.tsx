@@ -7,11 +7,6 @@ import {
   MapPin,
   Compass,
   Calendar,
-  Sparkles,
-  ShieldCheck,
-  Users,
-  CheckCircle2,
-  Clock,
   ChevronDown,
   RotateCcw,
 } from "lucide-react";
@@ -40,14 +35,6 @@ const destinationOptions: OptionItem[] = [
   { value: "kawah-wurung", label: "Kawah Wurung" },
   { value: "alas-purwo", label: "Alas Purwo" },
   { value: "teluk-hijau", label: "Teluk Hijau" },
-];
-
-const popularDestinations = [
-  { value: "ijen", label: "🌋 Kawah Ijen" },
-  { value: "baluran", label: "🦏 TN Baluran" },
-  { value: "djawatan", label: "🌳 De Djawatan" },
-  { value: "sukamade", label: "🐢 Sukamade" },
-  { value: "kawah-wurung", label: "🌄 Kawah Wurung" },
 ];
 
 export function HeroSearch() {
@@ -94,14 +81,6 @@ export function HeroSearch() {
     router.push(`/sewa${params.toString() ? "?" + params.toString() : ""}`);
   }
 
-  function handleQuickDestination(destValue: string) {
-    if (destinasi === destValue) {
-      setDestinasi("");
-    } else {
-      setDestinasi(destValue);
-    }
-  }
-
   function handleReset() {
     setKategori("");
     setDestinasi("");
@@ -109,7 +88,7 @@ export function HeroSearch() {
   }
 
   return (
-    <section className="relative bg-gradient-to-b from-[#f0f7fa] via-[#f7fbfc] to-white pt-10 pb-14 sm:pt-14 sm:pb-16 md:pt-18 md:pb-20 overflow-hidden font-sans border-b border-[#e4ebef]">
+    <section id="cari-trip" className="relative bg-gradient-to-b from-[#f0f7fa] via-[#f7fbfc] to-white pt-10 pb-14 sm:pt-14 sm:pb-16 md:pt-18 md:pb-20 overflow-hidden font-sans border-b border-[#e4ebef]">
       {/* Subtle modern vector ambient glows (Pure CSS, NO background image) */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-gradient-to-r from-[#327691]/12 via-[#8abbd0]/10 to-transparent blur-3xl rounded-full pointer-events-none"
@@ -258,90 +237,6 @@ export function HeroSearch() {
               </div>
             </div>
           </form>
-
-          {/* Quick Destination Tags */}
-          <div className="mt-4 pt-3.5 border-t border-[#f0f4f6] flex flex-wrap items-center gap-1.5 sm:gap-2">
-            <span className="text-[11px] sm:text-xs font-semibold text-[#697780] flex items-center gap-1 mr-1">
-              <Sparkles size={13} className="text-[#327691]" />
-              {t("popular_destinations", "Destinasi Populer:")}
-            </span>
-            {popularDestinations.map((p) => {
-              const isSelected = destinasi === p.value;
-              return (
-                <button
-                  key={p.value}
-                  type="button"
-                  onClick={() => handleQuickDestination(p.value)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer border ${
-                    isSelected
-                      ? "bg-[#327691] text-white border-[#327691] shadow-xs"
-                      : "bg-[#f7f9fa] text-[#43545f] border-[#e4ebef] hover:border-[#327691]/50 hover:bg-white hover:text-[#327691]"
-                  }`}
-                >
-                  {p.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* 4 Value Proposition Strip — Clean Vector Highlights (No Photos) */}
-        <div className="mt-8 sm:mt-10 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 pt-2">
-          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white border border-[#e4ebef] shadow-2xs">
-            <div className="w-10 h-10 rounded-xl bg-[#e9f3f7] text-[#327691] flex items-center justify-center shrink-0">
-              <ShieldCheck size={20} />
-            </div>
-            <div>
-              <p className="text-xs sm:text-[13px] font-bold text-[#263b46] leading-tight">
-                {t("badge_armada", "Armada 4x4 Prima")}
-              </p>
-              <p className="text-[11px] text-[#697780] mt-0.5">
-                {t("badge_armada_sub", "Trooper siap segala medan")}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white border border-[#e4ebef] shadow-2xs">
-            <div className="w-10 h-10 rounded-xl bg-[#e9f3f7] text-[#327691] flex items-center justify-center shrink-0">
-              <Users size={20} />
-            </div>
-            <div>
-              <p className="text-xs sm:text-[13px] font-bold text-[#263b46] leading-tight">
-                {t("badge_driver", "Driver Lokal Ahli")}
-              </p>
-              <p className="text-[11px] text-[#697780] mt-0.5">
-                {t("badge_driver_sub", "Hafal rute & ramah tamah")}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white border border-[#e4ebef] shadow-2xs">
-            <div className="w-10 h-10 rounded-xl bg-[#e9f3f7] text-[#327691] flex items-center justify-center shrink-0">
-              <CheckCircle2 size={20} />
-            </div>
-            <div>
-              <p className="text-xs sm:text-[13px] font-bold text-[#263b46] leading-tight">
-                {t("badge_harga", "Harga Transparan")}
-              </p>
-              <p className="text-[11px] text-[#697780] mt-0.5">
-                {t("badge_harga_sub", "Tanpa biaya tersembunyi")}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white border border-[#e4ebef] shadow-2xs">
-            <div className="w-10 h-10 rounded-xl bg-[#e9f3f7] text-[#327691] flex items-center justify-center shrink-0">
-              <Clock size={20} />
-            </div>
-            <div>
-              <p className="text-xs sm:text-[13px] font-bold text-[#263b46] leading-tight">
-                {t("badge_jadwal", "Jadwal Fleksibel")}
-              </p>
-              <p className="text-[11px] text-[#697780] mt-0.5">
-                {t("badge_jadwal_sub", "Bisa kustom rute & waktu")}
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </section>
