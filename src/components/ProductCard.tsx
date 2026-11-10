@@ -77,14 +77,30 @@ export function ProductCard({
           alt={p.name}
           fill
           sizes="(max-width: 768px) 100vw, 33vw"
-          className="object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
+          className="object-cover group-hover:scale-105 group-hover:grayscale-[30%] transition-all duration-500 opacity-90"
         />
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/30 pointer-events-none" />
+
+        {/* Hover Overlay: Tombol Lihat Detail Sesuai Contoh Foto 1 */}
+        <Link
+          href={productUrl}
+          className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer"
+          title={`Lihat detail ${p.name}`}
+        >
+          <div className="inline-flex items-stretch rounded-lg shadow-2xl overflow-hidden border border-white/25 transform scale-95 group-hover:scale-100 transition-transform duration-300">
+            <span className="bg-[#e11d48] text-white px-3 py-2 flex items-center justify-center">
+              <Check size={16} strokeWidth={3} />
+            </span>
+            <span className="bg-[#0284c7] hover:bg-[#0369a1] text-white px-3.5 py-2 text-xs font-bold tracking-wide flex items-center transition-colors">
+              Lihat Detail
+            </span>
+          </div>
+        </Link>
 
         {/* BEST SELLER Ribbon Merah jika ditandai */}
         {p.is_best_seller && (
-          <div className="absolute top-2.5 left-2.5 z-30">
+          <div className="absolute top-2.5 left-2.5 z-30 pointer-events-none">
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-600 text-white text-[10px] font-black uppercase tracking-wider shadow-lg border border-red-400/50">
               <Sparkles size={11} className="fill-white" />
               BEST SELLER
@@ -93,12 +109,12 @@ export function ProductCard({
         )}
 
         {/* Watermark Brand Atas Kanan */}
-        <div className="absolute top-2.5 right-3 z-10 text-[9px] font-black italic text-white/90 drop-shadow-md tracking-wider">
+        <div className="absolute top-2.5 right-3 z-30 pointer-events-none text-[9px] font-black italic text-white/90 drop-shadow-md tracking-wider">
           SEWA JEEP BWI
         </div>
 
         {/* Strip 3 Foto Thumbnail Rapi di Pojok Kanan Bawah */}
-        <div className="absolute bottom-5 right-2.5 flex items-center gap-1 z-20 pointer-events-none">
+        <div className="absolute bottom-5 right-2.5 flex items-center gap-1 z-30 pointer-events-none">
           {gallery.slice(0, 3).map((src, i) => (
             <div
               key={i}
@@ -112,7 +128,7 @@ export function ProductCard({
         </div>
 
         {/* Badge Bookmark Ribbon Lipat di Bawah Gambar */}
-        <div className="absolute -bottom-3 left-3.5 z-20">
+        <div className="absolute -bottom-3 left-3.5 z-30 pointer-events-none">
           <div className="relative bg-[#327691] text-white text-[11px] font-extrabold uppercase tracking-wide px-3 py-1.5 rounded-r-md flex items-center gap-1.5 shadow-md">
             <div className="absolute -bottom-1 left-0 w-0 h-0 border-t-[4px] border-t-[#254958] border-l-[4px] border-l-transparent" />
             <span className="max-w-[200px] truncate">{badgeText}</span>
