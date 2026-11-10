@@ -53,22 +53,67 @@ export function ProductCard({
         {/* Subtle Gradient Overlay untuk kedalaman visual */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/20 pointer-events-none" />
 
-        {/* Badges Atas: Best Seller & Kategori */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10 pointer-events-none">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {p.is_best_seller && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-600 text-white text-[10px] font-extrabold uppercase tracking-wider shadow-md">
-                <Sparkles size={11} className="fill-white" />
+        {/* 3D Diagonal Corner Ribbon "BEST SELLER" (Persis Referensi Foto) */}
+        {p.is_best_seller && (
+          <div className="absolute top-0 left-0 z-20 pointer-events-none select-none">
+            <svg
+              width="100"
+              height="100"
+              viewBox="0 0 100 100"
+              className="filter drop-shadow-[0_3px_5px_rgba(0,0,0,0.45)]"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                <linearGradient id={`bestSellerRibbon-${p.id}`} x1="0%" y1="100%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#991b1b" />
+                  <stop offset="15%" stopColor="#dc2626" />
+                  <stop offset="50%" stopColor="#ef4444" />
+                  <stop offset="85%" stopColor="#dc2626" />
+                  <stop offset="100%" stopColor="#991b1b" />
+                </linearGradient>
+              </defs>
+
+              {/* Lipatan 3D Sudut Atas (Dark Red Shadow) */}
+              <path d="M78 0 L83 5 L78 5 Z" fill="#7f1d1d" />
+              {/* Lipatan 3D Sudut Kiri (Dark Red Shadow) */}
+              <path d="M0 78 L5 83 L5 78 Z" fill="#7f1d1d" />
+
+              {/* Badan Pita Merah Diagonal */}
+              <polygon points="0,48 48,0 78,0 0,78" fill={`url(#bestSellerRibbon-${p.id})`} />
+
+              {/* Garis Aksen Putih di Tepi Atas & Bawah Pita */}
+              <line x1="48" y1="0" x2="0" y2="48" stroke="rgba(255,255,255,0.7)" strokeWidth="1" />
+              <line x1="78" y1="0" x2="0" y2="78" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
+
+              {/* Teks "BEST SELLER" Miring 45 Derajat Persis di Tengah Pita */}
+              <text
+                x="31.5"
+                y="31.5"
+                fill="#ffffff"
+                fontSize="9.5"
+                fontWeight="900"
+                fontFamily="Arial, system-ui, -apple-system, sans-serif"
+                letterSpacing="1.2"
+                textAnchor="middle"
+                dominantBaseline="central"
+                transform="rotate(-45 31.5 31.5)"
+                style={{ textShadow: "0 1px 2px rgba(0,0,0,0.8)" }}
+              >
                 BEST SELLER
-              </span>
-            )}
-            {badgeText && (
-              <span className="inline-block px-2.5 py-1 rounded-full bg-black/55 backdrop-blur-xs text-white text-[10px] font-bold uppercase tracking-wider shadow-md">
-                {badgeText}
-              </span>
-            )}
+              </text>
+            </svg>
           </div>
-        </div>
+        )}
+
+        {/* Badge Kategori/Favorit di Pojok Kanan Atas */}
+        {badgeText && (
+          <div className="absolute top-3 right-3 z-10 pointer-events-none">
+            <span className="inline-block px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold uppercase tracking-wider shadow-md">
+              {badgeText}
+            </span>
+          </div>
+        )}
 
         {/* Hover Overlay: Tombol Lihat Detail */}
         <Link
@@ -90,27 +135,27 @@ export function ProductCard({
       {/* 2. Isi Badan Kartu yang Terstruktur Rapi */}
       <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
         <div>
-          {/* Judul Paket Wisata */}
+          {/* Judul Paket Wisata — Biru Elegan Sesuai Foto Referensi */}
           <Link href={productUrl}>
-            <h3 className="font-bold text-sm sm:text-base text-[#1e293b] leading-snug group-hover:text-[#327691] transition-colors line-clamp-2 min-h-[40px] sm:min-h-[44px]">
+            <h3 className="font-bold text-sm sm:text-base text-[#0284c7] hover:text-[#0369a1] leading-snug transition-colors line-clamp-2 min-h-[40px] sm:min-h-[44px]">
               {p.name}
             </h3>
           </Link>
 
-          {/* Info Durasi & Kapasitas Tamu */}
+          {/* Info Durasi & Kapasitas Tamu — Icon Pink/Rose Sesuai Foto Referensi */}
           <div className="flex items-center gap-2.5 text-xs text-[#64748b] mt-2 mb-3 font-medium">
             <span className="inline-flex items-center gap-1">
-              <Clock size={13} className="text-[#327691]" />
+              <Clock size={13} className="text-[#e11d48]" />
               {durationDisplay}
             </span>
             <span className="text-slate-300">•</span>
             <span className="inline-flex items-center gap-1 text-[#475569]">
-              <Users size={13} className="text-[#327691]" />
+              <Users size={13} className="text-[#e11d48]" />
               {capacityDisplay}
             </span>
           </div>
 
-          {/* Titik Destinasi Unggulan */}
+          {/* Titik Destinasi Unggulan — Icon Pink/Rose Sesuai Foto Referensi */}
           <div className="space-y-1.5 min-h-[44px] mb-3 text-xs text-[#64748b]">
             {destinationPoints.slice(0, 2).map((dest, i) => {
               const filterUrl = dest.slug
@@ -119,13 +164,13 @@ export function ProductCard({
 
               return (
                 <div key={i} className="flex items-center gap-1.5 leading-tight">
-                  <MapPin size={13} className="text-[#327691] shrink-0" />
+                  <MapPin size={13} className="text-[#e11d48] shrink-0" />
                   {filterUrl ? (
                     <Link
                       href={filterUrl}
                       onClick={(e) => e.stopPropagation()}
                       title={`Filter paket ${dest.name}`}
-                      className="truncate hover:text-[#327691] hover:underline transition-colors"
+                      className="truncate hover:text-[#0284c7] hover:underline transition-colors"
                     >
                       {dest.name}
                     </Link>
@@ -139,14 +184,14 @@ export function ProductCard({
 
           <div className="border-t border-slate-100 my-3" />
 
-          {/* Tarif Paket */}
+          {/* Tarif Paket — Format Sesuai Foto Referensi */}
           <div className="flex items-baseline justify-between mb-4">
-            <span className="text-[11px] text-[#64748b] font-medium">Tarif Mulai</span>
+            <span className="text-xs text-[#0284c7] font-bold">*Mulai</span>
             <div className="text-right">
-              <span className="text-base sm:text-lg font-black text-[#263b46] tracking-tight">
+              <span className="text-base sm:text-lg font-black text-[#0f172a] tracking-tight">
                 {formatIDR(finalPrice)}
               </span>
-              <span className="text-xs text-[#64748b] font-semibold">{t("per_jeep", " / Jeep")}</span>
+              <span className="text-xs text-[#64748b] font-bold uppercase">{t("per_jeep", " / JEEP")}</span>
             </div>
           </div>
         </div>
