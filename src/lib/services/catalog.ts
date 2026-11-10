@@ -32,6 +32,67 @@ export interface ProductRow extends Omit<Product, "status"> {
 }
 import { getProductDestinationPoints } from "@/lib/utils/destinations";
 
+function resolveTrooperImages(row: ProductRow): string[] {
+  const existingFirst = row.cover_image_url || row.images?.[0] || "";
+  const s = ((row.slug || "") + " " + (row.name || "")).toLowerCase();
+
+  // Jika gambar pertama sudah merupakan foto mobil Trooper valid (bukan kawah belerang / artikel tanpa mobil)
+  if (
+    existingFirst &&
+    !existingFirst.includes("tour-kawah-ijen.jpg") &&
+    !existingFirst.includes("article-") &&
+    !existingFirst.includes("hero-bg.jpg") &&
+    !existingFirst.includes("placeholder")
+  ) {
+    return row.images && row.images.length > 0
+      ? row.images
+      : [existingFirst, "/images/landing/hero-adventure-trooper.jpg"];
+  }
+
+  // Pilih foto mobil Jeep Trooper otentik HD sesuai destinasi
+  if (s.includes("sukamade")) {
+    return [
+      "/images/landing/tour-sukamade.jpg",
+      "/images/landing/hero-adventure-trooper.jpg",
+      "/images/landing/tour-baluran.jpg",
+    ];
+  }
+  if (s.includes("kawah-wurung") || s.includes("wurung")) {
+    return [
+      "/images/landing/tour-trooper-kawah-wurung.jpg",
+      "/images/landing/tour-djawatan.jpg",
+      "/images/landing/hero-adventure-trooper.jpg",
+    ];
+  }
+  if (s.includes("ijen")) {
+    return [
+      "/images/landing/tour-trooper-kawah-ijen.jpg",
+      "/images/landing/tour-trooper-kawah-wurung.jpg",
+      "/images/landing/tour-baluran.jpg",
+    ];
+  }
+  if (s.includes("baluran")) {
+    return [
+      "/images/landing/tour-baluran.jpg",
+      "/images/landing/hero-trooper-baluran-hd.webp",
+      "/images/landing/trooper-baluran-action.webp",
+    ];
+  }
+  if (s.includes("djawatan")) {
+    return [
+      "/images/landing/tour-djawatan.jpg",
+      "/images/landing/hero-adventure-trooper.jpg",
+      "/images/landing/tour-baluran.jpg",
+    ];
+  }
+
+  return [
+    "/images/landing/hero-adventure-trooper.jpg",
+    "/images/landing/tour-baluran.jpg",
+    "/images/landing/tour-djawatan.jpg",
+  ];
+}
+
 export function mapProduct(row: ProductRow): Product {
   const price = row.pricing_rules
     ?.filter(
@@ -51,16 +112,21 @@ export function mapProduct(row: ProductRow): Product {
     else calculatedPrice = 750000;
   }
 
+  const resolvedImages = resolveTrooperImages(row);
+
   const mapped: Product = {
     ...row,
     status:
       row.status === "active" ? "published" : (row.status as Product["status"]),
     base_price: calculatedPrice,
-    images: row.cover_image_url ? [row.cover_image_url] : row.images ?? [],
+    images: resolvedImages,
     duration_minutes: row.duration_minutes ?? 0,
     badge_label: row.badge_label ?? row.name,
     destinations: row.destinations ?? [],
-    gallery_images: row.gallery_images ?? (row.images?.slice(0, 3) || []),
+    gallery_images:
+      row.gallery_images && row.gallery_images.length > 0
+        ? row.gallery_images
+        : resolvedImages,
     duration_text: row.duration_text ?? `${Math.round((row.duration_minutes ?? 0) / 60)} Jam`,
     is_best_seller: row.is_best_seller ?? false,
     is_featured: row.is_featured ?? false,

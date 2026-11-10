@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { getProductBySlug, getPickupZones } from "@/lib/services/catalog";
 import { BookingWidget } from "./BookingWidget";
 import { serviceLabels } from "@/components/ProductCard";
+import { ProductGallery } from "@/components/ProductGallery";
 import { MapPin } from "lucide-react";
 export default async function Detail({
   params,
@@ -49,23 +50,17 @@ export default async function Detail({
               ))}
             </div>
           )}
-          <figure className="mt-7">
-            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-neutral-100">
-              <Image
-                src={p.images?.[0] || "/images/trooper-reference.jpg"}
-                alt={p.images?.[0] ? p.name : "Ilustrasi model Jeep Trooper"}
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 58vw"
-                className="object-cover"
-              />
-            </div>
-            {!p.images?.length && (
-              <figcaption className="text-xs text-neutral-500 mt-2">
-                Foto ilustrasi model. Unit perjalanan dikonfirmasi oleh admin.
-              </figcaption>
-            )}
-          </figure>
+          {/* Galeri Foto Mobil Jeep Trooper HD & Destinasi */}
+          <div className="mt-7">
+            <ProductGallery
+              images={
+                p.images && p.images.length > 0
+                  ? p.images
+                  : ["/images/landing/hero-adventure-trooper.jpg"]
+              }
+              productName={p.name}
+            />
+          </div>
           <div className="flex flex-wrap gap-3 mt-6 text-sm">
             <span className="rounded-full bg-neutral-100 px-4 py-2">
               {p.duration_minutes / 60} jam

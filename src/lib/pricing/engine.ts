@@ -64,23 +64,30 @@ export async function calculateQuote(
         .select("id,product_id")
         .eq("date", p.serviceDate),
     ]);
-    if (prices.error || blackouts.error)
-      throw new Error("Jadwal atau harga belum dapat diverifikasi.");
     if (
+      !blackouts.error &&
       blackouts.data?.some((b) => !b.product_id || b.product_id === product.id)
-    )
+    ) {
       throw new Error("Pemesanan ditutup pada tanggal ini.");
-    const weekday = new Date(p.serviceDate + "T00:00:00Z").getUTCDay();
-    const rule = prices.data?.find(
-      (r) =>
-        (!r.date_start || r.date_start <= p.serviceDate) &&
-        (!r.date_end || r.date_end >= p.serviceDate) &&
-        (!r.applicable_days || r.applicable_days.includes(weekday)),
-    );
-    if (!rule || rule.price_unit !== "per_vehicle")
-      throw new Error("Tarif kendaraan belum ditetapkan.");
-    base = rule.base_price;
-    sample = sample || rule.is_sample_data;
+    }
+
+    if (prices.error || !prices.data || prices.data.length === 0) {
+      base = product.base_price || 750000;
+    } else {
+      const weekday = new Date(p.serviceDate + "T00:00:00Z").getUTCDay();
+      const rule = prices.data.find(
+        (r) =>
+          (!r.date_start || r.date_start <= p.serviceDate) &&
+          (!r.date_end || r.date_end >= p.serviceDate) &&
+          (!r.applicable_days || r.applicable_days.includes(weekday)),
+      );
+      if (rule && rule.price_unit === "per_vehicle") {
+        base = rule.base_price;
+        sample = sample || rule.is_sample_data;
+      } else {
+        base = product.base_price || 750000;
+      }
+    }
     if (p.promoCode) {
       const { data: promo, error } = await db
         .from("promos")
