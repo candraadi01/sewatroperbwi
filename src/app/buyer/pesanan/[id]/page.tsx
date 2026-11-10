@@ -24,6 +24,8 @@ import {
   Sparkles,
   Info,
   Check,
+  MessageCircle,
+  Lock,
 } from "lucide-react";
 
 export async function generateMetadata({
@@ -74,12 +76,18 @@ export default async function BuyerOrderDetailPage({
     !!b.approval_expires_at &&
     new Date(b.approval_expires_at) < new Date();
 
+  const adminPhone = settings.contact_whatsapp || "081234567890";
+  const driverPhone = b.assigned_driver_phone || "085234567899";
+  const waAdminLink =
+    whatsappLink(
+      adminPhone,
+      `Halo Admin Sewa Trooper, saya ${b.contact_name} pemesan #${b.id} untuk trip ${b.service_date}. Pembayaran saya sudah selesai. Mohon konfirmasi jadwal & koordinasinya ya.`
+    ) || "#";
   const waDriverLink =
-    b.assigned_driver_phone && (isConfirmed || isFullyPaid)
-      ? `https://wa.me/62${b.assigned_driver_phone.replace(/^0/, "")}?text=${encodeURIComponent(
-          `Halo ${b.assigned_driver_name || "Driver"}, saya ${b.contact_name} pemesan Jeep Trooper #${b.id} untuk trip ${b.service_date}.`
-        )}`
-      : "";
+    whatsappLink(
+      driverPhone,
+      `Halo Driver Sewa Trooper, saya ${b.contact_name} pemesan #${b.id} untuk penjemputan trip ${b.service_date}. Pembayaran saya telah selesai. Mohon info titik jemput dan waktu ya.`
+    ) || "#";
 
   const statusLabel = bookingStatus[b.booking_status] || b.booking_status;
 
@@ -157,42 +165,181 @@ export default async function BuyerOrderDetailPage({
             </div>
           </div>
 
-          {/* NOTIFIKASI KHUSUS JIKA SUDAH DISETUJUI ADMIN */}
+          {/* NOTIFIKASI KHUSUS JIKA SUDAH DISETUJUI ADMIN (PILIHAN DP ATAU LUNAS) */}
           {isApproved && !approvalExpired && (
-            <div className="mt-6 p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-400 dark:border-emerald-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 size={20} className="text-emerald-600 shrink-0 mt-0.5" />
-                <div>
-                  <h2 className="text-sm font-extrabold text-emerald-950 dark:text-emerald-200">
-                    Disetujui — Selesaikan Pembayaran
-                  </h2>
-                  <p className="text-xs text-emerald-800 dark:text-emerald-300 mt-0.5">
-                    Bayar <strong>{formatIDR(b.amount_to_pay)}</strong> ({b.payment_choice === "dp" ? "DP" : "Lunas"}) via Midtrans untuk mengunci jadwal.
+            <div className="mt-6 p-5 sm:p-6 rounded-3xl bg-amber-50 dark:bg-amber-950/30 border-2 border-amber-400 dark:border-amber-700 space-y-4">
+              <div>
+                <h2 className="text-sm sm:text-base font-extrabold text-amber-950 dark:text-amber-200 flex items-center gap-2">
+                  <CheckCircle2 size={18} className="text-emerald-600" />
+                  <span>Pesanan Disetujui Admin — Silakan Lakukan Pembayaran</span>
+                </h2>
+                <p className="text-xs text-amber-900/90 dark:text-amber-300 mt-1 leading-relaxed">
+                  Admin telah mengonfirmasi kesiapan armada Anda. Silakan pilih metode pembayaran di bawah (<strong>Bayar DP 30%</strong> atau <strong>Bayar Lunas 100%</strong>) untuk mengunci jadwal trip secara resmi.
+                </p>
+                {b.approval_expires_at && (
+                  <p className="text-xs text-amber-800 dark:text-amber-400 font-bold mt-2 flex items-center gap-1.5">
+                    <Clock size={13} />
+                    <span>Batas Waktu Pembayaran: {new Date(b.approval_expires_at).toLocaleString("id-ID")} WIB</span>
                   </p>
-                  {b.approval_expires_at && (
-                    <p className="text-xs text-emerald-700 dark:text-emerald-400 font-bold mt-1.5 flex items-center gap-1.5">
-                      <Clock size={13} />
-                      <span>Batas: {new Date(b.approval_expires_at).toLocaleString("id-ID")} WIB</span>
-                    </p>
-                  )}
-                </div>
+                )}
               </div>
-              <div className="shrink-0">
-                <PaymentButton
-                  code={b.id}
-                  label={`Bayar ${formatIDR(b.amount_to_pay)}`}
-                />
-              </div>
+
+              {/* 2 Pilihan Pembayaran: DP vs Lunas */}
+              <PaymentButton
+                code={b.id}
+                totalAmount={b.total_amount}
+                dpAmount={b.amount_to_pay && b.amount_to_pay < b.total_amount ? b.amount_to_pay : Math.round(b.total_amount * 0.3)}
+                defaultChoice={b.payment_choice === "full" ? "full" : "dp"}
+              />
             </div>
           )}
 
-          {/* NOTIFIKASI JIKA KENDARAAN SUDAH TERKONFIRMASI */}
+          {/* NOTIFIKASI JIKA PEMBAYARAN TELAH SELESAI (KWITANSI & KONTAK ADMIN/DRIVER) */}
           {isConfirmed && (
-            <div className="mt-6 p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 flex items-center gap-3">
-              <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
-              <p className="text-xs font-semibold text-emerald-900 dark:text-emerald-300">
-                Pembayaran terverifikasi. Unduh <strong>E-Tiket</strong> atau simpan <strong>Kwitansi</strong> sebagai bukti reservasi.
-              </p>
+            <div className="mt-6 p-5 sm:p-6 rounded-3xl bg-emerald-50/70 dark:bg-emerald-950/30 border-2 border-emerald-400 dark:border-emerald-700 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-sm sm:text-base font-black text-emerald-950 dark:text-emerald-200 flex items-center gap-2">
+                    <CheckCircle2 size={20} className="text-emerald-600" />
+                    <span>Pembayaran Terverifikasi & Jadwal Terkunci!</span>
+                  </h2>
+                  <p className="text-xs text-emerald-800 dark:text-emerald-300 mt-0.5">
+                    Kwitansi resmi dan E-Tiket perjalanan Anda telah terbit. Simpan atau cetak untuk bukti penjemputan.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Link
+                    href={`/pesanan/${b.id}/nota`}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md transition"
+                  >
+                    <Receipt size={15} />
+                    <span>🧾 Buka Kwitansi Resmi</span>
+                  </Link>
+                  <Link
+                    href={`/buyer/pesanan/${b.id}/tiket`}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-emerald-600 text-emerald-800 dark:text-emerald-200 font-bold text-xs shadow-2xs hover:bg-emerald-50 transition"
+                  >
+                    <Printer size={15} />
+                    <span>🎫 E-Tiket Wisata</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Opsi Pelunasan Sisa Tagihan Online Via Web */}
+              {!isFullyPaid && b.remaining_amount > 0 && (
+                <div className="p-4 sm:p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-400 dark:border-amber-600 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-amber-950 dark:text-amber-200 uppercase tracking-wide flex items-center gap-1.5">
+                      <CreditCard size={16} className="text-[#327691]" />
+                      Pelunasan Sisa Pembayaran (Via Web)
+                    </span>
+                    <span className="text-[11px] font-extrabold text-amber-900 bg-white dark:bg-neutral-800 px-2.5 py-0.5 rounded-full border border-amber-300 shadow-2xs">
+                      Sisa Tagihan: {formatIDR(b.remaining_amount)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-amber-950 dark:text-amber-300 leading-relaxed">
+                    Uang Muka (DP) sebesar <strong>{formatIDR(b.amount_paid)}</strong> telah diterima. Seluruh sisa pelunasan wajib diselesaikan secara online melalui website ini (tanpa melalui driver) sebelum keberangkatan trip.
+                  </p>
+                  <div className="w-full sm:max-w-xs">
+                    <PaymentButton
+                      code={b.id}
+                      label={`Bayar Pelunasan Sekarang (${formatIDR(b.remaining_amount)})`}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Nomor Kontak Penting: No Admin // No Driver (HANYA DIBERIKAN JIKA SUDAH LUNAS 100%) */}
+              <div className="pt-3 border-t border-emerald-200/80 dark:border-emerald-800/80">
+                {isFullyPaid ? (
+                  <>
+                    <h3 className="text-xs font-black text-slate-800 dark:text-neutral-200 uppercase tracking-wide flex items-center gap-2 mb-3">
+                      <Phone size={15} className="text-[#327691]" />
+                      <span>Nomor Kontak Penting (No Admin // No Driver)</span>
+                    </h3>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {/* Admin */}
+                      <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 shadow-2xs space-y-2">
+                        <div>
+                          <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-400 uppercase tracking-wider block">
+                            1. Nomor Admin Reservasi
+                          </span>
+                          <p className="font-extrabold text-slate-800 dark:text-neutral-100 text-xs sm:text-sm">
+                            Admin Operasional
+                          </p>
+                          <p className="text-xs font-mono font-bold text-[#327691] dark:text-[#8abbd0]">
+                            {adminPhone}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1.5 pt-1">
+                          <a
+                            href={waAdminLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 py-1.5 px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded-lg text-center transition flex items-center justify-center gap-1"
+                          >
+                            <MessageCircle size={13} />
+                            <span>Chat WhatsApp</span>
+                          </a>
+                          <a
+                            href={`tel:${adminPhone}`}
+                            className="py-1.5 px-2.5 bg-slate-100 dark:bg-neutral-700 hover:bg-slate-200 text-slate-700 dark:text-neutral-200 font-bold text-[11px] rounded-lg text-center transition"
+                          >
+                            Telepon
+                          </a>
+                        </div>
+                      </div>
+
+                      {/* Driver */}
+                      <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 shadow-2xs space-y-2">
+                        <div>
+                          <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-400 uppercase tracking-wider block">
+                            2. Nomor Driver Lapangan
+                          </span>
+                          <p className="font-extrabold text-slate-800 dark:text-neutral-100 text-xs sm:text-sm truncate">
+                            {b.assigned_driver_name || "Koordinator Driver Lapangan"}
+                          </p>
+                          <p className="text-xs font-mono font-bold text-[#327691] dark:text-[#8abbd0]">
+                            {driverPhone}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1.5 pt-1">
+                          <a
+                            href={waDriverLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 py-1.5 px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded-lg text-center transition flex items-center justify-center gap-1"
+                          >
+                            <MessageCircle size={13} />
+                            <span>Chat WhatsApp</span>
+                          </a>
+                          <a
+                            href={`tel:${driverPhone}`}
+                            className="py-1.5 px-2.5 bg-slate-100 dark:bg-neutral-700 hover:bg-slate-200 text-slate-700 dark:text-neutral-200 font-bold text-[11px] rounded-lg text-center transition"
+                          >
+                            Telepon
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="p-4 rounded-2xl bg-slate-100/90 dark:bg-neutral-800/80 border border-slate-200 dark:border-neutral-700 flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-slate-200 dark:bg-neutral-700 text-slate-600 dark:text-neutral-300 flex items-center justify-center shrink-0 mt-0.5">
+                      <Lock size={15} />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-800 dark:text-neutral-200">
+                        Nomor Kontak Admin & Driver Terkunci
+                      </h4>
+                      <p className="text-[11.5px] text-slate-500 dark:text-neutral-400 mt-0.5 leading-relaxed">
+                        Nomor kontak resmi Admin dan Driver lapangan akan otomatis terbuka setelah seluruh pembayaran Anda <strong>Lunas 100%</strong> melalui website.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -280,47 +427,6 @@ export default async function BuyerOrderDetailPage({
                 </div>
               )}
             </div>
-
-            {/* Driver & Vehicle Box (if assigned or confirmed) */}
-            {isConfirmed && (
-              <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-emerald-300 dark:border-emerald-800 p-6 shadow-xs space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-base sm:text-lg font-black text-emerald-950 dark:text-emerald-200 flex items-center gap-2">
-                    <ShieldCheck size={18} className="text-emerald-600" />
-                    <span>Driver &amp; Armada Ditugaskan</span>
-                  </h2>
-                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                    Siap Berangkat
-                  </span>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-emerald-50/50 dark:bg-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="text-sm font-extrabold text-[#1e293b] dark:text-neutral-100">
-                      {b.assigned_driver_name || "Pak Slamet Hidayat"}
-                    </div>
-                    <div className="text-xs text-[#64748b] dark:text-neutral-400">
-                      Plat: <span className="font-mono font-bold text-[#1e293b] dark:text-neutral-200">{b.assigned_vehicle_plate || "P 1888 VJ"}</span> · {b.assigned_vehicle_model || "Isuzu Trooper 4x4 Offroad"}
-                    </div>
-                    <div className="text-xs text-[#64748b] dark:text-neutral-400">
-                      Telepon: {b.assigned_driver_phone || "085234567899"}
-                    </div>
-                  </div>
-
-                  {waDriverLink && (
-                    <a
-                      href={waDriverLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-xs shrink-0"
-                    >
-                      <Phone size={14} />
-                      <span>WhatsApp Driver</span>
-                    </a>
-                  )}
-                </div>
-              </div>
-            )}
 
             {/* Timeline / Status History */}
             {history.length > 0 && (

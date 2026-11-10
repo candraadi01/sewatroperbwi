@@ -17,8 +17,6 @@ export function OrderActions({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [mode, setMode] = useState<ActionMode>("status");
-  const [showTimeEdit, setShowTimeEdit] = useState(false);
-  const [timeSuccess, setTimeSuccess] = useState(false);
   const router = useRouter();
 
   // Standard admin status transitions (post-approval flow)
@@ -119,143 +117,66 @@ export function OrderActions({
     }
   }
 
-  async function updateStartTime(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    setBusy(true);
-    setError("");
-    setTimeSuccess(false);
-    try {
-      const st = String(form.get("start_time") || "").trim();
-      if (!st) throw new Error("Jam keberangkatan tidak boleh kosong.");
-
-      const r = await fetch("/api/admin/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id,
-          start_time: st,
-          reason: String(form.get("reason") || `Jam keberangkatan diatur ke ${st} WIB`),
-        }),
-      });
-      const d = await r.json();
-      if (!r.ok) throw new Error(d.error || "Gagal mengubah jam keberangkatan.");
-      setTimeSuccess(true);
-      setShowTimeEdit(false);
-      router.refresh();
-      window.location.reload();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Gagal mengubah jam.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  // Quick Time Editor widget available across all statuses
-  const timeEditorBlock = (
-    <div className="pt-2.5 mt-2 border-t border-neutral-200 dark:border-neutral-800">
-      <div className="flex items-center justify-between text-xs gap-2">
-        <span className="text-neutral-500 dark:text-neutral-400">
-          Jam Berangkat: <strong className="text-neutral-800 dark:text-neutral-200">{currentStartTime?.slice(0, 5) || "08:00"} WIB</strong>
-        </span>
-        <button
-          type="button"
-          onClick={() => {
-            setShowTimeEdit((prev) => !prev);
-            setError("");
-            setTimeSuccess(false);
-          }}
-          className="text-[#327691] dark:text-[#8abbd0] font-bold underline hover:no-underline cursor-pointer"
-        >
-          {showTimeEdit ? "Batal" : "🕒 Atur Jam"}
-        </button>
-      </div>
-
-      {timeSuccess && (
-        <p className="mt-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-          ✓ Jam keberangkatan berhasil disimpan!
-        </p>
-      )}
-
-      {showTimeEdit && (
-        <form onSubmit={updateStartTime} className="mt-2 p-3 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 space-y-2">
-          <label className="admin-field text-xs">
-            Jam Keberangkatan Baru
-            <input
-              name="start_time"
-              type="time"
-              defaultValue={currentStartTime?.slice(0, 5) || "08:00"}
-              required
-              className="text-xs font-mono"
-            />
-          </label>
-          <input
-            name="reason"
-            type="hidden"
-            value="Penyesuaian jam keberangkatan oleh pengelola"
-          />
-          <button
-            type="submit"
-            className="action-link w-full justify-center text-xs cursor-pointer py-1.5"
-            disabled={busy}
-          >
-            {busy ? "Menyimpan…" : "Simpan Jam Keberangkatan"}
-          </button>
-        </form>
-      )}
-    </div>
-  );
-
   // Pending review: show approve / reject buttons
   if (status === "pending_review") {
     return (
-      <div className="space-y-4">
-        <p className="text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          ⏳ Menunggu konfirmasi admin — periksa ketersediaan kendaraan.
-        </p>
-        <div className="flex gap-3">
+      <div className="space-y-3.5">
+        <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 space-y-1">
+          <p className="font-bold flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            <span>Perlu Konfirmasi Admin</span>
+          </p>
+          <p className="text-[11px] text-amber-800/90 dark:text-amber-300/90 leading-snug">
+            Cek kesiapan unit Trooper &amp; jadwal driver sebelum menyetujui pesanan ini.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2.5">
           <button
-            className="flex-1 action-link text-center justify-center cursor-pointer"
-            onClick={() => setMode(mode === "approve" ? "status" : "approve")}
             type="button"
+            onClick={() => setMode(mode === "approve" ? "status" : "approve")}
+            className={`py-2.5 px-3 rounded-xl font-black text-xs transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5 min-h-[44px] ${
+              mode === "approve"
+                ? "bg-[#263b46] text-white ring-2 ring-[#327691]"
+                : "bg-[#327691] hover:bg-[#263b46] text-white"
+            }`}
           >
-            ✓ Setujui
+            <span>✓ Setujui</span>
           </button>
           <button
-            className="flex-1 px-4 py-2 rounded-lg border border-red-300 bg-red-50 text-red-700 text-sm font-medium hover:bg-red-100 transition-colors cursor-pointer"
-            onClick={() => setMode(mode === "reject" ? "status" : "reject")}
             type="button"
+            onClick={() => setMode(mode === "reject" ? "status" : "reject")}
+            className={`py-2.5 px-3 rounded-xl font-bold text-xs border transition-colors cursor-pointer flex items-center justify-center gap-1.5 min-h-[44px] ${
+              mode === "reject"
+                ? "bg-rose-100 text-rose-900 border-rose-300 ring-2 ring-rose-200"
+                : "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
+            }`}
           >
-            ✕ Tolak
+            <span>✕ Tolak</span>
           </button>
         </div>
+
         {mode === "approve" && (
           <form
             onSubmit={approve}
-            className="space-y-3 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-lg p-3"
+            className="space-y-3 bg-white dark:bg-neutral-800 border-2 border-emerald-400 dark:border-emerald-600 rounded-xl p-3.5 shadow-sm"
           >
-            <label className="admin-field">
-              Catatan untuk buyer (opsional)
+            <div>
+              <label className="block text-[11px] font-bold text-slate-700 dark:text-neutral-200 uppercase tracking-wider mb-1">
+                Catatan untuk Buyer (Opsional)
+              </label>
               <input
                 name="note"
                 maxLength={1000}
-                placeholder="Kendaraan tersedia. Silakan lanjutkan pembayaran."
+                placeholder="Armada ready & driver siap tepat waktu."
+                className="w-full text-xs font-semibold text-slate-900 bg-slate-50 focus:bg-white border border-slate-200 focus:border-[#327691] rounded-lg px-3 py-2 outline-hidden"
               />
-            </label>
-            <label className="admin-field">
-              🕐 Jam Keberangkatan
-              <input
-                name="start_time"
-                type="time"
-                defaultValue={currentStartTime?.slice(0, 5) || "08:00"}
-                required
-              />
-              <span className="text-[11px] text-green-700 dark:text-green-400">
-                Jam ini akan langsung tampil di menu/portal pesanan buyer.
-              </span>
-            </label>
-            <label className="admin-field">
-              Batas waktu pembayaran (jam)
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-slate-700 dark:text-neutral-200 uppercase tracking-wider mb-1">
+                Batas Waktu Pembayaran (Jam)
+              </label>
               <input
                 name="expiresHours"
                 type="number"
@@ -263,50 +184,69 @@ export function OrderActions({
                 max={720}
                 defaultValue={48}
                 required
+                className="w-full text-xs font-semibold text-slate-900 bg-slate-50 focus:bg-white border border-slate-200 focus:border-[#327691] rounded-lg px-3 py-2 outline-hidden"
               />
-            </label>
+              <span className="text-[10px] text-slate-400 mt-0.5 block">
+                Buyer diberi waktu 48 jam untuk membayar setelah disetujui.
+              </span>
+            </div>
+
             {error && (
-              <p role="alert" className="notice-error">
+              <p role="alert" className="text-xs text-rose-600 font-semibold">
                 {error}
               </p>
             )}
+
             <button
-              className="action-link w-full justify-center cursor-pointer"
+              type="submit"
               disabled={busy}
+              className="w-full py-2.5 px-4 rounded-xl bg-[#327691] hover:bg-[#263b46] text-white font-black text-xs shadow-xs transition cursor-pointer disabled:opacity-50 min-h-[44px] flex items-center justify-center gap-1.5"
             >
-              {busy ? "Menyetujui…" : "Konfirmasi Persetujuan"}
+              {busy ? (
+                <>
+                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Menyetujui…</span>
+                </>
+              ) : (
+                <span>Konfirmasi Persetujuan (ACC) →</span>
+              )}
             </button>
           </form>
         )}
+
         {mode === "reject" && (
           <form
             onSubmit={reject}
-            className="space-y-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg p-3"
+            className="space-y-3 bg-white dark:bg-neutral-800 border-2 border-rose-300 dark:border-rose-700 rounded-xl p-3.5 shadow-sm"
           >
-            <label className="admin-field">
-              Alasan penolakan (wajib)
+            <div>
+              <label className="block text-[11px] font-bold text-rose-800 dark:text-rose-300 uppercase tracking-wider mb-1">
+                Alasan Penolakan (Wajib)
+              </label>
               <input
                 name="reason"
                 required
                 maxLength={1000}
-                placeholder="Kendaraan tidak tersedia untuk tanggal yang dipilih."
+                placeholder="Armada penuh untuk tanggal yang dipilih."
+                className="w-full text-xs font-semibold text-slate-900 bg-slate-50 focus:bg-white border border-slate-200 focus:border-rose-400 rounded-lg px-3 py-2 outline-hidden"
               />
-            </label>
+            </div>
+
             {error && (
-              <p role="alert" className="notice-error">
+              <p role="alert" className="text-xs text-rose-600 font-semibold">
                 {error}
               </p>
             )}
+
             <button
-              className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium w-full hover:bg-red-700 transition-colors cursor-pointer"
+              type="submit"
               disabled={busy}
+              className="w-full py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs shadow-xs transition cursor-pointer disabled:opacity-50 min-h-[44px] flex items-center justify-center gap-1.5"
             >
               {busy ? "Menolak…" : "Konfirmasi Penolakan"}
             </button>
           </form>
         )}
-
-        {timeEditorBlock}
       </div>
     );
   }
@@ -347,8 +287,6 @@ export function OrderActions({
             </button>
           </form>
         )}
-
-        {timeEditorBlock}
       </div>
     );
   }
@@ -360,7 +298,6 @@ export function OrderActions({
         <p className="text-sm text-neutral-500">
           Tidak ada perubahan status yang tersedia.
         </p>
-        {timeEditorBlock}
       </div>
     );
   }
@@ -379,14 +316,6 @@ export function OrderActions({
           </select>
         </label>
         <label className="admin-field">
-          🕐 Jam Keberangkatan
-          <input
-            name="start_time"
-            type="time"
-            defaultValue={currentStartTime?.slice(0, 5) || "08:00"}
-          />
-        </label>
-        <label className="admin-field">
           Alasan / catatan untuk riwayat buyer
           <input name="reason" maxLength={1000} required />
         </label>
@@ -399,8 +328,6 @@ export function OrderActions({
           {busy ? "Menyimpan…" : "Simpan status"}
         </button>
       </form>
-
-      {timeEditorBlock}
     </div>
   );
 }

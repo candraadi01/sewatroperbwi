@@ -224,11 +224,11 @@ export function BuyerPortalLayout({
       {/* Footer Navigasi Cepat & Keluar: 2 Tombol Bersih seperti Konsep Homestay */}
       <div className="p-4 border-t border-[#e4ebef] dark:border-neutral-800 bg-white dark:bg-neutral-900 space-y-2.5">
         <Link
-          href="/buyer/katalog"
+          href="/"
           className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-[#327691] hover:bg-[#2c6881] text-white font-bold text-sm rounded-2xl shadow-xs transition cursor-pointer"
         >
-          <Search size={16} />
-          <span>Pesan Trip Baru</span>
+          <Globe size={16} />
+          <span>Ke Beranda Website</span>
         </Link>
 
         <button

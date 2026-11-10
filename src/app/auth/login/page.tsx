@@ -3,7 +3,7 @@
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Mountain, Mail, AlertCircle } from "lucide-react";
+import { Mountain, Mail, AlertCircle, ShieldCheck } from "lucide-react";
 import { Button, Input, Card } from "@/components/ui";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { safeRedirectPath } from "@/lib/security/redirect";
@@ -80,7 +80,8 @@ function LoginForm() {
           },
         });
         if (signUpData?.user) {
-          window.location.assign("/buyer");
+          const target = redirectTo && redirectTo !== "/" ? redirectTo : "/buyer";
+          window.location.assign(target);
           return;
         }
       }
@@ -200,6 +201,21 @@ function LoginForm() {
             >
               <Mail size={18} className="shrink-0 mt-0.5" />
               <span>{message}</span>
+            </div>
+          )}
+
+          {/* Reassurance banner if redirected from checkout */}
+          {redirectTo.includes("/checkout") && (
+            <div className="mb-5 p-3.5 rounded-xl bg-[#e9f3f7] border border-[#327691]/40 text-[#254958] text-xs flex items-start gap-2.5">
+              <ShieldCheck size={18} className="text-[#327691] shrink-0 mt-0.5" />
+              <div>
+                <p className="font-extrabold text-[#263b46]">
+                  Pilihan Paket & Unit Sewa Anda Tersimpan Aman
+                </p>
+                <p className="text-slate-600 mt-0.5 leading-relaxed">
+                  Silakan masuk untuk melanjutkan pengajuan booking. Anda akan langsung diarahkan kembali ke formulir checkout.
+                </p>
+              </div>
             </div>
           )}
 

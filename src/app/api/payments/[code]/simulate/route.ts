@@ -62,10 +62,18 @@ export async function POST(
       });
     }
 
-    // Hitung nominal yang dibayarkan
+    // Hitung nominal yang dibayarkan berdasarkan pilihan DP atau LUNAS
+    const bodyChoice =
+      typeof body?.paymentChoice === "string" && ["dp", "full"].includes(body.paymentChoice)
+        ? (body.paymentChoice as "dp" | "full")
+        : (booking.payment_choice || "dp");
+
+    const dpVal = booking.dp_amount || Math.round(booking.total_amount * 0.3);
     const amountToPay =
-      booking.payment_choice === "dp" && (booking.amount_paid || 0) === 0
-        ? (booking.dp_amount || booking.total_amount)
+      bodyChoice === "full"
+        ? (booking.outstanding || booking.total_amount)
+        : (booking.amount_paid || 0) === 0
+        ? dpVal
         : (booking.outstanding || booking.total_amount);
 
     const newAmountPaid = (booking.amount_paid || 0) + amountToPay;
@@ -82,6 +90,7 @@ export async function POST(
         amount_paid: newAmountPaid,
         outstanding: newOutstanding,
         status: newStatus,
+        payment_choice: bodyChoice,
         confirmed_at: nowIso,
       })
       .eq("id", booking.id);

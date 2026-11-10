@@ -21,6 +21,7 @@ import {
   Check,
   XCircle,
   Sparkles,
+  Globe,
 } from "lucide-react";
 import type { BookingRecord } from "@/lib/services/booking";
 import { formatIDR } from "@/lib/utils/currency";
@@ -90,10 +91,11 @@ export function BuyerPesananClient({
           </h1>
         </div>
         <Link
-          href="/sewa"
+          href="/"
           className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#327691] hover:bg-[#2c6881] text-white text-xs sm:text-sm font-bold shadow-xs transition shrink-0"
         >
-          <span>+ Pesan Trip Baru</span>
+          <Globe size={15} />
+          <span>Ke Beranda Website</span>
         </Link>
       </div>
 

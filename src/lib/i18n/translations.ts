@@ -92,9 +92,9 @@ export const translations = {
 
     // Hero & Search
     hero_badge: "Sewa Jeep Trooper 4x4 Banyuwangi",
-    hero_title_1: "Jelajahi Banyuwangi",
-    hero_title_2: "Tanpa Batas",
-    hero_subtitle: "Nikmati sensasi petualangan offroad Kawah Ijen, Baluran, Sukamade & De Djawatan bersama armada tangguh dan driver profesional terpercaya.",
+    hero_title_1: "Sewa Jeep Trooper Banyuwangi",
+    hero_title_2: "Resmi & Terpercaya",
+    hero_subtitle: "Penyedia resmi sewa armada Jeep Trooper 4x4 prima dengan driver lokal berpengalaman. Jaminan pasti berangkat, aman & nyaman tanpa biaya tersembunyi untuk trip Kawah Ijen, Baluran, Sukamade & De Djawatan.",
     search_jadwal: "Jadwal Trip (Ready)",
     search_btn_paket: "Cari Paket",
     popular_destinations: "Destinasi Populer:",
@@ -134,7 +134,7 @@ export const translations = {
     buyer_menu_keluar: "Keluar",
     buyer_welcome: "Selamat Datang,",
     buyer_hero_desc: "Pantau jadwal reservasi dan armada Trooper Anda.",
-    buyer_new_trip: "Pesan Trip Baru",
+    buyer_new_trip: "Ke Beranda Website",
     buyer_stat_total: "Total Pesanan",
     buyer_stat_waiting: "Menunggu Konfirmasi",
     buyer_stat_need_pay: "Perlu Pembayaran",
@@ -209,10 +209,10 @@ export const translations = {
     cart_added_alert: "Jeep Trooper booking added to cart!",
 
     // Hero & Search
-    hero_badge: "4x4 Jeep Trooper Rental Banyuwangi",
-    hero_title_1: "Explore Banyuwangi",
-    hero_title_2: "Without Limits",
-    hero_subtitle: "Experience thrilling offroad adventures across Ijen Crater, Baluran, Sukamade & De Djawatan with our tough 4x4 fleet and expert drivers.",
+    hero_badge: "Official Banyuwangi Jeep Trooper 4x4",
+    hero_title_1: "Official Banyuwangi Jeep Rental",
+    hero_title_2: "Trusted & Guaranteed",
+    hero_subtitle: "Certified 4x4 Trooper fleet with experienced local drivers. 100% departure guarantee, safe & transparent pricing for Kawah Ijen, Baluran, Sukamade & De Djawatan tours.",
     search_jadwal: "Trip Schedule (Ready)",
     search_btn_paket: "Find Packages",
     popular_destinations: "Popular Destinations:",
@@ -314,10 +314,10 @@ export const translations = {
     cart_added_alert: "已成功加入购物车！",
 
     // Hero & Search
-    hero_badge: "外南梦 4x4 Jeep Trooper 租赁",
-    hero_title_1: "探索外南梦",
-    hero_title_2: "无拘无束",
-    hero_subtitle: "与我们信赖的四驱越野车队及资深向导一起，体验伊真火山、巴鲁兰、苏卡玛德和德贾瓦坦的精彩探险。",
+    hero_badge: "外南梦官方吉普车",
+    hero_title_1: "外南梦官方吉普车包车",
+    hero_title_2: "正规可靠 · 出行有保障",
+    hero_subtitle: "正规自营四驱Trooper车队与资深本地向导，100%发车保障，价格透明无隐形消费，畅游伊真火山、巴鲁兰、红树林与苏卡玛德。",
     search_jadwal: "出行日期（现货）",
     search_btn_paket: "查找行程",
     popular_destinations: "热门目的地：",

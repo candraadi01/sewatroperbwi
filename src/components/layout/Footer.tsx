@@ -44,15 +44,41 @@ export async function Footer() {
             {/* Kolom 1: Profil & Brand (4 Cols) */}
             <div className="lg:col-span-4 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#327691] flex items-center justify-center text-white font-black text-lg shadow-md border border-white/20">
-                  4x4
+                <div className="w-11 h-11 rounded-full bg-[#1e293b] p-0.5 border border-[#38bdf8]/40 shadow-md shrink-0 overflow-hidden">
+                  <svg
+                    viewBox="0 0 120 120"
+                    className="w-full h-full"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle cx="60" cy="60" r="58" fill="#1e293b" />
+                    {/* Background Gunung Ijen & Matahari */}
+                    <path d="M12 90 Q60 20 108 90 Z" fill="#334155" opacity="0.6" />
+                    <circle cx="60" cy="38" r="14" fill="#f59e0b" opacity="0.9" />
+
+                    {/* Bodi Kotak Jeep Trooper */}
+                    <path
+                      d="M32 50 L88 50 L88 70 L92 72 L92 88 L28 88 L28 72 L32 70 Z"
+                      fill="#eab308"
+                    />
+                    {/* Roof Rack & Ban Pacul */}
+                    <rect x="36" y="44" width="48" height="5" rx="1.5" fill="#0f172a" />
+                    {/* Kaca Depan */}
+                    <rect x="36" y="52" width="48" height="15" rx="2" fill="#0f172a" />
+                    {/* Grille & Headlamp Bulat */}
+                    <rect x="36" y="71" width="48" height="14" rx="2" fill="#1e293b" />
+                    <circle cx="42" cy="78" r="4" fill="#ffffff" />
+                    <circle cx="78" cy="78" r="4" fill="#ffffff" />
+                    {/* Bullbar */}
+                    <rect x="30" y="86" width="60" height="5" rx="2" fill="#0f172a" />
+                  </svg>
                 </div>
                 <div>
                   <h3 className="text-xl md:text-2xl font-black tracking-tight text-white leading-tight">
                     SEWA JEEP <span className="text-[#38bdf8]">BWI</span>
                   </h3>
                   <p className="text-[10px] font-bold text-[#8abbd0] tracking-[0.2em] uppercase">
-                    Trooper 4x4 Adventure Banyuwangi
+                    Banyuwangi Adventure
                   </p>
                 </div>
               </div>

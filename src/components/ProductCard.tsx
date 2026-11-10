@@ -17,16 +17,24 @@ export const serviceLabels = {
 export function ProductCard({
   product: p,
   date,
+  isClosed = false,
+  closedReason,
 }: {
   product: Product;
   date?: string;
+  isClosed?: boolean;
+  closedReason?: string;
 }) {
   const { t } = useLanguage();
   const productUrl = date
     ? `/sewa/${p.slug}?date=${encodeURIComponent(date)}`
     : `/sewa/${p.slug}`;
 
-  const mainImage = p.images?.[0] || "/images/landing/tour-baluran.jpg";
+  let rawImg = p.images?.[0] || "/images/landing/tour-trooper-baluran-savana.jpg";
+  if (rawImg.includes("tour-baluran.jpg")) {
+    rawImg = "/images/landing/tour-trooper-baluran-savana.jpg";
+  }
+  const mainImage = rawImg;
 
   const badgeText = p.badge_label || (p.is_featured ? "Paket Favorit" : null);
   const durationDisplay =
@@ -53,8 +61,17 @@ export function ProductCard({
         {/* Subtle Gradient Overlay untuk kedalaman visual */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/20 pointer-events-none" />
 
+        {/* Badge Tutup Jadwal di Pojok Kiri Atas */}
+        {isClosed && (
+          <div className="absolute top-3 left-3 z-30">
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-rose-600/95 backdrop-blur-xs text-white text-[11px] font-black uppercase tracking-wider shadow-lg">
+              ⛔ Jadwal Ditutup
+            </span>
+          </div>
+        )}
+
         {/* 3D Diagonal Corner Ribbon "BEST SELLER" (Persis Referensi Foto) */}
-        {p.is_best_seller && (
+        {!isClosed && p.is_best_seller && (
           <div className="absolute top-0 left-0 z-20 pointer-events-none select-none">
             <svg
               width="100"
@@ -199,9 +216,13 @@ export function ProductCard({
         {/* 3. Tombol Booking Sekarang */}
         <Link
           href={productUrl}
-          className="w-full bg-[#327691] hover:bg-[#255b70] active:scale-[0.99] text-white font-extrabold text-xs sm:text-sm py-2.5 sm:py-3 rounded-xl transition duration-200 flex items-center justify-center gap-1.5 shadow-xs uppercase tracking-wider cursor-pointer"
+          className={`w-full font-extrabold text-xs sm:text-sm py-2.5 sm:py-3 rounded-xl transition duration-200 flex items-center justify-center gap-1.5 shadow-xs uppercase tracking-wider cursor-pointer ${
+            isClosed
+              ? "bg-slate-400 hover:bg-slate-500 text-white"
+              : "bg-[#327691] hover:bg-[#255b70] active:scale-[0.99] text-white"
+          }`}
         >
-          <span>{t("btn_book_now", "Booking Sekarang")}</span>
+          <span>{isClosed ? "Jadwal Tutup (Cek Detail)" : t("btn_book_now", "Booking Sekarang")}</span>
         </Link>
       </div>
     </div>

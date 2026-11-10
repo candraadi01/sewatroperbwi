@@ -29,7 +29,10 @@ export async function POST(
     if (!/^TRP-\d{8}-[A-Z0-9]{10}$/.test(cleanCode))
       throw new RequestError("Kode tidak valid.");
     const input = z
-      .object({ idempotencyKey: z.string().min(1) })
+      .object({
+        idempotencyKey: z.string().min(1),
+        paymentChoice: z.enum(["dp", "full"]).optional(),
+      })
       .strict()
       .safeParse(await readJson(request));
     if (!input.success) throw new RequestError("Permintaan tidak valid.");
@@ -82,10 +85,22 @@ export async function POST(
     )
       throw new RequestError("Pesanan tidak memiliki tagihan aktif.", 409);
 
+    const chosenType = input.data.paymentChoice || b.payment_choice || "dp";
+    const dpVal = b.dp_amount || Math.round(b.total_amount * 0.3);
     const amountToPay =
-      b.payment_choice === "dp" && (b.amount_paid || 0) === 0
-        ? (b.dp_amount || b.total_amount)
+      chosenType === "full"
+        ? (b.outstanding || b.total_amount)
+        : (b.amount_paid || 0) === 0
+        ? dpVal
         : (b.outstanding || b.total_amount);
+
+    if (chosenType !== b.payment_choice) {
+      await db
+        .from("bookings")
+        .update({ payment_choice: chosenType })
+        .eq("id", b.id);
+      b.payment_choice = chosenType;
+    }
 
     // Jika Midtrans belum dikonfigurasi dengan server key asli, gunakan sandbox simulator
     if (!midtransConfigured()) {
@@ -97,7 +112,7 @@ export async function POST(
         totalAmount: b.total_amount,
         amountPaid: b.amount_paid || 0,
         outstanding: b.outstanding || 0,
-        paymentChoice: b.payment_choice,
+        paymentChoice: chosenType,
         message: "Midtrans mode simulasi aktif (Sandbox).",
       });
     }

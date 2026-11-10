@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getProducts } from "@/lib/services/catalog";
 import { ProductCard, serviceLabels } from "@/components/ProductCard";
 import { Calendar } from "lucide-react";
+import { createPublicClient } from "@/lib/supabase/public";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export default async function Catalog({
   searchParams,
@@ -50,6 +52,27 @@ export default async function Catalog({
 
   const hasActiveFilter = Boolean(q || kategori || destinasi || durasi || service || (sort && sort !== "popular"));
   const isSearchFiltered = Boolean(date || hasActiveFilter);
+
+  // Periksa status ketersediaan tanggal jika buyer mencari dengan parameter tanggal
+  const closedProductIds = new Set<string>();
+  let isGlobalClosed = false;
+
+  if (date && isSupabaseConfigured()) {
+    try {
+      const supabase = createPublicClient();
+      const { data: blackouts } = await supabase
+        .from("blackout_dates")
+        .select("product_id")
+        .eq("date", date);
+
+      (blackouts || []).forEach((b) => {
+        if (!b.product_id) isGlobalClosed = true;
+        else closedProductIds.add(b.product_id);
+      });
+    } catch (e) {
+      console.error("Gagal memeriksa ketersediaan tanggal:", e);
+    }
+  }
 
   return (
     <div className="bg-[#f7f8f9] min-h-screen py-10 md:py-16 font-sans">
@@ -225,9 +248,10 @@ export default async function Catalog({
         {/* Product Cards Grid */}
         {products.length ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7">
-            {products.map((p) => (
-              <ProductCard key={p.id} product={p} date={date} />
-            ))}
+            {products.map((p) => {
+              const isClosed = isGlobalClosed || closedProductIds.has(p.id);
+              return <ProductCard key={p.id} product={p} date={date} isClosed={isClosed} />;
+            })}
           </div>
         ) : (
           <div className="bg-white rounded-2xl p-12 text-center border border-[#e4ebef]">

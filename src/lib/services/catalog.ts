@@ -36,10 +36,11 @@ function resolveTrooperImages(row: ProductRow): string[] {
   const existingFirst = row.cover_image_url || row.images?.[0] || "";
   const s = ((row.slug || "") + " " + (row.name || "")).toLowerCase();
 
-  // Jika gambar pertama sudah merupakan foto mobil Trooper valid (bukan kawah belerang / artikel tanpa mobil)
+  // Jika gambar pertama sudah merupakan foto mobil Trooper valid (bukan kawah belerang / artikel / foto kerbau tanpa mobil)
   if (
     existingFirst &&
     !existingFirst.includes("tour-kawah-ijen.jpg") &&
+    !existingFirst.includes("tour-baluran.jpg") &&
     !existingFirst.includes("article-") &&
     !existingFirst.includes("hero-bg.jpg") &&
     !existingFirst.includes("placeholder")
@@ -54,7 +55,7 @@ function resolveTrooperImages(row: ProductRow): string[] {
     return [
       "/images/landing/tour-sukamade.jpg",
       "/images/landing/hero-adventure-trooper.jpg",
-      "/images/landing/tour-baluran.jpg",
+      "/images/landing/tour-trooper-baluran-savana.jpg",
     ];
   }
   if (s.includes("kawah-wurung") || s.includes("wurung")) {
@@ -68,12 +69,12 @@ function resolveTrooperImages(row: ProductRow): string[] {
     return [
       "/images/landing/tour-trooper-kawah-ijen.jpg",
       "/images/landing/tour-trooper-kawah-wurung.jpg",
-      "/images/landing/tour-baluran.jpg",
+      "/images/landing/tour-trooper-baluran-savana.jpg",
     ];
   }
   if (s.includes("baluran")) {
     return [
-      "/images/landing/tour-baluran.jpg",
+      "/images/landing/tour-trooper-baluran-savana.jpg",
       "/images/landing/hero-trooper-baluran-hd.webp",
       "/images/landing/trooper-baluran-action.webp",
     ];

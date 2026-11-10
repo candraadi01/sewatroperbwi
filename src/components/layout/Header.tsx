@@ -205,14 +205,9 @@ export function Header({
 
               {/* Brand Typography — Proporsional di Mobile & Desktop */}
               <div className="flex flex-col justify-center">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm sm:text-lg md:text-xl font-black text-[#263b46] tracking-tight leading-tight group-hover:text-[#327691] transition-colors whitespace-nowrap">
-                    SEWA JEEP
-                  </span>
-                  <span className="hidden sm:inline-block px-1.5 py-0.2 rounded bg-[#f59e0b] text-white text-[9px] font-black uppercase tracking-wider">
-                    4X4
-                  </span>
-                </div>
+                <span className="text-sm sm:text-lg md:text-xl font-black text-[#263b46] tracking-tight leading-tight group-hover:text-[#327691] transition-colors whitespace-nowrap">
+                  SEWA JEEP
+                </span>
                 <span className="text-[8.5px] sm:text-[10px] md:text-[11px] font-bold text-[#327691] tracking-[0.22em] uppercase leading-none mt-0.5 whitespace-nowrap">
                   BANYUWANGI
                 </span>

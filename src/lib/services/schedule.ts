@@ -42,19 +42,27 @@ export async function getScheduleRange(
     }
 
     // 2. Ambil sales quotas (kapasitas harian)
-    const quotaQuery = supabase
+    let quotaQuery = supabase
       .from("sales_quotas")
       .select("id, product_id, date, max_units, booked_units")
       .gte("date", startDate)
       .lte("date", endDate);
 
+    if (productId) {
+      quotaQuery = quotaQuery.or(`product_id.is.null,product_id.eq.${productId}`);
+    }
+
     // 3. Ambil jumlah booking aktif yang sudah masuk
-    const bookingsQuery = supabase
+    let bookingsQuery = supabase
       .from("bookings")
-      .select("service_date, num_units, status")
+      .select("service_date, num_units, status, product_id")
       .gte("service_date", startDate)
       .lte("service_date", endDate)
       .not("status", "in", '("cancelled","rejected","cancelled_by_admin")');
+
+    if (productId) {
+      bookingsQuery = bookingsQuery.eq("product_id", productId);
+    }
 
     const [blackoutsRes, quotasRes, bookingsRes] = await Promise.all([
       blackoutQuery,
@@ -64,12 +72,17 @@ export async function getScheduleRange(
 
     const blackoutMap = new Map<string, { id: string; reason: string }>();
     (blackoutsRes.data || []).forEach((b) => {
-      blackoutMap.set(b.date, { id: b.id, reason: b.reason || "" });
+      // Prioritaskan spesifik produk jika ada
+      if (b.product_id === productId || !blackoutMap.has(b.date)) {
+        blackoutMap.set(b.date, { id: b.id, reason: b.reason || "" });
+      }
     });
 
     const quotaMap = new Map<string, { id: string; maxUnits: number; bookedUnits: number }>();
     (quotasRes.data || []).forEach((q) => {
-      quotaMap.set(q.date, { id: q.id, maxUnits: q.max_units, bookedUnits: q.booked_units });
+      if (q.product_id === productId || !quotaMap.has(q.date)) {
+        quotaMap.set(q.date, { id: q.id, maxUnits: q.max_units, bookedUnits: q.booked_units });
+      }
     });
 
     const activeBookingsCount = new Map<string, number>();
@@ -135,24 +148,31 @@ function generateDefaultSchedule(startDate: string, endDate: string): DateSchedu
 
 /**
  * Toggle ketersediaan tanggal (Buka / Tutup Jadwal).
- * Dijalankan oleh Admin atau Owner.
+ * Dijalankan oleh Admin atau Owner. Mendukung per-katalog maupun global.
  */
 export async function setDateAvailability(params: {
   date: string;
   isAvailable: boolean;
   reason?: string;
   maxUnits?: number;
+  productId?: string;
 }): Promise<{ success: boolean; message: string }> {
   const supabase = await createClient();
 
   if (params.isAvailable) {
     // Buka jadwal: Hapus dari blackout_dates
-    const { error: delError } = await supabase
+    let delQuery = supabase
       .from("blackout_dates")
       .delete()
-      .eq("date", params.date)
-      .is("product_id", null);
+      .eq("date", params.date);
 
+    if (params.productId) {
+      delQuery = delQuery.eq("product_id", params.productId);
+    } else {
+      delQuery = delQuery.is("product_id", null);
+    }
+
+    const { error: delError } = await delQuery;
     if (delError) {
       throw new Error(`Gagal membuka jadwal: ${delError.message}`);
     }
@@ -164,6 +184,7 @@ export async function setDateAvailability(params: {
         .upsert(
           {
             date: params.date,
+            product_id: params.productId || null,
             max_units: params.maxUnits,
           },
           { onConflict: "product_id,date" }
@@ -181,7 +202,7 @@ export async function setDateAvailability(params: {
       .upsert(
         {
           date: params.date,
-          product_id: null, // Berlaku untuk semua produk
+          product_id: params.productId || null,
           reason: params.reason || "Jadwal ditutup oleh Admin / Pemilik",
         },
         { onConflict: "product_id,date" }
@@ -199,19 +220,100 @@ export async function setDateAvailability(params: {
 }
 
 /**
- * Bulk toggle ketersediaan rentang tanggal.
+ * Memperbarui pengaturan jam keberangkatan katalog produk
+ */
+export async function updateProductDepartureSettings(
+  productId: string,
+  defaultStartTime: string
+): Promise<{ success: boolean; message: string }> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("products")
+    .update({ default_start_time: defaultStartTime })
+    .eq("id", productId);
+
+  if (error) {
+    throw new Error(`Gagal menyimpan jam keberangkatan: ${error.message}`);
+  }
+
+  return {
+    success: true,
+    message: `Jam keberangkatan katalog berhasil diperbarui ke: ${defaultStartTime} WIB`,
+  };
+}
+
+/**
+ * Bulk toggle ketersediaan rentang tanggal (Buka / Tutup Massal Cepat).
+ * Dijalankan secara batch satu query efisien.
  */
 export async function bulkSetDateAvailability(params: {
   dates: string[];
   isAvailable: boolean;
   reason?: string;
+  maxUnits?: number;
+  productId?: string;
 }): Promise<{ success: boolean; count: number }> {
-  for (const d of params.dates) {
-    await setDateAvailability({
-      date: d,
-      isAvailable: params.isAvailable,
-      reason: params.reason,
-    });
+  if (!params.dates || params.dates.length === 0) {
+    return { success: true, count: 0 };
   }
+
+  const supabase = await createClient();
+
+  if (params.isAvailable) {
+    // Buka jadwal massal: Hapus dari blackout_dates sekaligus
+    let delQuery = supabase
+      .from("blackout_dates")
+      .delete()
+      .in("date", params.dates);
+
+    if (params.productId) {
+      delQuery = delQuery.eq("product_id", params.productId);
+    } else {
+      delQuery = delQuery.is("product_id", null);
+    }
+
+    const { error: delError } = await delQuery;
+    if (delError) {
+      console.warn("[bulkSetDateAvailability] Error deleting blackouts:", delError);
+    }
+
+    // Jika maxUnits ditentukan, perbarui quota sekaligus
+    if (typeof params.maxUnits === "number" && params.maxUnits > 0) {
+      const quotaRows = params.dates.map((d) => ({
+        date: d,
+        product_id: params.productId || null,
+        max_units: params.maxUnits,
+      }));
+      await supabase
+        .from("sales_quotas")
+        .upsert(quotaRows, { onConflict: "product_id,date" });
+    }
+  } else {
+    // Tutup jadwal massal: Upsert ke blackout_dates sekaligus
+    const blackoutRows = params.dates.map((d) => ({
+      date: d,
+      product_id: params.productId || null,
+      reason: params.reason || "Jadwal ditutup oleh pengelola",
+    }));
+
+    const { error: insError } = await supabase
+      .from("blackout_dates")
+      .upsert(blackoutRows, { onConflict: "product_id,date" });
+
+    if (insError) {
+      console.warn("[bulkSetDateAvailability] Error upserting blackouts:", insError);
+      // Fallback satu per satu jika upsert constraint gagal
+      for (const d of params.dates) {
+        await supabase
+          .from("blackout_dates")
+          .insert({
+            date: d,
+            product_id: params.productId || null,
+            reason: params.reason || "Jadwal ditutup oleh pengelola",
+          });
+      }
+    }
+  }
+
   return { success: true, count: params.dates.length };
 }

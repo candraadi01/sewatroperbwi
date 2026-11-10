@@ -112,26 +112,18 @@ export function HeroSearch() {
       </div>
 
       {/* Konten Utama Hero: Judul & Form Pencarian */}
-      <div className="container-app relative z-10 max-w-5xl mx-auto px-4 sm:px-6">
-        {/* Eyebrow Badge — Ringkas & Transparan Elegan */}
-        <div className="flex justify-center mb-2.5 sm:mb-4">
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full bg-black/30 backdrop-blur-xs border border-white/35 text-white text-[11px] sm:text-xs font-bold shadow-md">
-            <span className="flex h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-amber-400 animate-pulse" />
-            <span>{t("hero_badge", "Sewa Jeep Trooper 4x4 Banyuwangi")}</span>
-          </div>
-        </div>
-
-        {/* Hero Title & Subtitle — Proporsional di Mobile & Desktop */}
-        <div className="text-center max-w-3xl mx-auto mb-4 sm:mb-8 md:mb-12">
-          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-[52px] font-black text-white tracking-tight leading-[1.18] sm:leading-[1.16] drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
-            {t("hero_title_1", "Jelajahi Banyuwangi")}{" "}
-            <span className="text-[#fbbf24] drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)]">
-              {t("hero_title_2", "Tanpa Batas")}
+      <div className="container-app relative z-10 max-w-5xl mx-auto px-4 sm:px-6 pt-2 sm:pt-4">
+        {/* Hero Title & Subtitle — Terpercaya, Profesional & Meyakinkan Pengunjung */}
+        <div className="text-center max-w-3xl mx-auto mb-5 sm:mb-8 md:mb-12">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-[52px] font-black text-white tracking-tight leading-[1.18] sm:leading-[1.16] drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]">
+            {t("hero_title_1", "Sewa Jeep Trooper Banyuwangi")}{" "}
+            <span className="text-[#facc15] drop-shadow-[0_2px_14px_rgba(250,204,21,0.55)]">
+              {t("hero_title_2", "Resmi & Terpercaya")}
             </span>
           </h1>
 
-          <p className="mt-2 sm:mt-3 text-[11.5px] sm:text-sm md:text-base text-white/95 max-w-2xl mx-auto font-medium leading-relaxed drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)]">
-            {t("hero_subtitle", "Nikmati sensasi petualangan offroad Kawah Ijen, Baluran, Sukamade & De Djawatan bersama armada tangguh dan driver profesional terpercaya.")}
+          <p className="mt-2.5 sm:mt-3.5 text-xs sm:text-sm md:text-base text-white/95 max-w-2xl mx-auto font-medium leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+            {t("hero_subtitle", "Penyedia resmi sewa armada Jeep Trooper 4x4 prima dengan driver lokal berpengalaman. Jaminan pasti berangkat, aman & nyaman tanpa biaya tersembunyi untuk trip Kawah Ijen, Baluran, Sukamade & De Djawatan.")}
           </p>
         </div>
 
@@ -242,10 +234,10 @@ export function HeroSearch() {
 
                 <button
                   type="submit"
-                  className="flex-1 md:flex-initial h-10 sm:h-11 md:h-full min-h-[42px] sm:min-h-[46px] px-6 sm:px-8 bg-[#f97316] hover:bg-[#ea580c] active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm rounded-lg sm:rounded-xl transition-all shadow-lg shadow-orange-500/30 flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap border border-orange-300/40 uppercase tracking-wide"
+                  className="group flex-1 md:flex-initial h-10 sm:h-11 md:h-full min-h-[42px] sm:min-h-[46px] px-6 sm:px-8 bg-[#0f172a] hover:bg-[#1e293b] active:bg-[#020617] active:scale-[0.98] text-white font-black text-xs sm:text-sm rounded-lg sm:rounded-xl transition-all duration-200 shadow-xl shadow-black/50 hover:shadow-black/70 flex items-center justify-center gap-2.5 cursor-pointer whitespace-nowrap border border-white/25 hover:border-white/60 uppercase tracking-wider"
                 >
-                  <Search size={15} strokeWidth={2.6} />
-                  <span>{t("search_btn_paket", "Cari Paket")}</span>
+                  <Search size={16} strokeWidth={2.8} className="text-white group-hover:scale-110 transition-transform duration-200" />
+                  <span className="tracking-wider">{t("search_btn_paket", "Cari Paket")}</span>
                 </button>
               </div>
             </div>

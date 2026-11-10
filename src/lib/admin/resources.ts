@@ -14,7 +14,8 @@ export interface AdminField {
     | "lines"
     | "content"
     | "json"
-    | "image";
+    | "image"
+    | "time-list";
   required?: boolean;
   min?: number;
   max?: number;
@@ -139,7 +140,12 @@ export const resources: Record<string, AdminResource> = {
       num("base_price", "Tarif utama per kendaraan (Rp)"),
       num("passenger_capacity", "Kapasitas penumpang", 1, 6),
       num("duration_minutes", "Durasi layanan (menit)", 1, 480),
-      text("default_start_time", "Jam mulai (HH:MM)", { default: "08:00" }),
+      {
+        key: "default_start_time",
+        label: "Pilihan Jam Keberangkatan (Dapat Ditambah)",
+        type: "time-list",
+        default: "08:00",
+      },
       num("min_booking_hours", "Minimal pemesanan sebelum trip (jam)", 0, 24),
       {
         key: "driver_included",
@@ -584,8 +590,12 @@ export function resourceSchema(resource: AdminResource) {
         .string()
         .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
         .max(200);
-    if (f.key === "default_start_time")
-      value = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d(?::00)?$/);
+    if (f.key === "default_start_time" || f.type === "time-list")
+      value = z.string().refine((val) => {
+        if (!val) return true;
+        const parts = val.split(",").map((s) => s.trim().slice(0, 5));
+        return parts.length > 0 && parts.every((p) => /^([01]\d|2[0-3]):[0-5]\d$/.test(p));
+      }, "Format jam harus berupa format HH:MM (contoh: 08:00 atau dipisahkan koma: 06:00, 08:00, 13:00)");
     if (f.type === "image")
       value = z
         .string()

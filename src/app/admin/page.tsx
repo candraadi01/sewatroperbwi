@@ -3,7 +3,6 @@ import { requireAdmin } from "@/lib/auth/helpers";
 import { getAllBookings } from "@/lib/services/booking";
 import { formatIDR } from "@/lib/utils/currency";
 import { bookingStatus } from "@/lib/utils/booking-status";
-import { midtransConfigured } from "@/lib/midtrans/snap";
 import {
   Clock,
   Car,
@@ -13,14 +12,11 @@ import {
   ShoppingBag,
   Calendar,
   Users,
-  Settings,
   BarChart3,
   ChevronRight,
   Phone,
   ArrowUpRight,
-  Sparkles,
   Wallet,
-  Package,
   Check,
   X,
   ExternalLink,
@@ -431,138 +427,6 @@ export default async function AdminDashboardPage() {
             </p>
           </div>
         )}
-      </div>
-
-      {/* 5. Section Dua Kolom: Aksi Cepat Operasional & Kesiapan Sistem */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Kolom Kiri: Menu Pintasan Cepat (Quick Actions) */}
-        <div className="rounded-2xl border border-[#e4ebef] dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 shadow-xs">
-          <h3 className="font-extrabold text-sm sm:text-base text-[#263b46] dark:text-neutral-100 flex items-center gap-2 mb-1">
-            <Sparkles size={16} className="text-[#327691] dark:text-[#8abbd0]" />
-            Aksi Cepat Operasional
-          </h3>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
-            Navigasi instan ke modul-modul penting pengelolaan wisata dan armada.
-          </p>
-
-          <div className="grid grid-cols-2 gap-2.5">
-            <Link
-              href="/admin/jadwal"
-              className="p-3 rounded-xl border border-[#e4ebef] dark:border-neutral-800 hover:bg-[#f6fafc] dark:hover:bg-neutral-800/70 transition flex items-center gap-2.5 group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-sky-50 dark:bg-neutral-800 text-[#327691] flex items-center justify-center group-hover:scale-105 transition-transform">
-                <Calendar size={16} />
-              </div>
-              <div className="min-w-0">
-                <span className="font-bold text-xs text-[#263b46] dark:text-neutral-200 block truncate">
-                  Jadwal & Kuota
-                </span>
-                <span className="text-[10px] text-neutral-400 block truncate">
-                  Kalender ketersediaan
-                </span>
-              </div>
-            </Link>
-
-            <Link
-              href="/admin/produk"
-              className="p-3 rounded-xl border border-[#e4ebef] dark:border-neutral-800 hover:bg-[#f6fafc] dark:hover:bg-neutral-800/70 transition flex items-center gap-2.5 group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-neutral-800 text-emerald-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                <Package size={16} />
-              </div>
-              <div className="min-w-0">
-                <span className="font-bold text-xs text-[#263b46] dark:text-neutral-200 block truncate">
-                  Tour & Armada
-                </span>
-                <span className="text-[10px] text-neutral-400 block truncate">
-                  Kelola paket & tarif
-                </span>
-              </div>
-            </Link>
-
-            <Link
-              href="/admin/tim"
-              className="p-3 rounded-xl border border-[#e4ebef] dark:border-neutral-800 hover:bg-[#f6fafc] dark:hover:bg-neutral-800/70 transition flex items-center gap-2.5 group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-neutral-800 text-amber-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                <Users size={16} />
-              </div>
-              <div className="min-w-0">
-                <span className="font-bold text-xs text-[#263b46] dark:text-neutral-200 block truncate">
-                  Tim Driver
-                </span>
-                <span className="text-[10px] text-neutral-400 block truncate">
-                  Daftar driver lokal
-                </span>
-              </div>
-            </Link>
-
-            <Link
-              href="/admin/pengaturan"
-              className="p-3 rounded-xl border border-[#e4ebef] dark:border-neutral-800 hover:bg-[#f6fafc] dark:hover:bg-neutral-800/70 transition flex items-center gap-2.5 group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-purple-50 dark:bg-neutral-800 text-purple-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                <Settings size={16} />
-              </div>
-              <div className="min-w-0">
-                <span className="font-bold text-xs text-[#263b46] dark:text-neutral-200 block truncate">
-                  Pengaturan
-                </span>
-                <span className="text-[10px] text-neutral-400 block truncate">
-                  DP, kontak & website
-                </span>
-              </div>
-            </Link>
-          </div>
-        </div>
-
-        {/* Kolom Kanan: Status Kesiapan Operasional & Sistem */}
-        <div className="rounded-2xl border border-[#e4ebef] dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 shadow-xs">
-          <h3 className="font-extrabold text-sm sm:text-base text-[#263b46] dark:text-neutral-100 flex items-center gap-2 mb-1">
-            <CheckCircle2 size={16} className="text-emerald-600" />
-            Kesiapan Sistem & Payment Gateway
-          </h3>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
-            Status konfigurasi gateway pembayaran online dan database aplikasi.
-          </p>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 rounded-xl bg-[#f8fafc] dark:bg-neutral-800/50 border border-neutral-200/60 dark:border-neutral-800">
-              <div className="flex items-center gap-2.5">
-                <CreditCard size={16} className="text-[#327691]" />
-                <span className="text-xs font-bold text-[#263b46] dark:text-neutral-200">
-                  Midtrans Snap Payment:
-                </span>
-              </div>
-              <span
-                className={cn(
-                  "text-[11px] font-bold px-2 py-0.5 rounded-full border",
-                  midtransConfigured()
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                    : "bg-amber-50 text-amber-700 border-amber-200"
-                )}
-              >
-                {midtransConfigured()
-                  ? process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === "true"
-                    ? "✓ Siap (Produksi)"
-                    : "✓ Siap (Sandbox)"
-                  : "Belum Dikonfigurasi"}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between p-3 rounded-xl bg-[#f8fafc] dark:bg-neutral-800/50 border border-neutral-200/60 dark:border-neutral-800">
-              <div className="flex items-center gap-2.5">
-                <Car size={16} className="text-[#327691]" />
-                <span className="text-xs font-bold text-[#263b46] dark:text-neutral-200">
-                  SOP Verifikasi Booking:
-                </span>
-              </div>
-              <span className="text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">
-                Admin review &rarr; Setujui &rarr; Buyer Bayar
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -22,6 +22,7 @@ import {
   ShieldCheck,
   Compass,
   Lock,
+  Globe,
 } from "lucide-react";
 import type { BookingRecord } from "@/lib/services/booking";
 
@@ -95,11 +96,11 @@ export function BuyerDashboardClient({ user, orders }: BuyerDashboardClientProps
           </div>
 
           <Link
-            href="/buyer/katalog"
+            href="/"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#327691] hover:bg-[#2c6881] text-white text-xs sm:text-sm font-bold shadow-xs transition shrink-0"
           >
-            <Search size={15} />
-            <span>{t("buyer_new_trip", "Pesan Trip Baru")}</span>
+            <Globe size={15} />
+            <span>Ke Beranda Website</span>
           </Link>
         </div>
 

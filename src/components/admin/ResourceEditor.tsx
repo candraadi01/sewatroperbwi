@@ -13,10 +13,14 @@ import {
   Calendar, 
   Check, 
   FileText,
-  AlertCircle
+  AlertCircle,
+  Eye,
 } from "lucide-react";
 import type { AdminResource, AdminField } from "@/lib/admin/resources";
 import { formatIDR } from "@/lib/utils/currency";
+import { TimeListEditor } from "./TimeListEditor";
+import { ProductEditorForm } from "./ProductEditorForm";
+import Link from "next/link";
 
 type Row = Record<string, unknown>;
 
@@ -347,7 +351,20 @@ export function ResourceEditor({
       )}
 
       {/* Editor Modal / Section (High-Contrast, Clean Form) */}
-      {selected && (
+      {selected && resourceKey === "produk" ? (
+        <ProductEditorForm
+          selected={selected}
+          onClose={() => setSelected(null)}
+          options={options}
+          busy={busy}
+          error={error}
+          onSave={save}
+          onUpload={async (key, file) => {
+            const field = config.fields.find((f) => f.key === key);
+            if (field) await upload(field, file);
+          }}
+        />
+      ) : selected ? (
         <section className="bg-white dark:bg-neutral-900 rounded-2xl border border-[#e4ebef] dark:border-neutral-800 p-6 sm:p-8 shadow-sm">
           <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#f0f4f6] dark:border-neutral-800">
             <div>
@@ -380,7 +397,9 @@ export function ResourceEditor({
                     f.type === "textarea" ||
                     f.type === "content" ||
                     f.type === "json" ||
-                    f.type === "lines"
+                    f.type === "lines" ||
+                    f.type === "time-list" ||
+                    f.key === "default_start_time"
                       ? "md:col-span-2 space-y-1.5"
                       : "space-y-1.5"
                   }
@@ -390,7 +409,13 @@ export function ResourceEditor({
                     {f.required && <span className="text-rose-500 ml-1">*</span>}
                   </label>
 
-                  {f.type === "checkbox" ? (
+                  {f.type === "time-list" || f.key === "default_start_time" ? (
+                    <TimeListEditor
+                      key={String(selected.id) + f.key}
+                      name={f.key}
+                      initialValue={String(value(f))}
+                    />
+                  ) : f.type === "checkbox" ? (
                     <div className="flex items-center gap-3 pt-1">
                       <input
                         key={String(selected.id) + f.key}
@@ -498,7 +523,7 @@ export function ResourceEditor({
             </div>
           </form>
         </section>
-      )}
+      ) : null}
 
       {/* Mobile Friendly Card View (< md) */}
       <div className="md:hidden space-y-3">
@@ -538,13 +563,25 @@ export function ResourceEditor({
                 )}
               </div>
               {!config.readOnly && (
-                <button
-                  onClick={() => start(row)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#e8f3f7] dark:bg-neutral-800 text-[#327691] dark:text-[#8abbd0] font-bold text-xs hover:bg-[#d5e9f1] transition cursor-pointer"
-                >
-                  <Edit3 size={13} />
-                  <span>Edit</span>
-                </button>
+                <div className="flex items-center gap-1.5">
+                  {resourceKey === "produk" && (
+                    <Link
+                      href={`/admin/jadwal?catalogId=${row.id}`}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-sky-50 dark:bg-neutral-800 text-[#327691] dark:text-[#8abbd0] font-bold text-xs hover:bg-sky-100 transition"
+                      title="Atur Jadwal & Kuota Armada"
+                    >
+                      <Calendar size={13} />
+                      <span>Jadwal</span>
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => start(row)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#e8f3f7] dark:bg-neutral-800 text-[#327691] dark:text-[#8abbd0] font-bold text-xs hover:bg-[#d5e9f1] transition cursor-pointer"
+                  >
+                    <Edit3 size={13} />
+                    <span>Edit</span>
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -578,13 +615,39 @@ export function ResourceEditor({
                   ))}
                   {!config.readOnly && (
                     <td className="px-5 py-4 text-right">
-                      <button
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#e8f3f7] dark:bg-neutral-800 text-[#327691] dark:text-[#8abbd0] hover:bg-[#d5e9f1] dark:hover:bg-neutral-700 font-bold text-xs transition cursor-pointer"
-                        onClick={() => start(row)}
-                      >
-                        <Edit3 size={13} />
-                        <span>Edit</span>
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        {resourceKey === "produk" && (
+                          <>
+                            {Boolean(row.slug) && (
+                              <a
+                                href={`/sewa/${row.slug}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 text-slate-700 dark:text-neutral-300 font-bold text-xs transition"
+                                title="Lihat Halaman Buyer"
+                              >
+                                <Eye size={12} />
+                                <span>Preview</span>
+                              </a>
+                            )}
+                            <Link
+                              href={`/admin/jadwal?catalogId=${row.id}`}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 dark:bg-neutral-800 text-[#327691] dark:text-[#8abbd0] font-bold text-xs transition"
+                              title="Kelola Jadwal & Kuota Paket Ini"
+                            >
+                              <Calendar size={13} />
+                              <span>Jadwal & Kuota</span>
+                            </Link>
+                          </>
+                        )}
+                        <button
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#e8f3f7] dark:bg-neutral-800 text-[#327691] dark:text-[#8abbd0] hover:bg-[#d5e9f1] dark:hover:bg-neutral-700 font-bold text-xs transition cursor-pointer"
+                          onClick={() => start(row)}
+                        >
+                          <Edit3 size={13} />
+                          <span>Edit</span>
+                        </button>
+                      </div>
                     </td>
                   )}
                 </tr>

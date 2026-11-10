@@ -77,11 +77,32 @@ export async function POST(
         (!values.base_price || Number(values.base_price) < 1)
       )
         throw new RequestError("Isi tarif sebelum menyetujui produk.");
-      const { error } = await db.rpc("save_admin_product", {
-        p: values,
+
+      const rawTime = String(values.default_start_time || "08:00").trim();
+      const firstTime = rawTime.split(",")[0].trim().slice(0, 5) || "08:00";
+
+      const rpcPayload = {
+        ...values,
+        default_start_time: firstTime,
+      };
+
+      const { data: savedId, error } = await db.rpc("save_admin_product", {
+        p: rpcPayload,
         p_id: id ?? null,
       });
       if (error) throw new Error("Product save failed: " + error.code);
+
+      const targetId = id || savedId;
+      if (targetId) {
+        try {
+          await db
+            .from("products")
+            .update({ default_start_time: rawTime })
+            .eq("id", targetId);
+        } catch {
+          // ignore jika kolom DB masih strict time
+        }
+      }
     } else if (resource === "bisnis") {
       const { error } = await db.rpc("save_business_settings", { p: values });
       if (error)
