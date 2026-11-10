@@ -60,3 +60,4 @@ export function ProductGallery({
     </div>
   );
 }
+
