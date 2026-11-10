@@ -38,16 +38,44 @@ export function ProductCard({
   const destinationPoints = getProductDestinationPoints(p);
   const finalPrice = p.base_price && p.base_price > 0 ? p.base_price : 750000;
 
-  // Ekstraksi nama rute untuk overlay branding brosur (sesuai referensi foto)
-  const upperName = (p.name || "").toUpperCase();
-  const cleanedRoute =
+  // Ekstraksi nama rute & tipe paket untuk overlay branding brosur (persis referensi foto 1)
+  const rawName = (p.name || "").trim();
+  const upperName = rawName.toUpperCase();
+  const isMultiDay =
+    upperName.includes("2D1N") ||
+    upperName.includes("3D2N") ||
+    upperName.includes("DAY") ||
+    upperName.includes("HARI") ||
+    Boolean(p.duration_text && (p.duration_text.includes("Day") || p.duration_text.includes("Hari")));
+  const isPrivateTrip = upperName.includes("PRIVATE TRIP");
+  const isPaketWisata = upperName.includes("PAKET WISATA");
+
+  let topBadgeText = "PAKET JEEP";
+  if (upperName.includes("3D2N") || (p.duration_text && p.duration_text.includes("3 Day"))) {
+    topBadgeText = "PAKET 3D2N";
+  } else if (upperName.includes("2D1N") || (p.duration_text && p.duration_text.includes("2 Day"))) {
+    topBadgeText = "PAKET 2D1N";
+  } else if (isMultiDay) {
+    topBadgeText = "PAKET WISATA";
+  }
+
+  let titleLine1 = "SEWA JEEP";
+  let titleLine2 =
     upperName.replace(/^(SEWA\s+)?(JEEP\s+)?(TROOPER\s+)?/i, "").trim() ||
     p.route_name?.toUpperCase() ||
     "BANYUWANGI TRIP";
 
+  if (isPrivateTrip) {
+    titleLine1 = "PRIVATE TRIP";
+    titleLine2 = upperName.replace(/^PRIVATE\s+TRIP\s+/i, "").trim();
+  } else if (isPaketWisata) {
+    titleLine1 = "PAKET WISATA";
+    titleLine2 = upperName.replace(/^PAKET\s+WISATA\s+/i, "").trim();
+  }
+
   return (
     <div className="bg-white rounded-2xl overflow-hidden border border-[#e2e8f0] shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
-      {/* 1. Header Gambar Produk Lebih Besar & Megah (Sesuai Referensi Foto) */}
+      {/* 1. Header Gambar Produk (Sesuai Referensi Foto 1) */}
       <div className="relative h-60 sm:h-64 md:h-68 w-full overflow-hidden bg-slate-900 select-none">
         <Image
           src={mainImage}
@@ -57,43 +85,43 @@ export function ProductCard({
           className="object-cover group-hover:scale-105 group-hover:grayscale-[15%] transition-transform duration-500 opacity-95"
         />
 
-        {/* Gradient Overlay Sinematik Menyeluruh untuk Keterbacaan Sempurna */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-black/20 pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/25 pointer-events-none" />
+        {/* Gradient Overlay: Bawah Pekat untuk Kontras Teks, Atas Jernih untuk Jeep & Lanskap */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent pointer-events-none" />
 
-        {/* 2. Banner Branding Ala Brosur Wisata Jeep — Posisi Tengah Vertikal (Persis Referensi Foto) */}
-        <div className="absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 z-10 flex items-stretch gap-2.5 max-w-[85%] pointer-events-none select-none">
+        {/* 2. Banner Branding Ala Brosur Wisata Jeep — Posisi Kiri Bawah (Persis Referensi Foto 1) */}
+        <div className="absolute left-3.5 sm:left-4 bottom-3 sm:bottom-3.5 md:bottom-4 z-10 flex items-stretch gap-2.5 max-w-[88%] pointer-events-none select-none">
           {/* Garis Vertikal Putih Tebal */}
           <div className="w-1.5 bg-white rounded-full shrink-0 shadow-md self-stretch" />
 
           {/* Blok Teks Bertingkat */}
-          <div className="flex flex-col items-start justify-center gap-1.5">
+          <div className="flex flex-col items-start justify-center gap-1 sm:gap-1.5">
             {/* Tag Atas Oranye */}
-            <span className="inline-block bg-[#ea580c] text-white font-playful-block text-[9.5px] sm:text-[10.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-[4px] leading-tight shadow-md">
-              PAKET JEEP
+            <span className="inline-block bg-[#ea580c] text-white font-playful-block text-[9.5px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-[4px] leading-tight shadow-md">
+              {topBadgeText}
             </span>
 
-            {/* Judul Bold Bertingkat — Rounded Playful Sans / Handwritten Block (Sesuai Referensi Foto) */}
-            <div className="text-white font-playful-block leading-[1.12] drop-shadow-[0_2px_5px_rgba(0,0,0,0.95)]">
-              <span className="block text-[11.5px] sm:text-[13px] tracking-wide font-extrabold opacity-95">
-                SEWA JEEP
+            {/* Judul Bold Bertingkat — Rounded Playful Sans / Handwritten Block (Sesuai Referensi Foto 1) */}
+            <div className="text-white font-playful-block leading-[1.12] drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]">
+              <span className="block text-[11px] sm:text-[12.5px] tracking-wide font-extrabold opacity-95">
+                {titleLine1}
               </span>
-              <span className="block text-[13px] sm:text-[15px] md:text-[16px] tracking-normal uppercase line-clamp-2 font-black">
-                {cleanedRoute}
+              <span className="block text-[13px] sm:text-[14.5px] md:text-[15.5px] tracking-normal uppercase line-clamp-2 font-black">
+                {titleLine2}
               </span>
             </div>
 
             {/* Tag Bawah Oranye */}
-            <span className="inline-block bg-[#ea580c] text-white font-playful-block text-[9.5px] sm:text-[10.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-[4px] leading-tight shadow-md">
+            <span className="inline-block bg-[#ea580c] text-white font-playful-block text-[9.5px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-[4px] leading-tight shadow-md">
               START BANYUWANGI
             </span>
           </div>
         </div>
 
-        {/* Watermark Mini Logo Sewa Jeep di Pojok Kanan Atas (Sesuai Referensi Foto) */}
-        <div className="absolute top-3 right-3 z-10 pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity">
-          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-black/40 backdrop-blur-xs border border-white/25 text-[9px] font-extrabold text-white tracking-wider uppercase shadow-xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#38bdf8]" />
+        {/* Watermark Mini Logo Sewa Jeep di Pojok Kanan Atas (Sesuai Referensi Foto 1) */}
+        <div className="absolute top-3 right-3 z-10 pointer-events-none opacity-85 group-hover:opacity-100 transition-opacity">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#327691]/80 backdrop-blur-xs border border-white/25 text-[8.5px] font-black text-white tracking-wider uppercase shadow-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
             <span>SEWA JEEP BWI</span>
           </div>
         </div>

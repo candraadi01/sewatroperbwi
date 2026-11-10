@@ -62,6 +62,10 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans:ital,wght@0,700;1,700&family=Fredoka:wght@700;800;900&family=Mali:wght@700;800&family=Shantell+Sans:ital,wght@0,700;0,800&family=Sniglet:wght@800&display=swap"
+          rel="stylesheet"
+        />
       </head>
       <body className={`${urbanist.className} min-h-full flex flex-col font-sans antialiased`}>
         <LanguageProvider>
