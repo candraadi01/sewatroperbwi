@@ -11,9 +11,9 @@ interface VisitorCounterWidgetProps {
 export function VisitorCounterWidget({ initialStats }: VisitorCounterWidgetProps) {
   const [stats, setStats] = useState<VisitorStats>(
     initialStats || {
-      today: 28,
-      yesterday: 76,
-      all: 7022,
+      today: 0,
+      yesterday: 0,
+      all: 0,
       online: 1,
     }
   );
@@ -107,3 +107,4 @@ export function VisitorCounterWidget({ initialStats }: VisitorCounterWidgetProps
     </div>
   );
 }
+

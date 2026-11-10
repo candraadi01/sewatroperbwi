@@ -21,12 +21,12 @@ const DATA_DIR = path.join(process.cwd(), "data");
 const DATA_FILE = path.join(DATA_DIR, "visitor-stats.json");
 const TMP_FILE = path.join("/tmp", "sewa-trooper-visitor-stats.json");
 
-// Baseline awal sesuai data ril yang tertera di referensi web
+// Baseline awal murni dari 0 (Real-time data asli)
 const DEFAULT_DATA: VisitorStore = {
   lastDate: getJakartaDate(),
-  today: 28,
-  yesterday: 76,
-  all: 7022,
+  today: 0,
+  yesterday: 0,
+  all: 0,
   sessions: {},
 };
 
@@ -91,7 +91,7 @@ export function recordVisit(sessionId: string): VisitorStats {
 
   // 1. Pergantian hari otomatis (WIB)
   if (store.lastDate !== currentDate) {
-    store.yesterday = store.today > 0 ? store.today : 76;
+    store.yesterday = store.today;
     store.today = 0;
     store.lastDate = currentDate;
     // Bersihkan sesi lama dari hari sebelumnya
@@ -140,7 +140,7 @@ export function getVisitorStats(): VisitorStats {
 
   // Pergantian hari
   if (store.lastDate !== currentDate) {
-    store.yesterday = store.today > 0 ? store.today : 76;
+    store.yesterday = store.today;
     store.today = 0;
     store.lastDate = currentDate;
     store.sessions = {};
@@ -160,3 +160,4 @@ export function getVisitorStats(): VisitorStats {
     online: Math.max(1, onlineCount),
   };
 }
+
