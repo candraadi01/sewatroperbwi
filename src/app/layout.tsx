@@ -1,6 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Urbanist, Inter } from "next/font/google";
+import { Plus_Jakarta_Sans, Urbanist, Inter } from "next/font/google";
 import "./globals.css";
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-plus-jakarta",
+});
 
 const urbanist = Urbanist({
   subsets: ["latin"],
@@ -58,16 +65,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" data-scroll-behavior="smooth" className={`${urbanist.variable} ${inter.variable} ${urbanist.className} h-full`}>
+    <html lang="id" data-scroll-behavior="smooth" className={`${plusJakartaSans.variable} ${urbanist.variable} ${inter.variable} ${plusJakartaSans.className} h-full`}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans:ital,wght@0,700;1,700&family=Fredoka:wght@700;800;900&family=Mali:wght@700;800&family=Shantell+Sans:ital,wght@0,700;0,800&family=Sniglet:wght@800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700&family=Balsamiq+Sans:ital,wght@0,700;1,700&family=Fredoka:wght@700;800;900&family=Mali:wght@700;800&family=Shantell+Sans:ital,wght@0,700;0,800&family=Sniglet:wght@800&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className={`${urbanist.className} min-h-full flex flex-col font-sans antialiased`}>
+      <body className={`${plusJakartaSans.className} min-h-full flex flex-col font-sans antialiased`}>
         <LanguageProvider>
           {/* Skip link for keyboard navigation */}
           <a href="#main-content" className="skip-link">
