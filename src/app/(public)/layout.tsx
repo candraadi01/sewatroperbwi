@@ -8,10 +8,10 @@ import { AppProviders } from "@/components/providers/AppProviders";
 
 async function SiteHeader() {
   const [u, settings, links, articles] = await Promise.all([
-    getAuthUser(),
-    getSiteSettings(),
-    getHeaderMenu(),
-    getContent("articles"),
+    getAuthUser().catch(() => null),
+    getSiteSettings().catch(() => undefined),
+    getHeaderMenu().catch(() => []),
+    getContent("articles").catch(() => []),
   ]);
   return (
     <Header

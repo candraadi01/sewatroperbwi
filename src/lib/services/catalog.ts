@@ -144,17 +144,26 @@ export const getProducts = cache(
     if (!isSupabaseConfigured())
       items = SAMPLE_PRODUCTS.filter((p) => p.status === "published");
     else {
-      let query = createPublicClient()
-        .from("products")
-        .select(
-          "*,pricing_rules(base_price,is_active,priority,date_start,date_end,applicable_days,price_unit)",
-        )
-        .eq("status", "active");
-      if (options?.serviceType)
-        query = query.eq("service_type", options.serviceType);
-      const { data, error } = await query.order("sort_order").limit(200);
-      if (error) throw new Error("Katalog belum dapat dimuat dari database.");
-      items = (data as ProductRow[]).map(mapProduct);
+      try {
+        let query = createPublicClient()
+          .from("products")
+          .select(
+            "*,pricing_rules(base_price,is_active,priority,date_start,date_end,applicable_days,price_unit)",
+          )
+          .eq("status", "active");
+        if (options?.serviceType)
+          query = query.eq("service_type", options.serviceType);
+        const { data, error } = await query.order("sort_order").limit(200);
+        if (error || !data) {
+          console.warn("[getProducts] Gagal memuat dari database, beralih ke data sampel:", error?.message);
+          items = SAMPLE_PRODUCTS.filter((p) => p.status === "published");
+        } else {
+          items = (data as ProductRow[]).map(mapProduct);
+        }
+      } catch (err) {
+        console.warn("[getProducts] Exception database, beralih ke data sampel:", err);
+        items = SAMPLE_PRODUCTS.filter((p) => p.status === "published");
+      }
     }
     if (options?.serviceType)
       items = items.filter((p) => p.service_type === options.serviceType);
@@ -305,23 +314,39 @@ export const getProductById = cache(
 );
 export const getCategories = cache(async (): Promise<ProductCategory[]> => {
   if (!isSupabaseConfigured()) return SAMPLE_CATEGORIES;
-  const { data, error } = await createPublicClient()
-    .from("product_categories")
-    .select("*")
-    .eq("is_active", true)
-    .order("sort_order");
-  if (error) throw new Error("Kategori belum dapat dimuat.");
-  return data ?? [];
+  try {
+    const { data, error } = await createPublicClient()
+      .from("product_categories")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort_order");
+    if (error || !data) {
+      console.warn("[getCategories] Gagal memuat kategori, fallback ke sample:", error?.message);
+      return SAMPLE_CATEGORIES;
+    }
+    return data;
+  } catch (err) {
+    console.warn("[getCategories] Exception, fallback ke sample:", err);
+    return SAMPLE_CATEGORIES;
+  }
 });
 export const getPickupZones = cache(async (): Promise<PickupZone[]> => {
   if (!isSupabaseConfigured()) return SAMPLE_PICKUP_ZONES;
-  const { data, error } = await createPublicClient()
-    .from("pickup_zones")
-    .select("id,name,description,additional_cost,is_active")
-    .eq("is_active", true)
-    .order("sort_order");
-  if (error) throw new Error("Penjemputan belum dapat dimuat.");
-  return (data ?? []).map((r) => ({ ...r, surcharge: r.additional_cost }));
+  try {
+    const { data, error } = await createPublicClient()
+      .from("pickup_zones")
+      .select("id,name,description,additional_cost,is_active")
+      .eq("is_active", true)
+      .order("sort_order");
+    if (error || !data) {
+      console.warn("[getPickupZones] Gagal memuat pickup zones, fallback ke sample:", error?.message);
+      return SAMPLE_PICKUP_ZONES;
+    }
+    return data.map((r) => ({ ...r, surcharge: r.additional_cost }));
+  } catch (err) {
+    console.warn("[getPickupZones] Exception, fallback ke sample:", err);
+    return SAMPLE_PICKUP_ZONES;
+  }
 });
 export async function getPickupZoneById(id: string) {
   return (await getPickupZones()).find((z) => z.id === id) ?? null;

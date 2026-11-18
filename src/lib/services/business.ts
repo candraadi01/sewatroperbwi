@@ -28,13 +28,18 @@ export async function getBusinessSettings(): Promise<BusinessSettings> {
     version: 0,
   };
   if (!isSupabaseConfigured()) return defaults;
-  const { data, error } = await createPublicClient()
-    .from("business_settings_versions")
-    .select("*")
-    .eq("is_current", true)
-    .order("version", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error || !data) throw new Error("Ketentuan bisnis belum tersedia.");
-  return { ...defaults, ...data };
+  try {
+    const { data, error } = await createPublicClient()
+      .from("business_settings_versions")
+      .select("*")
+      .eq("is_current", true)
+      .order("version", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error || !data) return defaults;
+    return { ...defaults, ...data };
+  } catch (err) {
+    console.warn("[getBusinessSettings] Gagal memuat business settings, menggunakan default:", err);
+    return defaults;
+  }
 }
