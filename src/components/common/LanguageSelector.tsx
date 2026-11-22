@@ -30,7 +30,7 @@ export function LanguageSelector({ inline = false, aboveBookingBar = false }: { 
   return (
     <div
       ref={containerRef}
-      className={`${inline ? "relative z-10" : `fixed right-3 z-50 sm:right-5 ${aboveBookingBar ? "bottom-[calc(6rem+env(safe-area-inset-bottom))] lg:bottom-5" : "bottom-[max(.85rem,env(safe-area-inset-bottom))]"}`} select-none font-sans`}
+      className={`${inline ? "relative z-10" : `fixed right-3 z-50 sm:right-5 ${aboveBookingBar ? "bottom-[calc(7rem+env(safe-area-inset-bottom))] lg:bottom-9" : "bottom-[calc(1.85rem+env(safe-area-inset-bottom))]"}`} select-none font-sans`}
     >
       {/* Language Popup Menu (Positioned above button like in Foto 2) */}
       {open && (
@@ -68,7 +68,7 @@ export function LanguageSelector({ inline = false, aboveBookingBar = false }: { 
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex min-h-11 items-center gap-2 bg-white hover:bg-neutral-50 text-neutral-800 px-3 py-2 rounded-full shadow-lg border border-neutral-300 transition-colors"
+        className="flex min-h-11 items-center gap-2 bg-white hover:bg-neutral-50 text-neutral-800 px-3 py-2 rounded-md shadow-lg border border-neutral-300 transition-colors"
         aria-label="Pilih Bahasa / Select Language"
         aria-expanded={open}
       >

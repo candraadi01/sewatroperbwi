@@ -3,7 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ArrowDown, ArrowRight, CalendarDays, MapPin, Search, Users } from "lucide-react";
+import { ArrowDown, CalendarDays, MapPin, Search, Users } from "lucide-react";
 import type { DateScheduleItem } from "@/lib/services/schedule";
 import { HeroDatePicker } from "./HeroDatePicker";
 import { FleetShowcase, type FleetSlide } from "./FleetShowcase";
@@ -64,9 +64,6 @@ export function CinematicHero({ destinations, heading, accent, description, back
           <h1 id="landing-title">{heading} {accent && <em>{accent}</em>}</h1>
           <p className={styles.heroDescription}>{description}</p>
           <div className={styles.heroActions}>
-            <a href="#cari-trip" className={styles.primary}>
-              <CalendarDays size={18} /> {language === "id" ? "Booking sekarang" : t("btn_book_now")} <ArrowRight size={17} />
-            </a>
             <a href="#armada" className={styles.secondary}>Lihat armada <ArrowDown size={17} /></a>
           </div>
         </div>

@@ -1,8 +1,8 @@
 "use client";
 
-import { type CSSProperties, useEffect, useRef, useState } from "react";
+import { type CSSProperties, useRef, useState } from "react";
 import Image from "next/image";
-import { ArrowLeft, ArrowRight, Pause, Play } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import styles from "./cinematic.module.css";
 
 export type FleetSlide = { name: string; photo: string; wheels?: readonly (readonly [number, number])[] };
@@ -14,8 +14,6 @@ const illustrations = [
   { name: "Trooper Navy", photo: "/images/landing/fleet-navy.webp", wheels: [[47, 78], [82, 76]] },
 ] as const;
 
-const interval = 6500;
-
 export function FleetShowcase({ slides }: { slides?: FleetSlide[] }) {
   const fleet: readonly FleetSlide[] = slides?.length ? slides : illustrations;
   const count = fleet.length;
@@ -24,10 +22,7 @@ export function FleetShowcase({ slides }: { slides?: FleetSlide[] }) {
     previous: -1,
     direction: 1,
   });
-  const [paused, setPaused] = useState(false);
   const [firstJeepReady, setFirstJeepReady] = useState(false);
-  const [hovering, setHovering] = useState(false);
-  const [focused, setFocused] = useState(false);
   const [announcement, setAnnouncement] = useState("");
   const swipe = useRef<{ x: number; y: number } | null>(null);
 
@@ -41,30 +36,11 @@ export function FleetShowcase({ slides }: { slides?: FleetSlide[] }) {
     select((active + delta + fleet.length) % fleet.length, delta);
   }
 
-  useEffect(() => {
-    if (!firstJeepReady || count < 2 || paused || hovering || focused) return;
-    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const timer = window.setInterval(() => {
-      if (!document.hidden && !motion.matches) {
-        setSlide(({ active }) => ({
-          previous: active,
-          active: (active + 1) % count,
-          direction: 1,
-        }));
-      }
-    }, interval);
-    return () => window.clearInterval(timer);
-  }, [active, count, firstJeepReady, paused, hovering, focused]);
-
   return (
     <section
       aria-label="Pilihan visual Jeep Trooper"
       aria-roledescription="karusel"
       className={styles.showcase}
-      onPointerEnter={(event) => { if (event.pointerType === "mouse") setHovering(true); }}
-      onPointerLeave={() => setHovering(false)}
-      onFocus={() => setFocused(true)}
-      onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}
       onKeyDown={(event) => {
         if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
           event.preventDefault();
@@ -139,11 +115,6 @@ export function FleetShowcase({ slides }: { slides?: FleetSlide[] }) {
         </div>
         <button type="button" className={styles.round} aria-label="Jeep berikutnya" onClick={() => step(1)}>
           <ArrowRight size={19} />
-        </button>
-        <button type="button" className={`${styles.round} ${styles.motionToggle}`}
-          aria-label={paused ? "Putar pergantian otomatis" : "Jeda pergantian otomatis"}
-          onClick={() => setPaused(!paused)}>
-          {paused ? <Play size={15} /> : <Pause size={15} />}
         </button>
       </div>}
       <p className={styles.vehicleCaption}>{fleet[active].name}</p>
