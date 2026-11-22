@@ -8,6 +8,12 @@ import {
 import { createAdminClient } from "@/lib/supabase/server";
 import { notificationSchema } from "@/lib/validations/requests";
 import { readJson, errorResponse, RequestError } from "@/lib/security/http";
+
+function toMinorUnits(amount: string) {
+  const [whole, fraction = ""] = amount.split(".");
+  return BigInt(whole + fraction.padEnd(2, "0"));
+}
+
 export async function POST(request: Request) {
   try {
     if (!midtransConfigured())
@@ -30,8 +36,10 @@ export async function POST(request: Request) {
     )
       throw new RequestError("Merchant tidak sesuai.", 403);
     const safe = await getMidtransStatus(n.order_id);
-    if (Number(safe.gross_amount) !== Number(n.gross_amount))
+    if (toMinorUnits(safe.gross_amount) !== toMinorUnits(n.gross_amount))
       throw new RequestError("Nominal gateway tidak sesuai.", 403);
+    if (n.transaction_id && n.transaction_id !== safe.transaction_id)
+      throw new RequestError("Transaksi gateway tidak sesuai.", 403);
     if (
       process.env.MIDTRANS_MERCHANT_ID &&
       safe.merchant_id !== process.env.MIDTRANS_MERCHANT_ID

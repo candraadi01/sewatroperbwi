@@ -86,6 +86,7 @@ export default async function Page({
                 alt={a.title}
                 fill
                 priority
+                unoptimized={a.cover_image_url.startsWith("https://") && !a.cover_image_url.startsWith("https://res.cloudinary.com/")}
                 sizes="(max-width: 896px) 100vw, 896px"
                 className="object-cover"
               />

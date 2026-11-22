@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireOwner } from "@/lib/auth/helpers";
 import { getAllBookings } from "@/lib/services/booking";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { OwnerPayoutClient } from "./OwnerPayoutClient";
 
 export const metadata = {
@@ -11,7 +11,7 @@ export const metadata = {
 
 export default async function OwnerTarikDanaPage() {
   const user = await requireOwner("/owner/tarik-dana");
-  const db = await createAdminClient();
+  const db = await createClient();
 
   // Hitung saldo dari booking
   const bookings = await getAllBookings();
@@ -29,7 +29,7 @@ export default async function OwnerTarikDanaPage() {
     .order("requested_at", { ascending: false });
 
   // Ambil data rekening default dari user metadata
-  const { data: authUser } = await db.auth.admin.getUserById(user.id);
+  const { data: authUser } = await db.auth.getUser();
   const metadata = authUser?.user?.user_metadata || {};
 
   const prefill = {

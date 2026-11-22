@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Lock, Check } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ScheduleItem {
   isAvailable: boolean;
@@ -33,16 +33,13 @@ export function BuyerCalendarPicker({
   const [viewYear, setViewYear] = useState(() => initialDateObj.getFullYear());
   const [viewMonth, setViewMonth] = useState(() => initialDateObj.getMonth()); // 0-indexed
 
-  // Update view when value changes
-  useEffect(() => {
-    if (value) {
-      const d = new Date(value + "T00:00:00");
-      if (!isNaN(d.getTime())) {
-        setViewYear(d.getFullYear());
-        setViewMonth(d.getMonth());
-      }
+  function toggleCalendar() {
+    if (!isOpen && !Number.isNaN(initialDateObj.getTime())) {
+      setViewYear(initialDateObj.getFullYear());
+      setViewMonth(initialDateObj.getMonth());
     }
-  }, [value]);
+    setIsOpen(!isOpen);
+  }
 
   // Click outside to close
   useEffect(() => {
@@ -123,44 +120,46 @@ export function BuyerCalendarPicker({
       {/* Tombol Input Trigger Kalender */}
       <button
         type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
-        className={`w-full text-left text-xs sm:text-sm font-semibold bg-slate-50 hover:bg-slate-100/80 focus:bg-white border rounded-xl px-3 py-2.5 transition shadow-2xs flex items-center justify-between cursor-pointer ${
+        aria-label={`Tanggal trip: ${displayFormatted}`}
+        aria-expanded={isOpen}
+        onClick={toggleCalendar}
+        className={`w-full min-h-11 text-left text-base sm:text-sm font-semibold bg-[var(--raised)] hover:bg-[var(--raised)] focus:bg-[var(--surface)] border rounded-xl px-3 py-2.5 transition shadow-2xs flex items-center justify-between cursor-pointer ${
           isCurrentClosed
-            ? "border-rose-300 bg-rose-50/50 text-rose-900"
+            ? "border-rose-700/80 bg-[#302125] text-rose-300"
             : isOpen
-            ? "border-[#327691] ring-2 ring-[#327691]/20 bg-white text-slate-900"
-            : "border-slate-200 text-slate-900"
+            ? "border-[var(--gold)] ring-2 ring-[#f4bd4255] bg-[var(--surface)] text-[color:var(--ink)]"
+            : "border-[var(--line)] text-[color:var(--ink)]"
         }`}
       >
         <span className="flex items-center gap-2 truncate">
-          <CalendarIcon size={14} className="text-[#327691] shrink-0" />
+          <CalendarIcon size={14} className="text-[color:var(--gold)] shrink-0" />
           <span className="font-extrabold truncate">{displayFormatted}</span>
         </span>
-        <span className="text-[11px] font-bold text-[#327691] shrink-0 ml-1">
+        <span className="text-[11px] font-bold text-[color:var(--gold)] shrink-0 ml-1">
           {isOpen ? "Tutup ✕" : "Ubah ▾"}
         </span>
       </button>
 
       {/* Popover Kalender Kustom Interaktif */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 sm:right-auto sm:w-[320px] mt-1.5 z-50 bg-white rounded-2xl border border-slate-200 shadow-2xl p-3.5 space-y-3 animate-fadeIn">
+        <div className="absolute top-full left-0 right-0 sm:right-auto sm:w-80 sm:max-w-[calc(100vw-3rem)] mt-1.5 z-50 bg-[var(--surface)] rounded-2xl border border-[var(--line)] shadow-2xl p-3.5 space-y-3 animate-fadeIn">
           {/* Header Navigasi Bulan */}
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div className="flex items-center justify-between pb-2 border-b border-[var(--line)]">
             <button
               type="button"
               onClick={prevMonth}
-              className="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-600 flex items-center justify-center transition cursor-pointer"
+              className="size-11 rounded-lg hover:bg-[var(--raised)] text-[color:var(--mist)] flex items-center justify-center transition cursor-pointer"
               title="Bulan Sebelumnya"
             >
               <ChevronLeft size={16} />
             </button>
-            <span className="text-xs font-black text-slate-900">
+            <span className="text-xs font-black text-[color:var(--ink)]">
               {monthNames[viewMonth]} {viewYear}
             </span>
             <button
               type="button"
               onClick={nextMonth}
-              className="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-600 flex items-center justify-center transition cursor-pointer"
+              className="size-11 rounded-lg hover:bg-[var(--raised)] text-[color:var(--mist)] flex items-center justify-center transition cursor-pointer"
               title="Bulan Berikutnya"
             >
               <ChevronRight size={16} />
@@ -173,7 +172,7 @@ export function BuyerCalendarPicker({
               <span
                 key={lbl}
                 className={`text-[10.5px] font-extrabold ${
-                  idx === 0 ? "text-rose-500" : "text-slate-400"
+                  idx === 0 ? "text-rose-300" : "text-[color:var(--mist)]"
                 }`}
               >
                 {lbl}
@@ -185,7 +184,7 @@ export function BuyerCalendarPicker({
           <div className="grid grid-cols-7 gap-1">
             {cells.map((cell, idx) => {
               if (!cell.day) {
-                return <div key={`empty-${idx}`} className="h-9" />;
+                return <div key={`empty-${idx}`} className="min-h-11" />;
               }
 
               const isPast = cell.dateStr < minDate;
@@ -210,14 +209,14 @@ export function BuyerCalendarPicker({
                       ? `Jadwal Ditutup (${sched?.reason || "Tidak tersedia"})`
                       : `Tersedia untuk dipesan`
                   }
-                  className={`h-9 w-full rounded-xl text-xs font-bold flex flex-col items-center justify-center relative transition cursor-pointer ${
+                  className={`min-h-11 w-full rounded-xl text-xs font-bold flex flex-col items-center justify-center relative transition cursor-pointer ${
                     isSelected
-                      ? "bg-[#327691] text-white shadow-xs font-black scale-105 z-10"
+                      ? "bg-[var(--gold)] text-[color:var(--on-gold)] shadow-xs font-black scale-105 z-10"
                       : isPast
                       ? "text-slate-300 opacity-40 cursor-not-allowed"
                       : isClosed
-                      ? "bg-rose-50 border border-rose-200 text-rose-400 line-through cursor-not-allowed"
-                      : "text-slate-800 hover:bg-emerald-50 hover:text-emerald-800 hover:border hover:border-emerald-300"
+                      ? "bg-[#3b2227] border border-rose-700/80 text-rose-400 line-through cursor-not-allowed"
+                      : "text-[color:var(--ink)] hover:bg-[#15342b] hover:text-emerald-300 hover:border hover:border-emerald-700"
                   }`}
                 >
                   <span className="leading-tight">{cell.day}</span>
@@ -226,7 +225,7 @@ export function BuyerCalendarPicker({
                     <span
                       className={`w-1 h-1 rounded-full ${
                         isSelected
-                          ? "bg-white"
+                          ? "bg-[var(--surface)]"
                           : isClosed
                           ? "bg-rose-500"
                           : "bg-emerald-500"
@@ -239,12 +238,12 @@ export function BuyerCalendarPicker({
           </div>
 
           {/* Legenda Keterangan Status di Bawah Kalender */}
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] font-bold px-1">
-            <span className="flex items-center gap-1.5 text-emerald-700">
+          <div className="pt-2 border-t border-[var(--line)] flex items-center justify-between text-[10px] font-bold px-1">
+            <span className="flex items-center gap-1.5 text-emerald-300">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
               Tersedia (Bisa Dipesan)
             </span>
-            <span className="flex items-center gap-1.5 text-rose-600">
+            <span className="flex items-center gap-1.5 text-rose-300">
               <span className="w-2 h-2 rounded-full bg-rose-500" />
               Ditutup / Off
             </span>

@@ -1,5 +1,5 @@
 import { requireAdmin } from "@/lib/auth/helpers";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { PayoutAdminClient, type PayoutItem } from "./PayoutAdminClient";
 
 export const metadata = {
@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPenarikanPage() {
   await requireAdmin();
-  const db = await createAdminClient();
+  const db = await createClient();
 
   const { data: requests } = await db
     .from("payout_requests")

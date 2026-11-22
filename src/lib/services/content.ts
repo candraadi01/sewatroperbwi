@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { createPublicClient } from "@/lib/supabase/public";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
-export type ContentBlock = { type: string; text?: string; content?: string };
+export type ContentBlock = { type: string; text?: string; content?: string; url?: string };
 export interface ContentRow {
   id: string;
   slug: string;
@@ -18,6 +18,8 @@ export interface FaqRow {
   answer: string;
   sort_order: number;
 }
+type PublicContentRow = ContentRow & { article_categories?: { name: string } | null };
+
 export const getContent = cache(
   async (table: "pages" | "articles", slug?: string): Promise<ContentRow[]> => {
     if (!isSupabaseConfigured()) return [];
@@ -26,7 +28,7 @@ export const getContent = cache(
         .from(table)
         .select(
           "id,slug,title,content,published_at" +
-            (table === "articles" ? ",excerpt,cover_image_url,category_name" : ""),
+            (table === "articles" ? ",excerpt,cover_image_url,category_name,article_categories(name)" : ""),
         )
         .eq("status", "published");
       if (slug) query = query.eq("slug", slug);
@@ -39,7 +41,19 @@ export const getContent = cache(
         console.warn(`[getContent] Gagal memuat ${table}:`, error.message);
         return [];
       }
-      return (data as unknown as ContentRow[]) ?? [];
+      const rows = (data as unknown as PublicContentRow[]) ?? [];
+      if (table === "pages") return rows;
+
+      return rows.map((row) => {
+        const content = Array.isArray(row.content) ? row.content : [];
+        const cover = content.find((block) => block.type === "_cover");
+        return {
+          ...row,
+          cover_image_url: cover?.url || row.cover_image_url,
+          category_name: row.article_categories?.name || row.category_name,
+          content: content.filter((block) => !block.type.startsWith("_")),
+        };
+      });
     } catch (err) {
       console.warn(`[getContent] Exception saat memuat ${table}:`, err);
       return [];
@@ -68,6 +82,7 @@ export const getFaqs = cache(async (): Promise<FaqRow[]> => {
 export async function getLandingSections(): Promise<
   {
     id: string;
+    section_type: string;
     title: string;
     subtitle: string;
     content: Record<string, unknown>;
@@ -77,9 +92,8 @@ export async function getLandingSections(): Promise<
   try {
     const { data, error } = await createPublicClient()
       .from("landing_sections")
-      .select("id,title,subtitle,content")
+      .select("id,section_type,title,subtitle,content")
       .eq("is_active", true)
-      .eq("section_type", "information")
       .order("sort_order");
     if (error) {
       console.warn("[getLandingSections] Gagal memuat landing sections:", error.message);

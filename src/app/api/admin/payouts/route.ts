@@ -2,7 +2,7 @@ import { z } from "zod";
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getAuthUser } from "@/lib/auth/helpers";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { idSchema } from "@/lib/validations/requests";
 import {
   assertSameOrigin,
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     }
 
     const { id, action, adminNotes, transferProofUrl } = parsed.data;
-    const db = await createAdminClient();
+    const db = await createClient();
 
     let newStatus = "pending";
     if (action === "approve") newStatus = "approved";
@@ -51,14 +51,17 @@ export async function POST(request: Request) {
       updatePayload.transfer_proof_url = transferProofUrl;
     }
 
-    const { error } = await db
+    const { data: updated, error } = await db
       .from("payout_requests")
       .update(updatePayload)
-      .eq("id", id);
+      .eq("id", id)
+      .select("id")
+      .maybeSingle();
 
     if (error) {
       throw new RequestError(`Gagal memperbarui status penarikan: ${error.message}`, 500);
     }
+    if (!updated) throw new RequestError("Permohonan tidak ditemukan atau tidak dapat diproses oleh akun ini.", 404);
 
     revalidatePath("/admin/penarikan");
     revalidatePath("/owner/tarik-dana");

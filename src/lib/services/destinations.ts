@@ -94,9 +94,7 @@ export async function getDestinations(): Promise<DestinationItem[]> {
       .eq("is_active", true)
       .order("sort_order", { ascending: true });
 
-    if (error || !data || data.length === 0) {
-      return DEFAULT_DESTINATIONS;
-    }
+    if (error || !data) return [];
 
     return data.map((d) => ({
       id: d.slug || d.id,
@@ -109,6 +107,6 @@ export async function getDestinations(): Promise<DestinationItem[]> {
       queryParam: d.query_param || d.slug || "",
     }));
   } catch {
-    return DEFAULT_DESTINATIONS;
+    return [];
   }
 }

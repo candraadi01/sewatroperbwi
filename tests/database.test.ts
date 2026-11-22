@@ -253,17 +253,39 @@ test("PostgreSQL migration, RLS, durable booking and idempotent payment", async 
       );
     });
     await t.test(
-      "other buyer cannot read order/payment or request changes",
+      "booking code, payment and history are visible only to the buyer who booked and admin",
       async () => {
+        const { id, booking_code: code } = result.booking;
+        await actor("service_role");
+        await db.query(
+          "INSERT INTO booking_status_history(booking_id,new_status,changed_by,reason) VALUES($1,'pending_payment',$2,'Access test')",
+          [id, a],
+        );
+
+        const lookup = async () => {
+          const result = await db.query<{
+            booking: boolean;
+            payment: boolean;
+            history: boolean;
+          }>(
+            `SELECT EXISTS(SELECT 1 FROM bookings WHERE booking_code=$1) AS booking,
+                    EXISTS(SELECT 1 FROM payment_attempts WHERE booking_id=$2) AS payment,
+                    EXISTS(SELECT 1 FROM booking_status_history WHERE booking_id=$2) AS history`,
+            [code, id],
+          );
+          return result.rows[0];
+        };
+
+        const visible = { booking: true, payment: true, history: true };
+        const hidden = { booking: false, payment: false, history: false };
+        await actor("authenticated", a);
+        assert.deepEqual(await lookup(), visible);
+        await actor("authenticated", admin);
+        assert.deepEqual(await lookup(), visible);
+        await actor("anon");
+        assert.deepEqual(await lookup(), hidden);
         await actor("authenticated", b);
-        assert.equal(
-          (await db.query("SELECT id FROM bookings")).rows.length,
-          0,
-        );
-        assert.equal(
-          (await db.query("SELECT id FROM payment_attempts")).rows.length,
-          0,
-        );
+        assert.deepEqual(await lookup(), hidden);
         await assert.rejects(
           db.query(
             "INSERT INTO change_requests(booking_id,requested_by,request_type) VALUES($1,$2,'cancel')",

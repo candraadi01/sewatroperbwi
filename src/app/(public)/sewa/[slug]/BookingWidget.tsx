@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { formatIDR } from "@/lib/utils/currency";
 import type { Product, PickupZone, PricingQuote } from "@/types/database";
 import { BuyerCalendarPicker } from "@/components/booking/BuyerCalendarPicker";
+import styles from "@/components/landing/cinematic.module.css";
 import {
   Calendar,
   Clock,
@@ -138,11 +139,13 @@ export function BookingWidget({
   pickupZones,
   initialDate,
   today,
+  contact,
 }: {
   product: Product;
   pickupZones: PickupZone[];
   initialDate: string;
   today: string;
+  contact: string | null;
 }) {
   const router = useRouter();
   const { slots: timeSlots, defaultTime } = getAvailableDepartureSlots(product);
@@ -180,8 +183,8 @@ export function BookingWidget({
         );
         const json = await res.json();
         if (json.success && Array.isArray(json.data)) {
-          const map: Record<string, any> = {};
-          json.data.forEach((item: any) => {
+          const map: typeof scheduleMap = {};
+          json.data.forEach((item: (typeof scheduleMap)[string] & { date: string }) => {
             map[item.date] = item;
           });
           setScheduleMap(map);
@@ -207,10 +210,10 @@ export function BookingWidget({
 
   const selectedZone = pickupZones.find((z) => z.id === zone);
   const selectedSurcharge =
-    ((selectedZone?.surcharge ?? (selectedZone as any)?.additional_cost) || 0) * units;
+    ((selectedZone?.surcharge ?? (selectedZone as (PickupZone & { additional_cost?: number }) | undefined)?.additional_cost) || 0) * units;
 
   function formatZoneName(name: string): string {
-    let clean = name
+    const clean = name
       .replace(/\s*\(\+?Rp[^\)]*\)/gi, "")
       .replace(/\s*\(termasuk[^\)]*\)/gi, "")
       .replace(/\s*\(gratis[^\)]*\)/gi, "")
@@ -300,13 +303,6 @@ export function BookingWidget({
     router.push("/checkout?quote_id=" + encodeURIComponent(quote.quote_id));
   }
 
-  function scrollToWidget() {
-    const el = document.getElementById("booking-card");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }
-
   const baseDisplayPrice =
     quote?.total_amount || product.base_price || 1350000;
 
@@ -314,44 +310,32 @@ export function BookingWidget({
     <>
       <aside
         id="booking-card"
-        className="w-full lg:sticky lg:top-24 rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden"
+        tabIndex={-1}
+        className={`${styles.bookingMotion} w-full min-w-0 scroll-mt-34 lg:sticky lg:top-34 rounded-2xl bg-[var(--surface)] border border-[var(--line)] shadow-xl`}
       >
-        {/* Card Header: Harga & Garansi */}
-        <div className="bg-[#263b46] text-white p-5 sm:p-6 border-b border-slate-700/60">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-[11px] font-bold text-slate-300 uppercase tracking-widest">
-              Biaya Sewa Resmi
-            </span>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[11px] font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Armada Ready</span>
-            </div>
-          </div>
-
-          <div className="mt-2.5 flex items-baseline gap-2">
+        <div className="rounded-t-2xl bg-[#182229] text-white p-4 sm:p-6">
+          <p className="text-xs font-semibold text-slate-300">Estimasi sewa</p>
+          <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
             <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">
               {formatIDR(baseDisplayPrice)}
             </span>
             <span className="text-xs text-slate-300 font-medium">
-              / {units} Unit Jeep
+              / {units} Jeep
             </span>
           </div>
-          <p className="mt-1 text-xs text-slate-300 leading-snug">
-            Maks. {product.passenger_capacity} orang per mobil • Termasuk Driver & BBM
-          </p>
         </div>
 
         {/* Card Body: Form Pemesanan Rapi */}
-        <div className="p-5 sm:p-6 space-y-4">
-          <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+        <div className="p-4 sm:p-6 space-y-4">
+          <h3 className="text-sm font-extrabold text-[color:var(--ink)] uppercase tracking-wider flex items-center gap-1.5">
             <span>Rencanakan Jadwal Trip</span>
           </h3>
 
           {/* Grid Tanggal & Jam */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1 flex items-center gap-1">
-                <Calendar size={13} className="text-[#327691]" />
+              <label className="block text-[11px] font-bold text-[color:var(--mist)] uppercase tracking-wider mb-1 flex items-center gap-1">
+                <Calendar size={13} className="text-[color:var(--gold)]" />
                 Tanggal Trip
               </label>
               <BuyerCalendarPicker
@@ -364,15 +348,15 @@ export function BookingWidget({
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1 flex items-center gap-1">
-                <Clock size={13} className="text-[#327691]" />
+              <label className="block text-[11px] font-bold text-[color:var(--mist)] uppercase tracking-wider mb-1 flex items-center gap-1">
+                <Clock size={13} className="text-[color:var(--gold)]" />
                 Jam Keberangkatan
               </label>
               <div className="relative">
                 <select
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                  className="w-full appearance-none text-xs sm:text-sm font-semibold text-slate-900 bg-slate-50 hover:bg-slate-100/80 focus:bg-white border border-slate-200 focus:border-[#327691] rounded-xl px-3 py-2.5 pr-8 outline-hidden transition shadow-2xs cursor-pointer"
+                  className="w-full min-w-0 min-h-11 appearance-none text-base sm:text-sm font-semibold text-[color:var(--ink)] bg-[var(--raised)] hover:bg-[var(--raised)] focus:bg-[var(--raised)] border border-[var(--line)] focus:border-[var(--gold)] rounded-xl px-3 py-2.5 pr-8 outline-hidden transition shadow-2xs cursor-pointer"
                 >
                   {timeSlots.map((slot) => (
                     <option key={slot.value} value={slot.value}>
@@ -380,7 +364,7 @@ export function BookingWidget({
                     </option>
                   ))}
                 </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400">
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-[color:var(--mist)]">
                   <ChevronDown size={14} />
                 </div>
               </div>
@@ -389,40 +373,40 @@ export function BookingWidget({
 
           {/* Notifikasi Khusus Jika Tanggal Terpilih Ternyata Ditutup / Penuh */}
           {isDateClosed ? (
-            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs space-y-1 animate-fadeIn">
-              <div className="flex items-center gap-1.5 font-bold text-rose-900">
+            <div className="p-3 rounded-xl bg-[#3b2227] border border-rose-700/80 text-rose-300 text-xs space-y-1 animate-fadeIn">
+              <div className="flex items-center gap-1.5 font-bold text-rose-300">
                 <span className="inline-block w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0"></span>
                 <span>Jadwal Ditutup Pada Tanggal Ini</span>
               </div>
-              <p className="text-[11.5px] text-rose-700 leading-snug">
+              <p className="text-[11.5px] text-rose-300 leading-snug">
                 {closedReason ? (
                   <>Alasan pengelola: <strong>{closedReason}</strong></>
                 ) : (
                   "Armada untuk paket ini sedang tidak beroperasi pada tanggal terpilih."
                 )}
               </p>
-              <p className="text-[11px] text-rose-600 font-semibold pt-0.5">
+              <p className="text-[11px] text-rose-300 font-semibold pt-0.5">
                 👉 Silakan klik kalender di atas untuk memilih tanggal lain yang bertitik hijau (tersedia).
               </p>
             </div>
           ) : isUnitsExceeded ? (
-            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-1 animate-fadeIn">
+            <div className="p-3 rounded-xl bg-[#3a2e19] border border-amber-700/80 text-amber-200 text-xs space-y-1 animate-fadeIn">
               <div className="flex items-center gap-1.5 font-bold">
                 <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0"></span>
                 <span>Kuota Armada Tidak Cukup</span>
               </div>
-              <p className="text-[11.5px] text-amber-800 leading-snug">
+              <p className="text-[11.5px] text-amber-200 leading-snug">
                 Sisa armada siap jalan: <strong>{remainingUnits} Jeep</strong> (Anda memilih {units} Jeep).
               </p>
             </div>
           ) : null}
 
           {/* Stepper: Jumlah Unit & Peserta */}
-          <div className="grid grid-cols-2 gap-3 pt-1">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-3 pt-1">
             {/* Unit Jeep Stepper */}
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/90">
-              <span className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                <Car size={13} className="text-[#327691]" />
+            <div className="bg-[var(--raised)] p-3 rounded-xl border border-[var(--line)]">
+              <span className="block text-[11px] font-bold text-[color:var(--mist)] uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                <Car size={13} className="text-[color:var(--gold)]" />
                 Jumlah Unit
               </span>
               <div className="flex items-center justify-between">
@@ -435,13 +419,14 @@ export function BookingWidget({
                       Math.min(p, nextU * product.passenger_capacity)
                     );
                   }}
+                  aria-label="Kurangi jumlah Jeep"
                   disabled={units <= 1}
-                  className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-2xs"
+                  className="size-11 shrink-0 rounded-lg bg-[var(--surface)] border border-[var(--line)] flex items-center justify-center text-[color:var(--mist)] hover:bg-[var(--raised)] disabled:opacity-40 disabled:cursor-not-allowed transition shadow-2xs"
                 >
                   <Minus size={13} />
                 </button>
-                <span className="text-sm font-black text-slate-900">
-                  {units} <span className="text-xs font-normal text-slate-500">Jeep</span>
+                <span className="text-sm font-black text-[color:var(--ink)]">
+                  {units} <span className="text-xs font-normal text-[color:var(--mist)]">Jeep</span>
                 </span>
                 <button
                   type="button"
@@ -449,8 +434,9 @@ export function BookingWidget({
                     const nextU = Math.min(10, units + 1);
                     setUnits(nextU);
                   }}
+                  aria-label="Tambah jumlah Jeep"
                   disabled={units >= 10}
-                  className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-2xs"
+                  className="size-11 shrink-0 rounded-lg bg-[var(--surface)] border border-[var(--line)] flex items-center justify-center text-[color:var(--mist)] hover:bg-[var(--raised)] disabled:opacity-40 disabled:cursor-not-allowed transition shadow-2xs"
                 >
                   <Plus size={13} />
                 </button>
@@ -458,30 +444,32 @@ export function BookingWidget({
             </div>
 
             {/* Peserta Stepper */}
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/90">
-              <span className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                <Users size={13} className="text-[#327691]" />
+            <div className="bg-[var(--raised)] p-3 rounded-xl border border-[var(--line)]">
+              <span className="block text-[11px] font-bold text-[color:var(--mist)] uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                <Users size={13} className="text-[color:var(--gold)]" />
                 Jumlah Tamu
               </span>
               <div className="flex items-center justify-between">
                 <button
                   type="button"
                   onClick={() => setPassengers((p) => Math.max(1, p - 1))}
+                  aria-label="Kurangi jumlah peserta"
                   disabled={passengers <= 1}
-                  className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-2xs"
+                  className="size-11 shrink-0 rounded-lg bg-[var(--surface)] border border-[var(--line)] flex items-center justify-center text-[color:var(--mist)] hover:bg-[var(--raised)] disabled:opacity-40 disabled:cursor-not-allowed transition shadow-2xs"
                 >
                   <Minus size={13} />
                 </button>
-                <span className="text-sm font-black text-slate-900">
-                  {passengers} <span className="text-xs font-normal text-slate-500">Orang</span>
+                <span className="text-sm font-black text-[color:var(--ink)]">
+                  {passengers} <span className="text-xs font-normal text-[color:var(--mist)]">Orang</span>
                 </span>
                 <button
                   type="button"
                   onClick={() =>
                     setPassengers((p) => Math.min(maxPassengers, p + 1))
                   }
+                  aria-label="Tambah jumlah peserta"
                   disabled={passengers >= maxPassengers}
-                  className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-2xs"
+                  className="size-11 shrink-0 rounded-lg bg-[var(--surface)] border border-[var(--line)] flex items-center justify-center text-[color:var(--mist)] hover:bg-[var(--raised)] disabled:opacity-40 disabled:cursor-not-allowed transition shadow-2xs"
                 >
                   <Plus size={13} />
                 </button>
@@ -489,20 +477,20 @@ export function BookingWidget({
             </div>
           </div>
 
-          <p className="text-[11px] text-slate-500 italic">
+          <p className="text-[11px] text-[color:var(--mist)] italic">
             *Kapasitas maksimal armada adalah {product.passenger_capacity} peserta per unit Jeep.
           </p>
 
           {/* Area Penjemputan Dropdown */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1 flex items-center gap-1">
-              <MapPin size={13} className="text-[#327691]" />
+            <label className="block text-[11px] font-bold text-[color:var(--mist)] uppercase tracking-wider mb-1 flex items-center gap-1">
+              <MapPin size={13} className="text-[color:var(--gold)]" />
               Area Penjemputan
             </label>
             <select
               value={zone}
               onChange={(e) => setZone(e.target.value)}
-              className="w-full text-xs sm:text-sm font-semibold text-slate-900 bg-slate-50 hover:bg-slate-100/80 focus:bg-white border border-slate-200 focus:border-[#327691] rounded-xl px-3 py-2.5 outline-hidden transition shadow-2xs cursor-pointer"
+              className="w-full min-w-0 min-h-11 text-base sm:text-sm font-semibold text-[color:var(--ink)] bg-[var(--raised)] hover:bg-[var(--raised)] focus:bg-[var(--raised)] border border-[var(--line)] focus:border-[var(--gold)] rounded-xl px-3 py-2.5 outline-hidden transition shadow-2xs cursor-pointer"
             >
               <option value="">Pilih Lokasi Titik Jemput</option>
               {pickupZones.map((z) => (
@@ -516,18 +504,18 @@ export function BookingWidget({
             {zone && selectedZone && (
               <div className="mt-2">
                 {selectedSurcharge > 0 ? (
-                  <div className="flex items-center justify-between text-xs py-1.5 px-3 rounded-lg bg-sky-50 border border-sky-200/90 text-sky-900">
+                  <div className="flex items-center justify-between text-xs py-1.5 px-3 rounded-lg bg-[#1b303c] border border-sky-700/60 text-sky-200">
                     <span className="flex items-center gap-1.5 font-medium">
-                      <MapPin size={12} className="text-[#327691] shrink-0" />
+                      <MapPin size={12} className="text-[color:var(--gold)] shrink-0" />
                       <span>Biaya jemput luar area ({formatIDR(selectedSurcharge)})</span>
                     </span>
-                    <span className="font-extrabold text-[#2c6881] text-[11px] uppercase tracking-wide bg-white/80 px-2 py-0.5 rounded-md border border-sky-300/60 shadow-2xs">
+                    <span className="font-extrabold text-[color:var(--gold)] text-[11px] uppercase tracking-wide bg-[var(--raised)] px-2 py-0.5 rounded-md border border-sky-700/70 shadow-2xs">
                       Otomatis Masuk Total
                     </span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1.5 text-xs py-1.5 px-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-medium">
-                    <Check size={13} className="text-emerald-600 shrink-0" />
+                  <div className="flex items-center gap-1.5 text-xs py-1.5 px-3 rounded-lg bg-[#15342b] border border-emerald-700 text-emerald-300 font-medium">
+                    <Check size={13} className="text-emerald-300 shrink-0" />
                     <span>Area ini bebas biaya jemput (termasuk gratis dalam paket).</span>
                   </div>
                 )}
@@ -537,7 +525,7 @@ export function BookingWidget({
 
           {/* Detail Alamat Jemput */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+            <label className="block text-[11px] font-bold text-[color:var(--mist)] uppercase tracking-wider mb-1">
               Lokasi / Titik Temu Jemput
             </label>
             <input
@@ -545,7 +533,7 @@ export function BookingWidget({
               onChange={(e) => setAddress(e.target.value)}
               maxLength={500}
               placeholder="Contoh: Hotel Dialoog / Stasiun Banyuwangi Kota"
-              className="w-full text-xs sm:text-sm text-slate-900 bg-slate-50 focus:bg-white border border-slate-200 focus:border-[#327691] rounded-xl px-3 py-2.5 outline-hidden transition shadow-2xs placeholder:text-slate-400"
+              className="w-full min-w-0 min-h-11 text-base sm:text-sm text-[color:var(--ink)] bg-[var(--raised)] focus:bg-[var(--raised)] border border-[var(--line)] focus:border-[var(--gold)] rounded-xl px-3 py-2.5 outline-hidden transition shadow-2xs placeholder:text-[color:var(--mist)]"
             />
           </div>
 
@@ -555,15 +543,15 @@ export function BookingWidget({
               <button
                 type="button"
                 onClick={() => setShowPromo(true)}
-                className="text-xs font-bold text-[#327691] hover:text-[#263b46] hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-xs font-bold text-[color:var(--gold)] hover:text-[color:var(--ink)] hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <Tag size={12} />
                 Punya Kode Promo / Voucher?
               </button>
             ) : (
               <div>
-                <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1 flex items-center gap-1">
-                  <Tag size={13} className="text-[#327691]" />
+                <label className="block text-[11px] font-bold text-[color:var(--mist)] uppercase tracking-wider mb-1 flex items-center gap-1">
+                  <Tag size={13} className="text-[color:var(--gold)]" />
                   Kode Promo
                 </label>
                 <div className="flex gap-2">
@@ -572,7 +560,7 @@ export function BookingWidget({
                     onChange={(e) => setPromo(e.target.value.toUpperCase())}
                     maxLength={50}
                     placeholder="Masukkan kode promo"
-                    className="flex-1 uppercase font-bold text-xs sm:text-sm text-slate-900 bg-slate-50 focus:bg-white border border-slate-200 focus:border-[#327691] rounded-xl px-3 py-2 outline-hidden shadow-2xs tracking-wider"
+                    className="min-w-0 min-h-11 flex-1 uppercase font-bold text-base sm:text-sm text-[color:var(--ink)] bg-[var(--raised)] focus:bg-[var(--raised)] border border-[var(--line)] focus:border-[var(--gold)] rounded-xl px-3 py-2 outline-hidden shadow-2xs tracking-wider"
                   />
                   {promo && (
                     <button
@@ -581,7 +569,7 @@ export function BookingWidget({
                         setPromo("");
                         setShowPromo(false);
                       }}
-                      className="text-xs text-rose-600 font-bold px-2 py-1 hover:underline"
+                      className="text-xs text-rose-300 font-bold px-2 py-1 hover:underline"
                     >
                       Batal
                     </button>
@@ -592,49 +580,46 @@ export function BookingWidget({
           </div>
 
           {/* Rincian Harga & Total */}
-          <div className="mt-4 pt-4 border-t border-slate-200" aria-live="polite">
+          <div className="mt-4 pt-4 border-t border-[var(--line)]" aria-live="polite">
             {loading ? (
               <div className="py-4 text-center">
-                <div className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500">
-                  <span className="w-3.5 h-3.5 border-2 border-[#327691] border-t-transparent rounded-full animate-spin" />
-                  <span>Menghitung rincian harga terbaik…</span>
+                <div className="inline-flex items-center gap-2 text-xs font-semibold text-[color:var(--mist)]">
+                  <span className="w-3.5 h-3.5 border-2 border-[var(--gold)] border-t-transparent rounded-full animate-spin" />
+                    <span>Menghitung estimasi biaya…</span>
                 </div>
               </div>
             ) : error ? (
-              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-medium text-rose-700 flex items-center gap-2">
-                <AlertCircle size={15} className="shrink-0 text-rose-600" />
+              <div className="p-3 rounded-xl bg-[#3b2227] border border-rose-700/80 text-xs font-medium text-rose-300 flex items-center gap-2">
+                <AlertCircle size={15} className="shrink-0 text-rose-300" />
                 <span>{error}</span>
               </div>
             ) : (
               quote && (
                 <div className="space-y-3">
-                  <div className="space-y-2 text-xs text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
+                  <div className="space-y-1.5 text-xs text-[color:var(--mist)]">
                     {quote.breakdown.map((b, i) => (
                       <div key={i} className="flex justify-between gap-4">
                         <span>{b.label}</span>
-                        <span className="font-semibold text-slate-800 shrink-0">
+                        <span className="font-semibold text-[color:var(--ink)] shrink-0">
                           {formatIDR(b.amount)}
                         </span>
                       </div>
                     ))}
                   </div>
 
-                  <div className="pt-2 flex justify-between items-baseline">
-                    <span className="text-sm font-bold text-slate-700">Total Biaya:</span>
-                    <span className="text-xl sm:text-2xl font-black text-[#263b46]">
+                  <div className="pt-2 border-t border-[var(--line)] flex justify-between items-baseline gap-2">
+                    <span className="text-sm font-bold text-[color:var(--mist)]">Total biaya</span>
+                    <span className="text-xl sm:text-2xl font-black text-[color:var(--ink)]">
                       {formatIDR(quote.total_amount)}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs py-1.5 px-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800">
-                    <span className="font-semibold">Minimal DP (30%):</span>
-                    <span className="font-black text-emerald-700">
+                  <div className="flex items-center justify-between gap-2 text-xs text-[color:var(--gold)]">
+                    <span className="font-semibold">Estimasi DP</span>
+                    <span className="font-bold">
                       {formatIDR(quote.dp_amount)}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400 italic">
-                    *Pilihan pembayaran DP atau Lunas dapat Anda tentukan saat checkout.
-                  </p>
                 </div>
               )
             )}
@@ -643,9 +628,9 @@ export function BookingWidget({
           {/* Tombol Utama: Lanjutkan Booking */}
           <button
             type="button"
-            className={`w-full mt-4 py-3.5 px-6 rounded-xl font-extrabold text-sm sm:text-base shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider ${isDateClosed || isUnitsExceeded
+            className={`w-full mt-4 min-h-11 py-3 px-4 rounded-xl font-extrabold text-sm sm:text-base transition-colors duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${isDateClosed || isUnitsExceeded
                 ? "bg-slate-400 text-white shadow-none"
-                : "bg-[#327691] hover:bg-[#263b46] active:bg-[#1b2a32] text-white shadow-[#327691]/25 hover:shadow-xl"
+                : styles.primary
               }`}
             onClick={next}
             disabled={pending || !quote || quote.is_sample_pricing || isDateClosed || isUnitsExceeded}
@@ -662,61 +647,48 @@ export function BookingWidget({
             )}
           </button>
 
-          {/* Catatan Garansi Bebas Biaya di Awal */}
-          <div className="p-3.5 rounded-xl bg-[#e9f3f7] border border-[#ccd8de] text-xs text-[#254958] space-y-1">
-            <p className="font-bold flex items-center gap-1.5 text-[#2c6881]">
-              <ShieldCheck size={15} className="text-[#327691] shrink-0" />
-              <span>Pengajuan Bebas Biaya di Awal</span>
-            </p>
-            <p className="text-[11.5px] leading-relaxed text-slate-600">
-              Admin akan memeriksa kesiapan armada & driver kami terlebih dahulu. Setelah terkonfirmasi siap, Anda baru dapat melakukan pembayaran.
-            </p>
-          </div>
+          <p className="flex items-start gap-2 text-xs leading-relaxed text-[color:var(--mist)]">
+            <ShieldCheck size={16} className="shrink-0 text-[color:var(--gold)]" />
+            Ajukan gratis. Setelah Admin menyetujui, Anda bisa bayar DP atau lunas.
+          </p>
 
           {/* Quick CS WhatsApp */}
-          <div className="pt-2 text-center">
+          <div className="border-t border-[var(--line)] pt-1 text-center">
             <a
-              href="https://wa.me/6281234567890?text=Halo%20Admin,%20saya%20ingin%20tanya%20paket%20Sewa%20Jeep"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-emerald-700 transition"
+              href={contact ?? "/kontak"}
+              target={contact ? "_blank" : undefined}
+              rel={contact ? "noopener noreferrer" : undefined}
+              className="inline-flex min-h-11 items-center gap-1.5 text-xs font-bold text-[color:var(--mist)] hover:text-[color:var(--gold)] transition"
             >
-              <MessageCircle size={14} className="text-emerald-600" />
-              <span>Butuh bantuan / kustom rute? Chat via WhatsApp</span>
+              <MessageCircle size={15} />
+              <span>{contact ? "Chat Admin via WhatsApp" : "Hubungi Admin"}</span>
             </a>
           </div>
         </div>
       </aside>
 
       {/* Floating Bottom Bar Khusus Mobile */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] flex items-center justify-between gap-3">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--surface)] backdrop-blur-md border-t border-[var(--line)] px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_20px_rgba(0,0,0,0.08)] flex items-center justify-between gap-3">
         <div>
-          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-            Total Sewa ({units} Jeep)
+          <span className="block text-[10px] font-bold text-[color:var(--mist)] uppercase tracking-wider">
+            {pending || error ? "Harga mulai" : `Total sewa (${units} Jeep)`}
           </span>
-          <span className="text-base sm:text-lg font-black text-slate-900">
-            {formatIDR(baseDisplayPrice)}
+          <span className="text-base sm:text-lg font-black text-[color:var(--ink)]">
+            {pending || error ? (product.base_price ? formatIDR(product.base_price) : "Cek estimasi") : formatIDR(baseDisplayPrice)}
           </span>
           {isDateClosed && (
-            <span className="block text-[10px] font-bold text-rose-600">
+            <span className="block text-[10px] font-bold text-rose-300">
               ● Jadwal Ditutup
             </span>
           )}
         </div>
-        <button
-          type="button"
-          onClick={scrollToWidget}
-          disabled={isDateClosed || isUnitsExceeded}
-          className={`px-5 py-2.5 rounded-xl text-white text-xs sm:text-sm font-extrabold flex items-center gap-1.5 cursor-pointer uppercase tracking-wider transition ${isDateClosed || isUnitsExceeded
-              ? "bg-slate-400 opacity-60 cursor-not-allowed"
-              : "bg-[#327691] hover:bg-[#263b46] active:bg-[#1b2a32] shadow-md shadow-[#327691]/25"
-            }`}
+        <a
+          href="#booking-card"
+          className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[var(--gold)] px-4 text-sm font-extrabold text-[color:var(--on-gold)] hover:bg-[var(--gold-hover)]"
         >
-          <span>{isDateClosed ? "Jadwal Tutup" : isUnitsExceeded ? "Kuota Penuh" : "Pesan Sekarang"}</span>
-          {!isDateClosed && !isUnitsExceeded && (
-            <ArrowRight size={14} strokeWidth={2.5} />
-          )}
-        </button>
+          {isDateClosed || isUnitsExceeded ? "Ubah jadwal / unit" : "Pesan sekarang"}
+          <ArrowRight size={14} aria-hidden="true" />
+        </a>
       </div>
     </>
   );

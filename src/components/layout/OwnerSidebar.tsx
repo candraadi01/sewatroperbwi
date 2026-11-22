@@ -18,10 +18,8 @@ import {
   Compass,
   Calendar,
   Search,
-  RotateCw,
 } from "lucide-react";
 import { cn } from "@/components/ui";
-import { DemoAccountSwitcher } from "./DemoAccountSwitcher";
 
 interface OwnerUser {
   id: string;
@@ -44,7 +42,6 @@ const ownerNavItems = [
 export function OwnerSidebar({ user }: { user: OwnerUser }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [showSwitcher, setShowSwitcher] = useState(false);
 
   function isActive(href: string) {
     if (href === "/owner") return pathname === "/owner";
@@ -68,33 +65,7 @@ export function OwnerSidebar({ user }: { user: OwnerUser }) {
             </span>
           </div>
         </div>
-
-        {/* Tombol Toggle Switch Akun Demo (Persis Foto Homestay) */}
-        <button
-          type="button"
-          onClick={() => setShowSwitcher((prev) => !prev)}
-          className={cn(
-            "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border transition-all cursor-pointer",
-            showSwitcher
-              ? "bg-[#e9f3f7] dark:bg-neutral-800 text-[#327691] border-[#327691]/40 shadow-2xs"
-              : "bg-neutral-100/90 dark:bg-neutral-800 hover:bg-[#e9f3f7] dark:hover:bg-neutral-700 text-neutral-500 hover:text-[#327691] border-neutral-200/80 dark:border-neutral-700"
-          )}
-          title="Buka / Tutup Switch Akun Demo"
-          aria-label="Toggle Switch Akun Demo"
-        >
-          <RotateCw
-            size={14}
-            className={cn("transition-transform duration-300", showSwitcher && "rotate-180 text-[#327691]")}
-          />
-        </button>
       </div>
-
-      {/* Switch Akun Demo (Hanya Muncul Jika Tombol Diklik — Persis Homestay) */}
-      {showSwitcher && (
-        <div className="p-3 border-b border-[#e4ebef] dark:border-neutral-800 bg-[#f8fafc]/80 dark:bg-neutral-900/40 animate-in fade-in slide-in-from-top-2 duration-200">
-          <DemoAccountSwitcher currentRole="owner" />
-        </div>
-      )}
 
       {/* Navigation Links — Ukuran Font Nyaman & Mudah Dibaca */}
       <nav

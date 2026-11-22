@@ -21,6 +21,8 @@ import { formatIDR } from "@/lib/utils/currency";
 import { TimeListEditor } from "./TimeListEditor";
 import { ProductEditorForm } from "./ProductEditorForm";
 import Link from "next/link";
+import Image from "next/image";
+import { isGalleryImage } from "@/lib/gallery";
 
 type Row = Record<string, unknown>;
 
@@ -40,6 +42,40 @@ export function ResourceEditor({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const router = useRouter();
+  const isGallery = resourceKey === "galeri";
+  const canChangeVisibility = isGallery || ["testimoni", "destinasi", "tampilan"].includes(resourceKey);
+
+  async function toggleVisibility(row: Row) {
+    if (busy || typeof row.id !== "string") return;
+    const active = row.is_active === false;
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const response = await fetch(`/api/admin/${resourceKey}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: row.id, active }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Status belum berubah.");
+      setMessage(active ? "Konten dipublikasikan." : "Konten disembunyikan dari website.");
+      router.refresh();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Status belum berubah.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function visibilityButton(row: Row) {
+    return canChangeVisibility && (
+      <button type="button" disabled={busy} onClick={() => toggleVisibility(row)}
+        className="rounded-lg border border-slate-200 px-2 py-1.5 text-xs font-semibold hover:bg-slate-100 disabled:opacity-50 dark:border-neutral-700 dark:hover:bg-neutral-800">
+        {row.is_active === false ? "Tampilkan" : isGallery ? "Arsipkan" : "Sembunyikan"}
+      </button>
+    );
+  }
 
   function start(row: Row = {}) {
     setSelected({ ...row });
@@ -159,11 +195,16 @@ export function ResourceEditor({
       default_start_time: "Jam Berangkat",
       driver_included: "Termasuk Sopir",
       short_description: "Deskripsi Singkat",
+      image_url: "Foto",
+      sort_order: "Urutan",
     };
     return map[col] || col.replaceAll("_", " ");
   }
 
   function renderBadgeOrValue(col: string, val: unknown) {
+    if (col === "image_url" && isGallery && isGalleryImage(val)) {
+      return <div className="relative h-12 w-18 overflow-hidden rounded-lg"><Image fill src={val} alt="" sizes="72px" className="object-cover" /></div>;
+    }
     if (col === "status") {
       const s = String(val).toLowerCase();
       if (s === "active" || s === "published") {
@@ -546,6 +587,7 @@ export function ResourceEditor({
               <div>{renderBadgeOrValue("status", row.status ?? row.is_active)}</div>
             </div>
 
+            {isGallery && renderBadgeOrValue("image_url", row.image_url)}
             {Boolean(row.short_description) && (
               <p className="text-xs text-[#64748b] dark:text-neutral-400 line-clamp-2">
                 {String(row.short_description)}
@@ -563,7 +605,8 @@ export function ResourceEditor({
                 )}
               </div>
               {!config.readOnly && (
-                <div className="flex items-center gap-1.5">
+                <div className="flex flex-wrap items-center justify-end gap-1.5">
+                  {visibilityButton(row)}
                   {resourceKey === "produk" && (
                     <Link
                       href={`/admin/jadwal?catalogId=${row.id}`}
@@ -616,6 +659,7 @@ export function ResourceEditor({
                   {!config.readOnly && (
                     <td className="px-5 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        {visibilityButton(row)}
                         {resourceKey === "produk" && (
                           <>
                             {Boolean(row.slug) && (

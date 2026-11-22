@@ -2,7 +2,7 @@ import { z } from "zod";
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getAuthUser } from "@/lib/auth/helpers";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import {
   assertSameOrigin,
   readJson,
@@ -33,13 +33,13 @@ export async function GET() {
       throw new RequestError("Akses pemilik armada diperlukan.", 403);
     }
 
-    const db = await createAdminClient();
+    const db = await createClient();
     const settings = await getSiteSettings();
 
     // Ambil data profile & auth user metadata
     const [{ data: profile }, { data: authUser }] = await Promise.all([
       db.from("profiles").select("full_name, phone, email").eq("id", user.id).single(),
-      db.auth.admin.getUserById(user.id),
+      db.auth.getUser(),
     ]);
 
     const metadata = authUser?.user?.user_metadata || {};
@@ -90,7 +90,12 @@ export async function POST(request: Request) {
       developerCredit,
     } = parsed.data;
 
-    const db = await createAdminClient();
+    const isAdmin = user.roles.includes("admin");
+    if (!isAdmin && [briAccount, bcaAccount, businessEmail, developerCredit].some((value) => value !== undefined)) {
+      throw new RequestError("Pengaturan publik hanya dapat diubah oleh admin.", 403);
+    }
+
+    const db = await createClient();
 
     // 1. Update tabel profiles
     const { error: profileError } = await db
@@ -103,16 +108,12 @@ export async function POST(request: Request) {
       .eq("id", user.id);
 
     if (profileError) {
-      console.error("[owner-profile] profile update error:", profileError);
+      throw new RequestError("Profil belum dapat disimpan.", 503);
     }
 
     // 2. Update auth user metadata
-    const { data: currentUser } = await db.auth.admin.getUserById(user.id);
-    const existingMeta = currentUser?.user?.user_metadata || {};
-
-    await db.auth.admin.updateUserById(user.id, {
-      user_metadata: {
-        ...existingMeta,
+    const { error: metadataError } = await db.auth.updateUser({
+      data: {
         full_name: fullName,
         phone,
         po_name: poName || "",
@@ -121,32 +122,35 @@ export async function POST(request: Request) {
         account_holder: accountHolder,
       },
     });
+    if (metadataError) throw new RequestError("Data rekening profil belum dapat disimpan.", 503);
 
-    // 3. Update site_settings agar footer langsung berubah secara realtime
-    const settingsRows = [
-      { key: "contact_whatsapp", value: phone, category: "contact" },
-      { key: "contact_phone", value: phone, category: "contact" },
-      { key: "contact_email", value: businessEmail || "info@kulinosewatroper.com", category: "contact" },
-      { key: "bank_bri_account", value: briAccount || "000000", category: "finance" },
-      { key: "bank_bca_account", value: bcaAccount || accountNumber || "000000", category: "finance" },
-      { key: "bank_account_holder", value: accountHolder || "PT. SEWA JEEP BANYUWANGI", category: "finance" },
-      { key: "developer_credit", value: developerCredit || "candra", category: "general" },
-    ].map((r) => ({
-      ...r,
-      updated_by: user.id,
-      updated_at: new Date().toISOString(),
-    }));
+    if (isAdmin) {
+      const settingsRows = [
+        { key: "contact_whatsapp", value: phone, category: "contact" },
+        { key: "contact_phone", value: phone, category: "contact" },
+        { key: "contact_email", value: businessEmail || "info@kulinosewatroper.com", category: "contact" },
+        { key: "bank_bri_account", value: briAccount || "000000", category: "finance" },
+        { key: "bank_bca_account", value: bcaAccount || accountNumber || "000000", category: "finance" },
+        { key: "bank_account_holder", value: accountHolder || "PT. SEWA JEEP BANYUWANGI", category: "finance" },
+        { key: "developer_credit", value: developerCredit || "candra", category: "general" },
+      ].map((r) => ({
+        ...r,
+        updated_by: user.id,
+        updated_at: new Date().toISOString(),
+      }));
 
-    await db.from("site_settings").upsert(settingsRows, { onConflict: "key" });
+      const { error } = await db.from("site_settings").upsert(settingsRows, { onConflict: "key" });
+      if (error) throw new RequestError("Pengaturan publik belum dapat disimpan.", 503);
+      revalidatePath("/", "layout");
+    }
 
-    revalidatePath("/", "layout");
     revalidatePath("/owner/profil");
     revalidatePath("/owner/tarik-dana");
     revalidatePath("/owner");
 
     return NextResponse.json({
       success: true,
-      message: "Profil pemilik dan informasi rekening website berhasil diperbarui secara realtime.",
+      message: "Profil berhasil diperbarui.",
     });
   } catch (e) {
     return errorResponse(e);

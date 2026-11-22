@@ -2,7 +2,7 @@ import { z } from "zod";
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getAuthUser } from "@/lib/auth/helpers";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import {
   assertSameOrigin,
   readJson,
@@ -26,7 +26,7 @@ export async function GET() {
       throw new RequestError("Akses pemilik armada diperlukan.", 403);
     }
 
-    const db = await createAdminClient();
+    const db = await createClient();
     const { data: requests, error } = await db
       .from("payout_requests")
       .select("*")
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     }
 
     const { amount, bankName, accountNumber, accountHolder } = parsed.data;
-    const db = await createAdminClient();
+    const db = await createClient();
 
     // Simpan permohonan ke tabel payout_requests
     const { data: inserted, error } = await db
@@ -70,8 +70,6 @@ export async function POST(request: Request) {
         bank_name: bankName,
         account_number: accountNumber,
         account_holder: accountHolder,
-        status: "pending",
-        requested_at: new Date().toISOString(),
       })
       .select()
       .single();

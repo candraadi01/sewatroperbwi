@@ -5,7 +5,7 @@ import { useLanguage } from "@/lib/i18n/context";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { FlagIcon } from "./FlagIcon";
 
-export function LanguageSelector() {
+export function LanguageSelector({ inline = false, aboveBookingBar = false }: { inline?: boolean; aboveBookingBar?: boolean }) {
   const { currentLanguage, setLanguage, allLanguages } = useLanguage();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -17,13 +17,20 @@ export function LanguageSelector() {
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
   }, []);
 
   return (
     <div
       ref={containerRef}
-      className="fixed bottom-6 right-6 z-50 select-none font-sans"
+      className={`${inline ? "relative z-10" : `fixed right-3 z-50 sm:right-5 ${aboveBookingBar ? "bottom-[calc(6rem+env(safe-area-inset-bottom))] lg:bottom-5" : "bottom-[max(.85rem,env(safe-area-inset-bottom))]"}`} select-none font-sans`}
     >
       {/* Language Popup Menu (Positioned above button like in Foto 2) */}
       {open && (
@@ -32,7 +39,10 @@ export function LanguageSelector() {
             const isSelected = lang.code === currentLanguage.code;
             return (
               <button
+                type="button"
                 key={lang.code}
+                lang={lang.code}
+                aria-pressed={isSelected}
                 onClick={() => {
                   setLanguage(lang.code);
                   setOpen(false);
@@ -56,8 +66,9 @@ export function LanguageSelector() {
 
       {/* Floating Toggle Button (Foto 2: Indonesian flag + ID + chevron) */}
       <button
+        type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 bg-white hover:bg-neutral-50 text-neutral-800 px-3.5 py-2 rounded-md shadow-lg border border-neutral-300 transition-all hover:scale-105 active:scale-95"
+        className="flex min-h-11 items-center gap-2 bg-white hover:bg-neutral-50 text-neutral-800 px-3 py-2 rounded-full shadow-lg border border-neutral-300 transition-colors"
         aria-label="Pilih Bahasa / Select Language"
         aria-expanded={open}
       >

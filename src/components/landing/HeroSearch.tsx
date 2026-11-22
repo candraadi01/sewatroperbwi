@@ -46,7 +46,6 @@ export function HeroSearch() {
   const [destinasi, setDestinasi] = useState("");
   const [tanggalTrip, setTanggalTrip] = useState("");
   const [schedules, setSchedules] = useState<DateScheduleItem[]>([]);
-  const [loadingSchedule, setLoadingSchedule] = useState(true);
 
   // Ambil data jadwal ketersediaan real-time dari API
   useEffect(() => {
@@ -65,8 +64,6 @@ export function HeroSearch() {
         }
       } catch (e) {
         console.error("Gagal memuat ketersediaan jadwal:", e);
-      } finally {
-        setLoadingSchedule(false);
       }
     }
     loadSchedules();
@@ -213,7 +210,6 @@ export function HeroSearch() {
                     value={tanggalTrip}
                     onChange={setTanggalTrip}
                     schedules={schedules}
-                    loading={loadingSchedule}
                   />
                 </div>
               </div>

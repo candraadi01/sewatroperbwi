@@ -45,6 +45,9 @@ next-env.d.ts
 
 # Local verification artifacts
 /artifacts/
+/scripts/cloud_*.csv
+*.dump
+*.backup
 
 *.zip
 node_modules/

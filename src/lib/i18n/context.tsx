@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useSyncExternalStore, useEffect } from "react";
 import { Language, languages, translations, LanguageOption } from "./translations";
 
 interface LanguageContextType {
@@ -12,28 +12,37 @@ interface LanguageContextType {
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+const defaultLanguage = () => "id" as const;
+const dictionaries: Record<Language, Record<string, string>> = translations;
+
+function savedLanguage(): Language {
+  const saved = localStorage.getItem("app_lang");
+  return languages.find(({ code }) => code === saved)?.code ?? "id";
+}
+
+function subscribeLanguage(update: () => void) {
+  window.addEventListener("storage", update);
+  window.addEventListener("app-language-change", update);
+  return () => {
+    window.removeEventListener("storage", update);
+    window.removeEventListener("app-language-change", update);
+  };
+}
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("id");
-
-  useEffect(() => {
-    const saved = localStorage.getItem("app_lang") as Language;
-    if (saved && translations[saved]) {
-      setLanguageState(saved);
-    }
-  }, []);
+  const language = useSyncExternalStore(subscribeLanguage, savedLanguage, defaultLanguage);
+  useEffect(() => { document.documentElement.lang = language; }, [language]);
 
   const setLanguage = (lang: Language) => {
-    setLanguageState(lang);
     localStorage.setItem("app_lang", lang);
+    window.dispatchEvent(new Event("app-language-change"));
   };
 
   const currentLanguage =
     languages.find((l) => l.code === language) || languages[languages.length - 1];
 
   const t = (key: string, fallback?: string): string => {
-    const currentDict = (translations as any)[language] || translations.id;
-    return currentDict?.[key] || (translations.id as any)?.[key] || fallback || key;
+    return dictionaries[language][key] || dictionaries.id[key] || fallback || key;
   };
 
   return (
@@ -59,7 +68,7 @@ export function useLanguage() {
       language: "id" as Language,
       currentLanguage: languages[languages.length - 1],
       setLanguage: () => {},
-      t: (key: string, fallback?: string) => (translations.id as any)?.[key] || fallback || key,
+      t: (key: string, fallback?: string) => dictionaries.id[key] || fallback || key,
       allLanguages: languages,
     };
   }

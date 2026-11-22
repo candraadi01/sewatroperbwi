@@ -2,8 +2,9 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { PricingQuote } from "@/types/database";
+import styles from "@/components/landing/cinematic.module.css";
 import { formatIDR } from "@/lib/utils/currency";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -13,7 +14,6 @@ import {
   Calendar,
   Clock,
   Car,
-  Users,
   MapPin,
   User,
   Phone,
@@ -24,7 +24,6 @@ import {
   AlertCircle,
   Info,
   ChevronRight,
-  Sparkles,
 } from "lucide-react";
 
 interface DraftFields {
@@ -51,8 +50,9 @@ function formatIndonesianDate(dateStr: string) {
 }
 
 function Checkout() {
+  const router = useRouter();
   const params = useSearchParams();
-  const [quote, setQuote] = useState<PricingQuote | null>(null);
+  const [quote, setQuote] = useState<(PricingQuote & { product_slug?: string }) | null>(null);
   const [ready, setReady] = useState(false);
   const [choice, setChoice] = useState<"dp" | "full">("dp");
   const [busy, setBusy] = useState(false);
@@ -183,7 +183,7 @@ function Checkout() {
         } catch {}
 
         const returnPath = window.location.pathname + window.location.search;
-        window.location.assign(`/login?redirectTo=${encodeURIComponent(returnPath)}`);
+        router.push(`/auth/login?redirectTo=${encodeURIComponent(returnPath)}`);
         return;
       }
 
@@ -329,7 +329,7 @@ function Checkout() {
               </div>
             </div>
             <Link
-              href={`/login?redirectTo=${encodeURIComponent(
+              href={`/auth/login?redirectTo=${encodeURIComponent(
                 typeof window !== "undefined"
                   ? window.location.pathname + window.location.search
                   : "/checkout"
@@ -345,9 +345,8 @@ function Checkout() {
         <div className="grid lg:grid-cols-[1.25fr_1fr] gap-8 items-start">
           {/* Kolom Kiri: Form Data Pemesan */}
           <form
-            key={`${draft.email || ""}-${draft.name || ""}`}
             onSubmit={submit}
-            className="bg-white rounded-2xl border border-slate-200/90 shadow-md p-5 sm:p-7 space-y-6"
+            className={`${styles.bookingMotion} bg-white rounded-2xl border border-slate-200/90 min-w-0 shadow-md p-4 sm:p-7 space-y-6 lg:col-start-1 lg:row-start-1`}
           >
             <div>
               <h2 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
@@ -361,40 +360,42 @@ function Checkout() {
 
             {/* Nama Lengkap */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <label htmlFor="booking-name" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                 <User size={13} className="text-[#327691]" />
                 <span>Nama Lengkap Pemesan *</span>
               </label>
               <input
+                id="booking-name"
                 name="name"
                 required
                 minLength={2}
                 maxLength={100}
                 autoComplete="name"
-                defaultValue={draft.name || ""}
+                value={draft.name ?? ""}
                 onChange={(e) => updateDraft("name", e.target.value)}
                 placeholder="Contoh: Budi Santoso"
-                className="w-full text-xs sm:text-sm font-semibold text-slate-900 bg-slate-50 focus:bg-white border border-slate-200 focus:border-[#327691] rounded-xl px-3.5 py-3 outline-hidden transition shadow-2xs placeholder:text-slate-400"
+                className="w-full min-w-0 text-base sm:text-sm font-semibold text-slate-900 bg-slate-50 focus:bg-white border border-slate-200 focus:border-[#327691] rounded-xl px-3.5 py-3 outline-hidden transition shadow-2xs placeholder:text-slate-400"
               />
             </div>
 
             {/* Grid No HP & Email */}
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                <label htmlFor="booking-phone" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                   <Phone size={13} className="text-[#327691]" />
                   <span>Nomor WhatsApp Aktif *</span>
                 </label>
                 <input
+                  id="booking-phone"
                   name="phone"
                   type="tel"
                   required
                   maxLength={18}
                   autoComplete="tel"
                   placeholder="Contoh: 081234567890"
-                  defaultValue={draft.phone || ""}
+                  value={draft.phone ?? ""}
                   onChange={(e) => updateDraft("phone", e.target.value)}
-                  className="w-full text-xs sm:text-sm font-semibold text-slate-900 bg-slate-50 focus:bg-white border border-slate-200 focus:border-[#327691] rounded-xl px-3.5 py-3 outline-hidden transition shadow-2xs placeholder:text-slate-400"
+                  className="w-full min-w-0 text-base sm:text-sm font-semibold text-slate-900 bg-slate-50 focus:bg-white border border-slate-200 focus:border-[#327691] rounded-xl px-3.5 py-3 outline-hidden transition shadow-2xs placeholder:text-slate-400"
                 />
                 <span className="text-[10.5px] text-slate-400 mt-1 block">
                   Driver akan menghubungi nomor ini saat penjemputan.
@@ -402,20 +403,21 @@ function Checkout() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                <label htmlFor="booking-email" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                   <Mail size={13} className="text-[#327691]" />
                   <span>Alamat Email Aktif *</span>
                 </label>
                 <input
+                  id="booking-email"
                   name="email"
                   type="email"
                   required
                   maxLength={255}
                   autoComplete="email"
                   placeholder="nama@email.com"
-                  defaultValue={draft.email || ""}
+                  value={draft.email ?? ""}
                   onChange={(e) => updateDraft("email", e.target.value)}
-                  className="w-full text-xs sm:text-sm font-semibold text-slate-900 bg-slate-50 focus:bg-white border border-slate-200 focus:border-[#327691] rounded-xl px-3.5 py-3 outline-hidden transition shadow-2xs placeholder:text-slate-400"
+                  className="w-full min-w-0 text-base sm:text-sm font-semibold text-slate-900 bg-slate-50 focus:bg-white border border-slate-200 focus:border-[#327691] rounded-xl px-3.5 py-3 outline-hidden transition shadow-2xs placeholder:text-slate-400"
                 />
                 <span className="text-[10.5px] text-slate-400 mt-1 block">
                   E-voucher & bukti booking resmi dikirim via email.
@@ -425,17 +427,18 @@ function Checkout() {
 
             {/* Titik Lokasi Jemput */}
             <div className="pt-2 border-t border-slate-100">
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <label htmlFor="booking-pickupAddress" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                 <MapPin size={13} className="text-[#327691]" />
                 <span>Alamat / Nama Tempat Penjemputan</span>
               </label>
               <input
+                id="booking-pickupAddress"
                 name="pickupAddress"
                 maxLength={500}
-                defaultValue={draft.pickupAddress || quote.pickup_address}
+                value={draft.pickupAddress ?? quote.pickup_address ?? ""}
                 onChange={(e) => updateDraft("pickupAddress", e.target.value)}
                 placeholder="Contoh: Lobby Hotel Dialoog / Stasiun Ketapang / Rumah Jl. Sudirman No 12"
-                className="w-full text-xs sm:text-sm text-slate-900 bg-slate-50 focus:bg-white border border-slate-200 focus:border-[#327691] rounded-xl px-3.5 py-3 outline-hidden transition shadow-2xs placeholder:text-slate-400"
+                className="w-full min-w-0 text-base sm:text-sm text-slate-900 bg-slate-50 focus:bg-white border border-slate-200 focus:border-[#327691] rounded-xl px-3.5 py-3 outline-hidden transition shadow-2xs placeholder:text-slate-400"
               />
               <span className="text-[10.5px] text-slate-400 mt-1 block">
                 Area: {quote.pickup_zone?.name || "Titik awal layanan / Kota Banyuwangi"}
@@ -444,18 +447,19 @@ function Checkout() {
 
             {/* Catatan Perjalanan */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <label htmlFor="booking-notes" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                 <FileText size={13} className="text-[#327691]" />
                 <span>Catatan Tambahan untuk Driver (Opsional)</span>
               </label>
               <textarea
+                id="booking-notes"
                 name="notes"
                 maxLength={1000}
                 rows={3}
-                defaultValue={draft.notes || ""}
+                value={draft.notes ?? ""}
                 onChange={(e) => updateDraft("notes", e.target.value)}
                 placeholder="Contoh: Ada lansia/anak kecil, bawa koper 3 buah, atau jam tiba kereta api pukul 07.15 WIB."
-                className="w-full text-xs sm:text-sm text-slate-900 bg-slate-50 focus:bg-white border border-slate-200 focus:border-[#327691] rounded-xl px-3.5 py-2.5 outline-hidden transition shadow-2xs placeholder:text-slate-400"
+                className="w-full min-w-0 text-base sm:text-sm text-slate-900 bg-slate-50 focus:bg-white border border-slate-200 focus:border-[#327691] rounded-xl px-3.5 py-2.5 outline-hidden transition shadow-2xs placeholder:text-slate-400"
               />
             </div>
 
@@ -528,7 +532,7 @@ function Checkout() {
             </div>
 
             {error && (
-              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs font-medium text-rose-700 flex items-center gap-2">
+              <div role="alert" className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs font-medium text-rose-700 flex items-center gap-2">
                 <AlertCircle size={16} className="shrink-0 text-rose-600" />
                 <span>{error}</span>
               </div>
@@ -573,7 +577,7 @@ function Checkout() {
           </form>
 
           {/* Kolom Kanan: Rincian Perjalanan & Ringkasan Biaya */}
-          <aside className="bg-white rounded-2xl border border-slate-200/90 shadow-md p-5 sm:p-6 lg:sticky lg:top-24 space-y-5 overflow-hidden">
+          <aside aria-label="Ringkasan pemesanan" className="row-start-1 min-w-0 bg-white lg:col-start-2 rounded-2xl border border-slate-200/90 shadow-md p-5 sm:p-6 lg:sticky lg:top-24 space-y-5 overflow-hidden">
             {/* Header Rincian */}
             <div className="pb-4 border-b border-slate-100">
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
@@ -603,14 +607,14 @@ function Checkout() {
               </div>
               <div className="flex items-center gap-2">
                 <MapPin size={14} className="text-[#327691] shrink-0" />
-                <span className="truncate">
+                <span className="break-words">
                   {quote.pickup_zone?.name || "Titik Awal Layanan (Kota Banyuwangi)"}
                 </span>
               </div>
               <div className="pt-2 border-t border-slate-200/70 flex justify-end">
                 <Link
-                  href={`/sewa/${(quote as any).product_slug || quote.product_id}?date=${encodeURIComponent(quote.service_date)}`}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold text-[#327691] hover:text-[#263b46] hover:underline bg-white px-2.5 py-1 rounded-md border border-slate-200/80 shadow-2xs transition"
+                  href={`/sewa/${quote.product_slug || quote.product_id}?date=${encodeURIComponent(quote.service_date)}#booking-card`}
+                  className="inline-flex items-center gap-1 min-h-11 text-sm font-bold text-[#327691] hover:text-[#263b46] hover:underline bg-white px-3 py-2 rounded-md border border-slate-200/80 shadow-2xs transition"
                 >
                   <span>✏️ Ubah Jadwal / Jumlah Unit</span>
                 </Link>
@@ -642,7 +646,7 @@ function Checkout() {
               </div>
 
               {/* Status Alur Pembayaran */}
-              <div className="p-3.5 rounded-xl bg-[#e9f3f7] border border-[#ccd8de] text-slate-800 space-y-1.5">
+              <div className="hidden lg:block p-3.5 rounded-xl bg-[#e9f3f7] border border-[#ccd8de] text-slate-800 space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-700">Status Tahap Ini:</span>
                   <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold text-[#263b46] bg-white px-2.5 py-0.5 rounded-md border border-slate-200 shadow-2xs">
@@ -651,7 +655,7 @@ function Checkout() {
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-600 leading-snug">
-                  Pembayaran akan dibuka setelah Admin & Pemilik Armada menyetujui ketersediaan kendaraan.
+                  Pembayaran DP atau lunas tersedia setelah Admin menyetujui pengajuan.
                 </p>
               </div>
 
@@ -661,7 +665,7 @@ function Checkout() {
                   Ketentuan Pembayaran Saat Disetujui:
                 </span>
                 <div className="flex justify-between text-slate-700">
-                  <span>Pilihan DP (30%):</span>
+                  <span>Pilihan DP:</span>
                   <span className="font-bold text-slate-900">{formatIDR(quote.dp_amount)}</span>
                 </div>
                 <div className="flex justify-between text-slate-700 pt-1.5 border-t border-slate-200/70">
@@ -672,7 +676,7 @@ function Checkout() {
             </div>
 
             {/* Kotak Jaminan & Kepastian Layanan */}
-            <div className="p-4 rounded-xl bg-[#e9f3f7] border border-[#ccd8de] text-xs text-[#254958] space-y-1.5">
+            <div className="hidden lg:block p-4 rounded-xl bg-[#e9f3f7] border border-[#ccd8de] text-xs text-[#254958] space-y-1.5">
               <p className="font-bold flex items-center gap-1.5 text-[#2c6881]">
                 <ShieldCheck size={16} className="text-[#327691] shrink-0" />
                 <span>Pasti Jalan & Terjamin Resmi</span>
@@ -683,7 +687,7 @@ function Checkout() {
             </div>
 
             {/* Bantuan WhatsApp CS */}
-            <div className="pt-2 text-center">
+            <div className="hidden pt-2 text-center lg:block">
               <a
                 href="https://wa.me/6281234567890?text=Halo%20Admin%20Sewa%20Trooper,%20saya%20sedang%20mengisi%20checkout%20dan%20ada%20pertanyaan"
                 target="_blank"

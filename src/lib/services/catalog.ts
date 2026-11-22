@@ -296,7 +296,8 @@ export const getProductBySlug = cache(
       if (found) return found;
     }
 
-    // 4. Fallback ke SAMPLE_PRODUCTS
+    if (isSupabaseConfigured()) return null;
+    // Fallback slug hanya untuk fixture lokal.
     const sample = SAMPLE_PRODUCTS.find(
       (p) => p.slug === slug || (alias && p.slug === alias)
     );

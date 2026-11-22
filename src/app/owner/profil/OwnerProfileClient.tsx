@@ -17,7 +17,7 @@ interface InitialData {
   developerCredit?: string;
 }
 
-export function OwnerProfileClient({ initialData }: { initialData: InitialData }) {
+export function OwnerProfileClient({ initialData, canEditSiteSettings }: { initialData: InitialData; canEditSiteSettings: boolean }) {
   const [formData, setFormData] = useState<InitialData>(initialData);
   const [isSaving, setIsSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -30,10 +30,14 @@ export function OwnerProfileClient({ initialData }: { initialData: InitialData }
     setErrorMessage("");
 
     try {
+      const { email: _email, briAccount, bcaAccount, businessEmail, developerCredit, ...profile } = formData;
+      const changes = canEditSiteSettings
+        ? { ...profile, briAccount, bcaAccount, businessEmail, developerCredit }
+        : profile;
       const res = await fetch("/api/owner/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(changes),
       });
 
       const data = await res.json();
@@ -41,7 +45,7 @@ export function OwnerProfileClient({ initialData }: { initialData: InitialData }
         throw new Error(data.error || "Gagal menyimpan profil.");
       }
 
-      setSuccessMessage("Profil pemilik, kontak hotline, dan data rekening footer berhasil diperbarui secara realtime!");
+      setSuccessMessage(data.message || "Profil berhasil diperbarui.");
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "Terjadi kesalahan saat menyimpan data.");
     } finally {
@@ -196,98 +200,95 @@ export function OwnerProfileClient({ initialData }: { initialData: InitialData }
           </div>
         </div>
 
-        {/* Informasi Publik & Footer Website */}
-        <div className="p-6 rounded-2xl bg-white border border-[#e4ebef] shadow-xs">
-          <div className="flex items-center gap-2 pb-4 border-b border-neutral-100">
-            <Globe size={20} className="text-[#327691]" />
-            <div>
-              <h3 className="font-extrabold text-base text-[#263b46]">
-                Informasi Kontak & Rekening Footer Website (Realtime)
-              </h3>
-              <p className="text-xs text-[#697780] mt-0.5">
-                Data yang diubah di sini langsung tampil secara realtime pada footer seluruh halaman website.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-5 space-y-4 text-xs">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {canEditSiteSettings && (
+          <div className="p-6 rounded-2xl bg-white border border-[#e4ebef] shadow-xs">
+            <div className="flex items-center gap-2 pb-4 border-b border-neutral-100">
+              <Globe size={20} className="text-[#327691]" />
               <div>
-                <label className="block font-bold text-[#263b46] mb-1">
-                  Rekening BRI Resmi Footer (cth: 000000)
-                </label>
-                <input
-                  type="text"
-                  value={formData.briAccount || ""}
-                  onChange={(e) => setFormData({ ...formData, briAccount: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#ccd8de] text-sm text-[#263b46] font-medium focus:outline-none focus:border-[#327691]"
-                  placeholder="000000"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-[#263b46] mb-1">
-                  Rekening BCA Resmi Footer (cth: 000000)
-                </label>
-                <input
-                  type="text"
-                  value={formData.bcaAccount || ""}
-                  onChange={(e) => setFormData({ ...formData, bcaAccount: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#ccd8de] text-sm text-[#263b46] font-medium focus:outline-none focus:border-[#327691]"
-                  placeholder="000000"
-                />
+                <h3 className="font-extrabold text-base text-[#263b46]">
+                  Informasi Kontak & Rekening Footer Website (Realtime)
+                </h3>
+                <p className="text-xs text-[#697780] mt-0.5">
+                  Data yang diubah di sini langsung tampil secara realtime pada footer seluruh halaman website.
+                </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block font-bold text-[#263b46] mb-1">
-                  Email Kontak Resmi (cth: info@kulinosewatroper.com)
-                </label>
-                <input
-                  type="email"
-                  value={formData.businessEmail || ""}
-                  onChange={(e) => setFormData({ ...formData, businessEmail: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#ccd8de] text-sm text-[#263b46] font-medium focus:outline-none focus:border-[#327691]"
-                  placeholder="info@kulinosewatroper.com"
-                />
+            <div className="mt-5 space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-bold text-[#263b46] mb-1">
+                    Rekening BRI Resmi Footer (cth: 000000)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.briAccount || ""}
+                    onChange={(e) => setFormData({ ...formData, briAccount: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#ccd8de] text-sm text-[#263b46] font-medium focus:outline-none focus:border-[#327691]"
+                    placeholder="000000"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#263b46] mb-1">
+                    Rekening BCA Resmi Footer (cth: 000000)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.bcaAccount || ""}
+                    onChange={(e) => setFormData({ ...formData, bcaAccount: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#ccd8de] text-sm text-[#263b46] font-medium focus:outline-none focus:border-[#327691]"
+                    placeholder="000000"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block font-bold text-[#263b46] mb-1">
-                  Developer Credit Footer (cth: candra)
-                </label>
-                <input
-                  type="text"
-                  value={formData.developerCredit || ""}
-                  onChange={(e) => setFormData({ ...formData, developerCredit: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#ccd8de] text-sm text-[#263b46] font-medium focus:outline-none focus:border-[#327691]"
-                  placeholder="candra"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-bold text-[#263b46] mb-1">
+                    Email Kontak Resmi (cth: info@kulinosewatroper.com)
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.businessEmail || ""}
+                    onChange={(e) => setFormData({ ...formData, businessEmail: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#ccd8de] text-sm text-[#263b46] font-medium focus:outline-none focus:border-[#327691]"
+                    placeholder="info@kulinosewatroper.com"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#263b46] mb-1">
+                    Developer Credit Footer (cth: candra)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.developerCredit || ""}
+                    onChange={(e) => setFormData({ ...formData, developerCredit: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#ccd8de] text-sm text-[#263b46] font-medium focus:outline-none focus:border-[#327691]"
+                    placeholder="candra"
+                  />
+                </div>
               </div>
             </div>
           </div>
+        )}
 
-          <div className="mt-6 pt-4 border-t border-[#f0f4f6] flex items-center justify-between">
-            <p className="text-[11px] text-[#697780]">
-              Perubahan langsung disinkronkan ke footer website dan laporan pemilik armada.
-            </p>
-
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="px-6 py-2.5 rounded-xl bg-[#327691] hover:bg-[#2c6881] disabled:opacity-50 text-white font-bold text-xs sm:text-sm shadow-xs transition cursor-pointer flex items-center gap-2 shrink-0 ml-3"
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  <span>Menyimpan...</span>
-                </>
-              ) : (
-                <span>Simpan Perubahan</span>
-              )}
-            </button>
-          </div>
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={isSaving}
+            className="px-6 py-2.5 rounded-xl bg-[#327691] hover:bg-[#2c6881] disabled:opacity-50 text-white font-bold text-xs sm:text-sm shadow-xs transition cursor-pointer flex items-center gap-2 shrink-0 ml-3"
+          >
+            {isSaving ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                <span>Menyimpan...</span>
+              </>
+            ) : (
+              <span>Simpan Perubahan</span>
+            )}
+          </button>
         </div>
       </form>
     </div>

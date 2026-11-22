@@ -1,6 +1,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { getAuthUser } from "@/lib/auth/helpers";
 import { createSnapTransaction } from "@/lib/midtrans/snap";
+import { RequestError } from "@/lib/security/http";
 export interface BookingRecord {
   id: string;
   database_id: string;
@@ -176,35 +177,17 @@ export async function getBookingById(
   const user = await getAuthUser();
   if (!user) return null;
   const cleanCode = (code || "").trim().toUpperCase();
-  const isAdminOrOwner = (user.roles || []).includes("admin") || (user.roles || []).includes("owner");
-  const db = isAdminOrOwner
-    ? await createAdminClient()
-    : await createClient();
+  const db = await createClient();
   let query = db.from("bookings").select(columns).eq("booking_code", cleanCode);
-  if (!isAdminOrOwner) {
-    query = query.eq("user_id", user.id);
-  }
-  let { data, error } = await query.maybeSingle();
-
-  // Fallback for development/testing if user switched accounts
-  if (!data) {
-    const adminDb = await createAdminClient();
-    const fallbackRes = await adminDb.from("bookings").select(columns).eq("booking_code", cleanCode).maybeSingle();
-    if (fallbackRes.data) {
-      data = fallbackRes.data;
-      error = null;
-    }
-  }
-
+  if (!user.roles.includes("admin")) query = query.eq("user_id", user.id);
+  const { data, error } = await query.maybeSingle();
   if (error) throw new Error("Pesanan belum dapat dimuat.");
   return data ? mapBooking(data as unknown as StoredBooking) : null;
 }
 export async function getAllBookings(): Promise<BookingRecord[]> {
   const user = await getAuthUser();
   if (!user) return [];
-  const db = user.roles.includes("admin")
-    ? await createAdminClient()
-    : await createClient();
+  const db = await createClient();
   let query = db
     .from("bookings")
     .select(columns)
@@ -224,7 +207,7 @@ export async function preparePayment(
       token: attempt.snap_token,
       redirect_url: attempt.snap_redirect_url,
     };
-  if (attempt.paid_amount > 0) throw new Error("Tagihan ini sudah dibayar.");
+  if (attempt.paid_amount > 0) throw new RequestError("Tagihan ini sudah dibayar.", 409);
   const result = await createSnapTransaction({
     orderId: attempt.midtrans_order_id,
     grossAmount: attempt.expected_amount,
@@ -239,6 +222,11 @@ export async function preparePayment(
         quantity: 1,
       },
     ],
+  }).catch(() => {
+    throw new RequestError(
+      "Midtrans belum dapat membuka tagihan. Coba lagi atau hubungi admin.",
+      502,
+    );
   });
   const db = await createAdminClient();
   const { error } = await db
@@ -250,8 +238,9 @@ export async function preparePayment(
     .eq("id", attempt.id)
     .eq("status", "pending");
   if (error)
-    throw new Error(
-      "Tagihan dibuat tetapi belum dapat disimpan. Hubungi admin dengan kode pesanan.",
+    throw new RequestError(
+      "Tagihan belum dapat dibuka. Hubungi admin dengan kode pesanan.",
+      502,
     );
   return result;
 }
@@ -259,24 +248,9 @@ export async function preparePayment(
 export async function getOwnBookings(): Promise<BookingRecord[]> {
   const user = await getAuthUser();
   if (!user) return [];
-  const db = await createAdminClient();
-
-  const isDemoBuyer = user.email === "buyer@sewatrooperbwi.com";
-  const demoAdminId = "80e4872f-e91c-4351-9a55-bc3b3b2b7dd5";
-
-  let query = db
-    .from("bookings")
-    .select(columns)
-    .order("created_at", { ascending: false })
-    .limit(100);
-
-  if (isDemoBuyer) {
-    query = query.or(`user_id.eq.${user.id},user_id.eq.${demoAdminId},contact_email.eq.${user.email}`);
-  } else {
-    query = query.or(`user_id.eq.${user.id},contact_email.eq.${user.email}`);
-  }
-
-  const { data, error } = await query;
+  const db = await createClient();
+  const { data, error } = await db.from("bookings").select(columns).eq("user_id", user.id)
+    .order("created_at", { ascending: false }).limit(100);
   if (error) throw new Error("Pesanan belum dapat dimuat.");
   return (data as unknown as StoredBooking[]).map(mapBooking);
 }
@@ -286,7 +260,7 @@ export async function getBookingHistory(
 ): Promise<{ new_status: string; reason: string; created_at: string }[]> {
   const user = await getAuthUser();
   if (!user) return [];
-  const db = await createAdminClient();
+  const db = await createClient();
   const { data, error } = await db
     .from("booking_status_history")
     .select("new_status,reason,created_at")

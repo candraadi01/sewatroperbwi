@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getAuthUser } from "@/lib/auth/helpers";
-import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { errorResponse, assertSameOrigin, RequestError } from "@/lib/security/http";
 
 // ----------------------------------------------------------------
@@ -40,10 +41,6 @@ function readTime(content: Block[]): number {
   return Math.max(1, Math.ceil(words / 200));
 }
 
-async function getDb() {
-  try { return await createAdminClient() as unknown as Awaited<ReturnType<typeof createClient>>; }
-  catch { return await createClient(); }
-}
 
 // ----------------------------------------------------------------
 // GET /api/admin/artikel
@@ -56,11 +53,11 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const filterStatus = searchParams.get("status") ?? "semua";
     const q = searchParams.get("q") ?? "";
-    const db = await getDb();
+    const db = await createClient();
 
     let query = db
       .from("articles")
-      .select("id, title, slug, excerpt, content, status, scheduled_at, published_at, created_at, updated_at, meta_title, meta_description, article_categories(id, name)")
+      .select("id, title, slug, excerpt, content, cover_image_url, category_name, status, scheduled_at, published_at, created_at, updated_at, meta_title, meta_description, article_categories(id, name)")
       .order("updated_at", { ascending: false });
 
     if (filterStatus === "tayang")    query = query.eq("status", "published");
@@ -81,10 +78,11 @@ export async function GET(request: Request) {
         status: displayStatus(a.status, a.scheduled_at),
         rawStatus: a.status, scheduledAt: a.scheduled_at, publishedAt: a.published_at,
         updatedAt: a.updated_at, createdAt: a.created_at,
-        category: (a.article_categories as { name?: string } | null)?.name ?? "",
+        category: (a.article_categories as { name?: string } | null)?.name || a.category_name || "",
         readTime: readTime(bodyBlocks), blockCount: bodyBlocks.length,
         seoTitle: a.meta_title ?? "", metaDescription: a.meta_description ?? "",
         ...meta,
+        coverUrl: meta.coverUrl || a.cover_image_url || null,
       };
     });
 
@@ -120,7 +118,7 @@ export async function POST(request: Request) {
       .replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-")
       || title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
-    const db = await getDb();
+    const db = await createClient();
 
     // Build content JSONB
     const bodyBlocks = Array.isArray(body.blocks) ? body.blocks : [];
@@ -154,6 +152,7 @@ export async function POST(request: Request) {
       title, slug, excerpt: String(body.excerpt ?? ""),
       content, status: dbStatus, scheduled_at: scheduledAt, published_at: publishedAt,
       author_id: user.id, category_id: categoryId,
+      cover_image_url: String(body.coverUrl ?? ""), category_name: String(body.category ?? "").trim(),
       meta_title: String(body.seoTitle ?? ""),
       meta_description: String(body.metaDescription ?? ""),
     }).select("id").single();
@@ -163,6 +162,7 @@ export async function POST(request: Request) {
       throw new RequestError(`Gagal menyimpan artikel: ${error.message}`, 500);
     }
 
+    revalidatePath("/", "layout");
     return NextResponse.json({ id: data.id, slug }, { status: 201 });
   } catch (e) { return errorResponse(e); }
 }

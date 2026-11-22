@@ -62,9 +62,7 @@ export async function getTestimonials(): Promise<TestimonialItem[]> {
       .eq("is_active", true)
       .order("sort_order", { ascending: true });
 
-    if (error || !data || data.length === 0) {
-      return DEFAULT_TESTIMONIALS;
-    }
+    if (error || !data) return [];
 
     return data.map((t) => ({
       id: t.id,
@@ -75,6 +73,6 @@ export async function getTestimonials(): Promise<TestimonialItem[]> {
       content: t.content,
     }));
   } catch {
-    return DEFAULT_TESTIMONIALS;
+    return [];
   }
 }

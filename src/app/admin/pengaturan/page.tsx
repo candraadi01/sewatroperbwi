@@ -13,6 +13,7 @@ import {
   MessageSquare,
   Compass,
   Newspaper,
+  Camera,
 } from "lucide-react";
 
 export default function SettingsPage() {
@@ -30,6 +31,13 @@ export default function SettingsPage() {
       icon: MessageSquare,
       active: false,
       description: "Ulasan dan rating pelanggan di beranda",
+    },
+    {
+      label: "Dokumentasi Foto",
+      href: "/admin/galeri",
+      icon: Camera,
+      active: false,
+      description: "Foto perjalanan di bawah ulasan beranda",
     },
     {
       label: "Destinasi Wisata",

@@ -20,7 +20,7 @@ export function ProductGallery({
   return (
     <div className="space-y-3">
       {/* Gambar Utama HD */}
-      <div className="relative aspect-[16/10] sm:aspect-[4/3] rounded-2xl overflow-hidden bg-slate-900 border border-slate-200/80 shadow-md">
+      <div className="relative aspect-[16/10] sm:aspect-[4/3] rounded-2xl overflow-hidden bg-slate-900 border border-[var(--line)] shadow-md">
         <Image
           src={currentImage}
           alt={`${productName} - Foto ${activeIdx + 1}`}
@@ -42,8 +42,8 @@ export function ProductGallery({
               onClick={() => setActiveIdx(i)}
               className={`relative w-20 h-14 sm:w-24 sm:h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all duration-200 cursor-pointer ${
                 activeIdx === i
-                  ? "border-[#327691] ring-2 ring-[#327691]/30 scale-[1.02]"
-                  : "border-slate-200 opacity-70 hover:opacity-100 hover:border-slate-300"
+                  ? "border-[var(--gold)] ring-2 ring-[#f4bd4255] scale-[1.02]"
+                  : "border-[var(--line)] opacity-70 hover:opacity-100 hover:border-[var(--line)]"
               }`}
             >
               <Image

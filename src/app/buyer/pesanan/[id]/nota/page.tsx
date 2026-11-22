@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireBuyer } from "@/lib/auth/helpers";
 import { getBookingById } from "@/lib/services/booking";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { PaymentReceiptView } from "@/components/booking/PaymentReceiptView";
 
 export const metadata = {
@@ -22,7 +22,7 @@ export default async function BuyerNotaPage({
     notFound();
   }
 
-  const db = await createAdminClient();
+  const db = await createClient();
   const { data: attempts } = await db
     .from("payment_attempts")
     .select("*")

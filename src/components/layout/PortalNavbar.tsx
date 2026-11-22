@@ -7,7 +7,6 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { PortalNotification } from "./PortalNotification";
 import { useLanguage } from "@/lib/i18n/context";
 import { createClient } from "@/lib/supabase/client";
-import { DemoAccountSwitcher } from "./DemoAccountSwitcher";
 
 interface PortalNavbarUser {
   id?: string;
@@ -129,14 +128,6 @@ export function PortalNavbar({ user, portalType, badgeLabel }: PortalNavbarProps
                   <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
                     {user.email}
                   </p>
-                </div>
-
-                {/* Fast Role Switcher */}
-                <div className="p-2 border-b border-[#e4ebef] dark:border-neutral-800 bg-[#f8fafc]/50 dark:bg-neutral-900/50">
-                  <DemoAccountSwitcher
-                    currentRole={portalType}
-                    onSwitchStart={() => setDropdownOpen(false)}
-                  />
                 </div>
 
                 <div className="py-1">

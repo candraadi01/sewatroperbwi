@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireOwner } from "@/lib/auth/helpers";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { getSiteSettings } from "@/lib/services/settings";
 import { OwnerProfileClient } from "./OwnerProfileClient";
 
@@ -11,13 +11,14 @@ export const metadata = {
 
 export default async function OwnerProfilPage() {
   const user = await requireOwner("/owner/profil");
-  const db = await createAdminClient();
+  const db = await createClient();
+  const canEditSiteSettings = user.roles.includes("admin");
   const settings = await getSiteSettings();
 
   // Ambil profil dan metadata
   const [{ data: profile }, { data: authUser }] = await Promise.all([
     db.from("profiles").select("full_name, phone, email").eq("id", user.id).single(),
-    db.auth.admin.getUserById(user.id),
+    db.auth.getUser(),
   ]);
 
   const metadata = authUser?.user?.user_metadata || {};
@@ -45,11 +46,11 @@ export default async function OwnerProfilPage() {
         </Link>
         <h1 className="heading-1 mt-2">Profil Pemilik, Kontak Usaha & Rekening Bank</h1>
         <p className="text-sm text-neutral-500 mt-1">
-          Informasi pemilik armada, data kontak hotline, nomor rekening resmi BRI & BCA, serta credit footer website.
+          Kelola profil dan rekening pencairan Anda.
         </p>
       </div>
 
-      <OwnerProfileClient initialData={initialData} />
+      <OwnerProfileClient initialData={initialData} canEditSiteSettings={canEditSiteSettings} />
     </div>
   );
 }

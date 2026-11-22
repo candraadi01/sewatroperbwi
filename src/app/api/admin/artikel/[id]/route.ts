@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getAuthUser } from "@/lib/auth/helpers";
-import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { errorResponse, assertSameOrigin, RequestError } from "@/lib/security/http";
 
 interface Block { type: string; [key: string]: unknown; }
@@ -29,10 +30,6 @@ function extractMeta(content: Block[]) {
   };
 }
 
-async function getDb() {
-  try { return await createAdminClient() as unknown as Awaited<ReturnType<typeof createClient>>; }
-  catch { return await createClient(); }
-}
 
 // ----------------------------------------------------------------
 // GET /api/admin/artikel/[id]
@@ -43,11 +40,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     if (!user?.roles.includes("admin")) throw new RequestError("Akses admin diperlukan.", 403);
 
     const { id } = await params;
-    const db = await getDb();
+    const db = await createClient();
 
     const { data, error } = await db
       .from("articles")
-      .select("id, title, slug, excerpt, content, status, scheduled_at, published_at, created_at, updated_at, meta_title, meta_description, article_categories(id, name)")
+      .select("id, title, slug, excerpt, content, cover_image_url, category_name, status, scheduled_at, published_at, created_at, updated_at, meta_title, meta_description, article_categories(id, name)")
       .eq("id", id).maybeSingle();
 
     if (error) throw new RequestError(`Database error: ${error.message}`, 500);
@@ -62,11 +59,12 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       status: displayStatus(data.status, data.scheduled_at),
       rawStatus: data.status, scheduledAt: data.scheduled_at, publishedAt: data.published_at,
       updatedAt: data.updated_at, createdAt: data.created_at,
-      category: (data.article_categories as { name?: string } | null)?.name ?? "",
+      category: (data.article_categories as { name?: string } | null)?.name || data.category_name || "",
       blocks: bodyBlocks,
       seoTitle: data.meta_title ?? "",
       metaDescription: data.meta_description ?? "",
       ...meta,
+      coverUrl: meta.coverUrl || data.cover_image_url || null,
     });
   } catch (e) { return errorResponse(e); }
 }
@@ -81,7 +79,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     if (!user?.roles.includes("admin")) throw new RequestError("Akses admin diperlukan.", 403);
 
     const { id } = await params;
-    const db = await getDb();
+    const db = await createClient();
     const body = await request.json() as Record<string, unknown>;
 
     const title = String(body.title ?? "").trim();
@@ -126,6 +124,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       title, slug, excerpt: String(body.excerpt ?? ""),
       content, status: dbStatus, scheduled_at: scheduledAt, published_at: publishedAt,
       category_id: categoryId,
+      cover_image_url: String(body.coverUrl ?? ""), category_name: String(body.category ?? "").trim(),
       meta_title: String(body.seoTitle ?? ""),
       meta_description: String(body.metaDescription ?? ""),
     }).eq("id", id);
@@ -135,6 +134,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       throw new RequestError(`Gagal memperbarui artikel: ${error.message}`, 500);
     }
 
+    revalidatePath("/", "layout");
     return NextResponse.json({ success: true, id, slug });
   } catch (e) { return errorResponse(e); }
 }
@@ -149,10 +149,11 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     if (!user?.roles.includes("admin")) throw new RequestError("Akses admin diperlukan.", 403);
 
     const { id } = await params;
-    const db = await getDb();
+    const db = await createClient();
     const { error } = await db.from("articles").delete().eq("id", id);
     if (error) throw new RequestError(`Gagal menghapus artikel: ${error.message}`, 500);
 
+    revalidatePath("/", "layout");
     return NextResponse.json({ success: true });
   } catch (e) { return errorResponse(e); }
 }

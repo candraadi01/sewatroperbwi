@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getAuthUser } from "@/lib/auth/helpers";
-import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { resources, resourceSchema } from "@/lib/admin/resources";
+import { gallerySectionType, isGalleryImage } from "@/lib/gallery";
 import { idSchema } from "@/lib/validations/requests";
 import {
   assertSameOrigin,
@@ -11,6 +12,37 @@ import {
   errorResponse,
 } from "@/lib/security/http";
 import { z } from "zod";
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ resource: string }> },
+) {
+  try {
+    assertSameOrigin(request);
+    const user = await getAuthUser();
+    if (!user) throw new RequestError("Masuk terlebih dahulu.", 401);
+    if (!user.roles.includes("admin")) throw new RequestError("Akses admin diperlukan.", 403);
+    const { resource } = await params;
+    if (!["testimoni", "destinasi", "tampilan", "galeri"].includes(resource))
+      throw new RequestError("Bagian ini tidak dapat diubah dari aksi publikasi.", 404);
+    const input = z.object({ id: idSchema, active: z.boolean() }).strict()
+      .safeParse(await readJson(request, 1000));
+    if (!input.success) throw new RequestError("Data publikasi tidak valid.", 400);
+    const db = await createClient();
+    let update = db.from(resources[resource].table).update({ is_active: input.data.active }).eq("id", input.data.id);
+    if (resource === "galeri") update = update.eq("section_type", gallerySectionType);
+    if (resource === "tampilan") update = update.neq("section_type", gallerySectionType);
+    const { data, error } = await update.select("id").maybeSingle();
+    if (error) throw new RequestError("Status publikasi belum dapat disimpan.", 409);
+    if (!data) throw new RequestError("Konten tidak ditemukan atau tidak dapat diubah.", 404);
+    revalidatePath("/", "layout");
+    revalidatePath(`/admin/${resource}`);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return errorResponse(error);
+  }
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ resource: string }> },
@@ -44,7 +76,7 @@ export async function POST(
       id = resource === "site" ? undefined : payload.data.id;
     if (id && !idSchema.safeParse(id).success)
       throw new RequestError("ID tidak valid.");
-    const db = await createAdminClient();
+    const db = await createClient();
     if (resource === "site") {
       if (
         values.contact_whatsapp &&
@@ -108,6 +140,12 @@ export async function POST(
       if (error)
         throw new Error("Business settings save failed: " + error.code);
     } else {
+      let record = values;
+      if (resource === "galeri") {
+        const { image_url, ...fields } = values;
+        if (!isGalleryImage(image_url)) throw new RequestError("Pilih foto perjalanan yang valid.");
+        record = { ...fields, section_type: gallerySectionType, content: { image: image_url } };
+      }
       if (resource === "promo") {
         values.code = String(values.code).toUpperCase();
         if (values.type === "percent" && Number(values.value) > 10000)
@@ -150,14 +188,11 @@ export async function POST(
         if (!menu.success) throw new RequestError("Daftar menu tidak valid.");
         values.items = menu.data;
       }
-      const result = id
-        ? await db
-            .from(config.table)
-            .update(values)
-            .eq("id", id)
-            .select("id")
-            .single()
-        : await db.from(config.table).insert(values).select("id").single();
+      const table = db.from(config.table);
+      let change = id ? table.update(record).eq("id", id) : table.insert(record);
+      if (id && resource === "galeri") change = change.eq("section_type", gallerySectionType);
+      if (id && resource === "tampilan") change = change.neq("section_type", gallerySectionType);
+      const result = await change.select("id").single();
       if (result.error)
         throw new RequestError(
           result.error.code === "23505"

@@ -1,29 +1,20 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import {
-  Calendar as CalendarIcon,
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  X,
-  Lock,
-  CheckCircle2,
-} from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import styles from "./cinematic.module.css";
 import type { DateScheduleItem } from "@/lib/services/schedule";
 
 interface HeroDatePickerProps {
   value: string; // YYYY-MM-DD
   onChange: (date: string) => void;
   schedules: DateScheduleItem[];
-  loading?: boolean;
 }
 
 export function HeroDatePicker({
   value,
   onChange,
   schedules,
-  loading = false,
 }: HeroDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -54,17 +45,12 @@ export function HeroDatePicker({
   });
 
   const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
-
-  const monthNamesId = [
     "Januari", "Februari", "Maret", "April", "Mei", "Juni",
     "Juli", "Agustus", "September", "Oktober", "November", "Desember"
   ];
 
   // Hari dimulai dari Sunday (Su) sesuai foto 1
-  const dayLabels = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+  const dayLabels = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
   // Navigasi Bulan
   function prevMonth() {
@@ -177,6 +163,7 @@ export function HeroDatePicker({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
+        aria-label={value ? `Tanggal sewa: ${displayLabel}` : "Pilih tanggal sewa"}
         className="w-full flex items-center justify-between text-left cursor-pointer focus:outline-none"
         aria-haspopup="dialog"
         aria-expanded={isOpen}
@@ -190,7 +177,7 @@ export function HeroDatePicker({
               : "text-white"
           } drop-shadow-sm`}
         >
-          {value ? displayLabel : "Semua Jadwal Ready"}
+          {value ? displayLabel : "Pilih tanggal"}
         </span>
 
         <ChevronDown
@@ -203,19 +190,19 @@ export function HeroDatePicker({
 
       {/* Popover Kalender Visual Kompak & Rapi (Membuka ke Atas agar Tidak Menabrak Section Bawah) */}
       {isOpen && (
-        <div className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 sm:left-auto sm:right-0 sm:translate-x-0 z-50 bg-white rounded-2xl shadow-[0_20px_60px_-10px_rgba(0,0,0,0.45)] border border-[#d2e4ec] p-3 sm:p-3.5 w-[275px] sm:w-[285px] max-w-[calc(100vw-36px)] max-h-[85vh] overflow-y-auto font-sans animate-in fade-in zoom-in-95 duration-150">
+        <div role="dialog" aria-label="Kalender sewa" className={`${styles.calendarPopover} absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 sm:left-auto sm:right-0 sm:translate-x-0 z-50 rounded-2xl shadow-[0_20px_60px_-10px_rgba(0,0,0,0.45)] border p-3 sm:p-3.5 w-[275px] sm:w-[285px] max-w-[calc(100vw-36px)] max-h-[85vh] overflow-y-auto font-sans animate-in fade-in zoom-in-95 duration-150`}>
           {/* Header Kalender: Bulan, Tahun & Panah Navigasi */}
-          <div className="flex items-center justify-between pb-2 border-b border-[#f0f4f6]">
-            <div className="flex items-center gap-1.5 font-bold text-xs sm:text-[13px] text-[#1e293b]">
+          <div className="flex items-center justify-between pb-2 border-b border-[var(--line)]">
+            <div className="flex items-center gap-1.5 font-bold text-xs sm:text-[13px] text-[color:var(--ink)]">
               <span>{monthNames[viewMonth]} {viewYear}</span>
               <span className="text-[10px] text-[#8e9da5]">▾</span>
             </div>
 
-            <div className="flex items-center gap-0.5 text-[#53636d]">
+            <div className="flex items-center gap-0.5 text-[color:var(--mist)]">
               <button
                 type="button"
                 onClick={prevMonth}
-                className="p-1 rounded-md hover:bg-neutral-100 text-[#53636d] hover:text-[#1e293b] transition cursor-pointer"
+                className="grid size-10 place-items-center rounded-md hover:bg-[var(--raised)] text-[color:var(--mist)] hover:text-[color:var(--ink)] transition cursor-pointer"
                 title="Bulan Sebelumnya"
               >
                 <ChevronLeft size={15} />
@@ -223,7 +210,7 @@ export function HeroDatePicker({
               <button
                 type="button"
                 onClick={nextMonth}
-                className="p-1 rounded-md hover:bg-neutral-100 text-[#53636d] hover:text-[#1e293b] transition cursor-pointer"
+                className="grid size-10 place-items-center rounded-md hover:bg-[var(--raised)] text-[color:var(--mist)] hover:text-[color:var(--ink)] transition cursor-pointer"
                 title="Bulan Berikutnya"
               >
                 <ChevronRight size={15} />
@@ -232,7 +219,7 @@ export function HeroDatePicker({
           </div>
 
           {/* Header Hari: Su Mo Tu We Th Fr Sa */}
-          <div className="grid grid-cols-7 gap-0.5 text-center text-[10px] font-semibold text-[#64748b] pt-2 pb-1">
+          <div className="grid grid-cols-7 gap-0.5 text-center text-[10px] font-semibold text-[color:var(--mist)] pt-2 pb-1">
             {dayLabels.map((day) => (
               <div key={day} className="py-0.5">
                 {day}
@@ -249,11 +236,6 @@ export function HeroDatePicker({
               const schedule = scheduleMap.get(cell.dateStr);
 
               // Logika Tanggal Tersedia vs Tidak Tersedia (Di-set oleh Admin/Pemilik)
-              const isAvailable =
-                cell.isCurrentMonth &&
-                !isPast &&
-                (schedule ? schedule.isAvailable : true);
-
               const isBlockedByAdmin =
                 cell.isCurrentMonth &&
                 !isPast &&
@@ -265,10 +247,10 @@ export function HeroDatePicker({
                 return (
                   <div
                     key={cell.dateStr}
-                    className={`h-7 w-full flex items-center justify-center rounded-md text-[10px] select-none ${
+                    className={`h-9 w-full flex items-center justify-center rounded-md text-[10px] select-none ${
                       isBlockedByAdmin
-                        ? "text-neutral-400 bg-neutral-100/70 cursor-not-allowed line-through font-medium"
-                        : "text-neutral-300 cursor-not-allowed"
+                        ? "text-neutral-400 bg-[var(--raised)] cursor-not-allowed line-through font-medium"
+                        : "text-[#8d969c] cursor-not-allowed"
                     }`}
                     title={
                       isBlockedByAdmin
@@ -287,12 +269,12 @@ export function HeroDatePicker({
                   key={cell.dateStr}
                   type="button"
                   onClick={() => handleSelectDate(cell.dateStr)}
-                  className={`h-7 w-full flex items-center justify-center rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                  className={`h-9 w-full flex items-center justify-center rounded-md text-[11px] font-bold transition-all cursor-pointer ${
                     isSelected
-                      ? "border border-[#327691] bg-[#327691] text-white shadow-xs"
+                      ? "border border-[var(--gold)] bg-[var(--gold)] text-[color:var(--on-gold)] shadow-xs"
                       : isToday
                       ? "bg-neutral-800 text-white font-extrabold hover:bg-neutral-900"
-                      : "text-neutral-800 hover:bg-[#e9f3f7] hover:text-[#327691]"
+                      : "text-[color:var(--ink)] hover:bg-[var(--raised)] hover:text-[color:var(--gold)]"
                   }`}
                   title="Jadwal Ready Siap Booking"
                 >
@@ -303,11 +285,11 @@ export function HeroDatePicker({
           </div>
 
           {/* Footer Status & Aksi Bersatu Rapi */}
-          <div className="mt-2.5 pt-2 border-t border-[#f0f4f6] flex items-center justify-between text-[10px] text-[#64748b]">
+          <div className="mt-2.5 pt-2 border-t border-[var(--line)] flex items-center justify-between text-[10px] text-[color:var(--mist)]">
             <div className="flex items-center gap-2.5">
               <span className="flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span>Ready</span>
+                <span>Tersedia</span>
               </span>
               <span className="flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-neutral-300" />
@@ -315,15 +297,15 @@ export function HeroDatePicker({
               </span>
             </div>
 
-            <div className="flex items-center gap-2 font-bold text-[#327691]">
+            <div className="flex items-center gap-2 font-bold text-[color:var(--gold)]">
               <button
                 type="button"
                 onClick={handleClear}
                 className="hover:underline cursor-pointer"
               >
-                Clear
+                Reset
               </button>
-              <span className="text-neutral-300">·</span>
+              <span className="text-[#8d969c]">·</span>
               <button
                 type="button"
                 onClick={handleToday}

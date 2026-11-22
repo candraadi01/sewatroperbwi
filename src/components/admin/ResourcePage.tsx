@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { resources } from "@/lib/admin/resources";
 import { ResourceEditor } from "./ResourceEditor";
 import { getSiteSettings } from "@/lib/services/settings";
+import { gallerySectionType, isGalleryImage } from "@/lib/gallery";
 export async function ResourcePage({
   name,
   page = 1,
@@ -28,9 +29,11 @@ export async function ResourcePage({
       .select(
         config.columns ?? (name === "produk" ? "*,pricing_rules(*)" : "*"),
       )
-      .order(config.order ?? "created_at", { ascending: false })
+      .order(name === "galeri" ? "sort_order" : config.order ?? "created_at", { ascending: name === "galeri" })
       .range(offset, offset + 30);
     if (name === "bisnis") query = query.eq("is_current", true);
+    if (name === "galeri") query = query.eq("section_type", gallerySectionType).order("id");
+    if (name === "tampilan") query = query.neq("section_type", gallerySectionType);
     const { data, error } = await query;
     if (error)
       errorMessage =
@@ -38,6 +41,10 @@ export async function ResourcePage({
     else {
       hasMore = (data?.length ?? 0) > 30;
       rows = (data ?? []).slice(0, 30) as unknown as Record<string, unknown>[];
+      if (name === "galeri") rows = rows.map(({ content, ...row }) => {
+        const image = (content as { image?: unknown } | null)?.image;
+        return { image_url: isGalleryImage(image) ? image : "", ...row };
+      });
       if (name === "produk")
         rows = rows.map((r) => {
           const prices = r.pricing_rules as {

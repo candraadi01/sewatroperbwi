@@ -344,7 +344,7 @@ export const resources: Record<string, AdminResource> = {
   testimoni: {
     table: "testimonials",
     title: "Testimoni Pelanggan",
-    description: "Ulasan nyata wisatawan yang tampil pada slider beranda web.",
+    description: "Ulasan aktif tampil di Beranda dan halaman Semua Ulasan. Nonaktifkan untuk menyembunyikan ulasan.",
     fields: [
       text("name", "Nama Pelanggan / Tamu", { required: true }),
       text("city", "Kota Asal (cth: Jakarta, Surabaya)", { required: true }),
@@ -394,13 +394,13 @@ export const resources: Record<string, AdminResource> = {
     table: "landing_sections",
     title: "Bagian beranda",
     description:
-      'Bagian informasi tambahan di bawah cara pemesanan. Isi JSON: {"text":"Isi bagian"}.',
+      'Kelola konten Beranda. JSON opsional hero: {"eyebrow":"Label","accent":"Aksen judul","image":"/images/...","fleet":[{"name":"Nama Jeep","photo":"/images/..."}]}. Keunggulan/alur: {"items":[{"title":"Judul","text":"Keterangan"}]}. Informasi: {"text":"Isi bagian"}.',
     fields: [
       {
         key: "section_type",
         label: "Bagian",
         type: "select",
-        options: ["information"],
+        options: ["hero", "featured", "destinations", "features", "howto", "information"],
         default: "information",
       },
       text("title", "Judul"),
@@ -410,6 +410,19 @@ export const resources: Record<string, AdminResource> = {
         default: {},
       }),
       num("sort_order", "Urutan"),
+      active,
+    ],
+  },
+  galeri: {
+    table: "landing_sections",
+    title: "Dokumentasi foto",
+    description: "Unggah dan urutkan foto perjalanan yang tampil di bawah ulasan beranda. Arsipkan foto untuk menghapusnya dari galeri publik.",
+    columns: "id,title,subtitle,content,sort_order,is_active",
+    fields: [
+      text("title", "Judul foto", { required: true }),
+      text("subtitle", "Keterangan foto"),
+      text("image_url", "Foto perjalanan", { type: "image", required: true }),
+      num("sort_order", "Urutan tampil"),
       active,
     ],
   },

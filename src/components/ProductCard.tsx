@@ -2,11 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Clock, Check, Sparkles, Users } from "lucide-react";
+import { ArrowRight, MapPin, Clock, Check, Users } from "lucide-react";
 import type { Product } from "@/types/database";
 import { formatIDR } from "@/lib/utils/currency";
 import { getProductDestinationPoints } from "@/lib/utils/destinations";
 import { useLanguage } from "@/lib/i18n/context";
+import styles from "@/components/landing/cinematic.module.css";
 
 export const serviceLabels = {
   paket_rute: "Paket Rute",
@@ -18,12 +19,13 @@ export function ProductCard({
   product: p,
   date,
   isClosed = false,
-  closedReason,
+  compact = false,
 }: {
   product: Product;
   date?: string;
   isClosed?: boolean;
   closedReason?: string;
+  compact?: boolean;
 }) {
   const { t } = useLanguage();
   const productUrl = date
@@ -45,9 +47,36 @@ export function ProductCard({
   const capacityDisplay = t("guest_capacity", "Max {n} Orang").replace("{n}", String(p.passenger_capacity || 6));
   const destinationPoints = getProductDestinationPoints(p);
   const finalPrice = p.base_price && p.base_price > 0 ? p.base_price : 750000;
+  const showRibbon = !isClosed && p.is_best_seller;
+
+  if (compact) return (
+    <article className={`${styles.compactCard} ${styles.compactProduct}`}>
+      {showRibbon && <span className={styles.bestSellerRibbon}><span><b>Best Seller</b></span></span>}
+      <Link href={productUrl} className={styles.compactPhoto} aria-label={p.name}>
+        <Image src={mainImage} alt="" fill sizes="(max-width: 600px) 34vw, (max-width: 1000px) 45vw, 28vw"
+          className="object-cover" unoptimized={mainImage.startsWith("https://") && !mainImage.startsWith("https://res.cloudinary.com/")} />
+        {!showRibbon && badgeText && badgeText !== p.name &&
+          <span className={styles.photoBadge}>{badgeText}</span>}
+      </Link>
+      <div className={styles.compactBody}>
+        <h3><Link href={productUrl}>{p.name}</Link></h3>
+        <div className={styles.compactMeta}>
+          <span><Clock size={14} />{durationDisplay}</span>
+          <span><Users size={14} />{capacityDisplay}</span>
+        </div>
+        <p className={styles.compactDescription}>{p.short_description || destinationPoints.map((point) => point.name).join(" · ")}</p>
+        <div className={styles.compactActions}>
+          <div><small>Mulai dari</small><strong>{p.base_price ? formatIDR(p.base_price) : "Cek tarif"}</strong></div>
+          <Link className={styles.primary} href={productUrl} aria-label={`Lihat ${p.name}`}>
+            {isClosed ? "Detail" : "Booking"} <ArrowRight size={14} />
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-[#e2e8f0] shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+    <div className="bg-[var(--surface,#fff)] rounded-2xl overflow-hidden border border-[var(--line,#e2e8f0)] shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
       {/* 1. Header Gambar Rapi & Proporsional */}
       <div className="relative h-50 sm:h-54 md:h-56 w-full overflow-hidden bg-slate-900 select-none">
         <Image
@@ -139,10 +168,10 @@ export function ProductCard({
           title={`Lihat detail ${p.name}`}
         >
           <div className="inline-flex items-stretch rounded-lg shadow-2xl overflow-hidden border border-white/20 transform scale-95 group-hover:scale-100 transition-transform duration-300">
-            <span className="bg-[#327691] text-white px-3 py-2 flex items-center justify-center">
+            <span className="bg-[var(--gold,#327691)] text-[color:var(--on-gold,#fff)] px-3 py-2 flex items-center justify-center">
               <Check size={16} strokeWidth={3} />
             </span>
-            <span className="bg-[#263b46] hover:bg-[#1a2931] text-white px-4 py-2 text-xs font-bold tracking-wide flex items-center transition-colors">
+            <span className="bg-[var(--raised,#263b46)] hover:bg-[#1a2931] text-white px-4 py-2 text-xs font-bold tracking-wide flex items-center transition-colors">
               Lihat Detail
             </span>
           </div>
@@ -154,26 +183,26 @@ export function ProductCard({
         <div>
           {/* Judul Paket Wisata — Brand Coastal Theme */}
           <Link href={productUrl}>
-            <h3 className="font-bold text-sm sm:text-base text-[#263b46] hover:text-[#327691] leading-snug transition-colors line-clamp-2 min-h-[40px] sm:min-h-[44px]">
+            <h3 className="font-bold text-sm sm:text-base text-[color:var(--ink,#263b46)] hover:text-[color:var(--gold,#327691)] leading-snug transition-colors line-clamp-2 min-h-[40px] sm:min-h-[44px]">
               {p.name}
             </h3>
           </Link>
 
           {/* Info Durasi & Kapasitas Tamu — Warna Ikon #327691 Sesuai Konsep Web */}
-          <div className="flex items-center gap-2.5 text-xs text-[#64748b] mt-2 mb-3 font-medium">
+          <div className="flex flex-wrap items-center gap-2.5 text-xs text-[color:var(--mist,#64748b)] mt-2 mb-3 font-medium">
             <span className="inline-flex items-center gap-1">
-              <Clock size={13} className="text-[#327691]" />
+              <Clock size={13} className="text-[color:var(--gold,#327691)]" />
               {durationDisplay}
             </span>
             <span className="text-slate-300">•</span>
-            <span className="inline-flex items-center gap-1 text-[#475569]">
-              <Users size={13} className="text-[#327691]" />
+            <span className="inline-flex items-center gap-1 text-[color:var(--mist,#475569)]">
+              <Users size={13} className="text-[color:var(--gold,#327691)]" />
               {capacityDisplay}
             </span>
           </div>
 
           {/* Titik Destinasi Unggulan — Warna Ikon #327691 Sesuai Konsep Web */}
-          <div className="space-y-1.5 min-h-[44px] mb-3 text-xs text-[#64748b]">
+          <div className="space-y-1.5 min-h-[44px] mb-3 text-xs text-[color:var(--mist,#64748b)]">
             {destinationPoints.slice(0, 2).map((dest, i) => {
               const filterUrl = dest.slug
                 ? `/sewa?destinasi=${encodeURIComponent(dest.slug)}${date ? `&date=${encodeURIComponent(date)}` : ""}`
@@ -181,13 +210,13 @@ export function ProductCard({
 
               return (
                 <div key={i} className="flex items-center gap-1.5 leading-tight">
-                  <MapPin size={13} className="text-[#327691] shrink-0" />
+                  <MapPin size={13} className="text-[color:var(--gold,#327691)] shrink-0" />
                   {filterUrl ? (
                     <Link
                       href={filterUrl}
                       onClick={(e) => e.stopPropagation()}
                       title={`Filter paket ${dest.name}`}
-                      className="truncate hover:text-[#327691] hover:underline transition-colors"
+                      className="truncate hover:text-[color:var(--gold,#327691)] hover:underline transition-colors"
                     >
                       {dest.name}
                     </Link>
@@ -199,16 +228,16 @@ export function ProductCard({
             })}
           </div>
 
-          <div className="border-t border-slate-100 my-3" />
+          <div className="border-t border-[var(--line,#f1f5f9)] my-3" />
 
           {/* Tarif Paket — Sesuai Konsep Warna Web */}
           <div className="flex items-baseline justify-between mb-4">
-            <span className="text-xs text-[#327691] font-bold">*Mulai</span>
+            <span className="text-xs text-[color:var(--gold,#327691)] font-bold">*Mulai</span>
             <div className="text-right">
-              <span className="text-base sm:text-lg font-black text-[#263b46] tracking-tight">
+              <span className="text-base sm:text-lg font-black text-[color:var(--ink,#263b46)] tracking-tight">
                 {formatIDR(finalPrice)}
               </span>
-              <span className="text-xs text-[#64748b] font-bold uppercase">{t("per_jeep", " / JEEP")}</span>
+              <span className="text-xs text-[color:var(--mist,#64748b)] font-bold uppercase">{t("per_jeep", " / JEEP")}</span>
             </div>
           </div>
         </div>
@@ -216,10 +245,10 @@ export function ProductCard({
         {/* 3. Tombol Booking Sekarang */}
         <Link
           href={productUrl}
-          className={`w-full font-extrabold text-xs sm:text-sm py-2.5 sm:py-3 rounded-xl transition duration-200 flex items-center justify-center gap-1.5 shadow-xs uppercase tracking-wider cursor-pointer ${
+          className={`w-full min-h-11 font-extrabold text-sm py-2.5 sm:py-3 rounded-xl transition duration-200 flex items-center justify-center gap-1.5 shadow-xs uppercase tracking-wider cursor-pointer ${
             isClosed
               ? "bg-slate-400 hover:bg-slate-500 text-white"
-              : "bg-[#327691] hover:bg-[#255b70] active:scale-[0.99] text-white"
+              : "bg-[var(--gold,#327691)] hover:bg-[var(--gold-hover,#255b70)] active:scale-[0.99] text-[color:var(--on-gold,#fff)]"
           }`}
         >
           <span>{isClosed ? "Jadwal Tutup (Cek Detail)" : t("btn_book_now", "Booking Sekarang")}</span>

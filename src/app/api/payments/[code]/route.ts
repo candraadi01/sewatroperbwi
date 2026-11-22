@@ -30,7 +30,7 @@ export async function POST(
       throw new RequestError("Kode tidak valid.");
     const input = z
       .object({
-        idempotencyKey: z.string().min(1),
+        idempotencyKey: z.string().uuid(),
         paymentChoice: z.enum(["dp", "full"]).optional(),
       })
       .strict()
@@ -43,16 +43,9 @@ export async function POST(
       .from("bookings")
       .select("*")
       .eq("booking_code", cleanCode)
+      .eq("user_id", user.id)
       .maybeSingle();
     if (error || !b) throw new RequestError("Pesanan tidak ditemukan.", 404);
-
-    const isOwnerOrAdmin = (user.roles || []).includes("admin") || (user.roles || []).includes("owner");
-    const isOwnBooking = b.user_id === user.id || b.contact_email?.toLowerCase() === user.email?.toLowerCase();
-    const isDev = process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_SITE_URL?.includes("localhost");
-
-    if (!isOwnBooking && !isOwnerOrAdmin && !isDev) {
-      throw new RequestError("Akses pesanan tidak diizinkan.", 403);
-    }
 
     // === APPROVAL GATE: block payment until admin approves ===
     if (b.status === "pending_review") {
@@ -85,37 +78,8 @@ export async function POST(
     )
       throw new RequestError("Pesanan tidak memiliki tagihan aktif.", 409);
 
-    const chosenType = input.data.paymentChoice || b.payment_choice || "dp";
-    const dpVal = b.dp_amount || Math.round(b.total_amount * 0.3);
-    const amountToPay =
-      chosenType === "full"
-        ? (b.outstanding || b.total_amount)
-        : (b.amount_paid || 0) === 0
-        ? dpVal
-        : (b.outstanding || b.total_amount);
-
-    if (chosenType !== b.payment_choice) {
-      await db
-        .from("bookings")
-        .update({ payment_choice: chosenType })
-        .eq("id", b.id);
-      b.payment_choice = chosenType;
-    }
-
-    // Jika Midtrans belum dikonfigurasi dengan server key asli, gunakan sandbox simulator
-    if (!midtransConfigured()) {
-      return NextResponse.json({
-        isDemo: true,
-        requiresSimulation: true,
-        bookingCode: cleanCode,
-        amountToPay,
-        totalAmount: b.total_amount,
-        amountPaid: b.amount_paid || 0,
-        outstanding: b.outstanding || 0,
-        paymentChoice: chosenType,
-        message: "Midtrans mode simulasi aktif (Sandbox).",
-      });
-    }
+    if (!midtransConfigured())
+      throw new RequestError("Midtrans belum dikonfigurasi. Pembayaran belum dapat dibuka.", 503);
 
     let booking = b as StoredBooking,
       attempt: PaymentAttempt;
@@ -130,41 +94,16 @@ export async function POST(
       booking = v.booking;
       attempt = v.attempt;
     } else {
-      // payment_attempt was created by approve_booking RPC or fallback
-      const r = await db
-        .from("payment_attempts")
-        .select("*")
-        .eq("booking_id", b.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (r.error || !r.data)
-        throw new RequestError("Tagihan tidak ditemukan.", 404);
-      attempt = r.data as PaymentAttempt;
-      if (attempt.status !== "pending")
-        throw new RequestError(
-          "Tagihan sudah berakhir. Hubungi admin untuk tindak lanjut.",
-          409,
-        );
+      const { data, error } = await db.rpc("prepare_initial_payment", {
+        p_booking_id: b.id, p_user_id: user.id, p_choice: input.data.paymentChoice ?? b.payment_choice,
+      });
+      if (error || !data) throw new RequestError("Tagihan sudah berubah, terkunci pada pilihan sebelumnya, atau kedaluwarsa. Periksa kembali pesanan.", 409);
+      booking = data.booking;
+      attempt = data.attempt;
     }
 
-    try {
-      const payment = await preparePayment(booking, attempt);
-      return NextResponse.json({ redirectUrl: payment.redirect_url, token: payment.token });
-    } catch (midtransErr) {
-      console.warn("[midtrans api error, fallback to sandbox simulator]:", midtransErr);
-      return NextResponse.json({
-        isDemo: true,
-        requiresSimulation: true,
-        bookingCode: cleanCode,
-        amountToPay,
-        totalAmount: b.total_amount,
-        amountPaid: b.amount_paid || 0,
-        outstanding: b.outstanding || 0,
-        paymentChoice: b.payment_choice,
-        message: "Midtrans Sandbox Simulator diaktifkan karena koneksi gateway testing.",
-      });
-    }
+    const payment = await preparePayment(booking, attempt);
+    return NextResponse.json({ redirectUrl: payment.redirect_url, token: payment.token });
   } catch (e) {
     return errorResponse(e);
   }
