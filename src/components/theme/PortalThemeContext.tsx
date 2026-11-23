@@ -17,48 +17,23 @@ const PortalThemeContext = createContext<ThemeContextType>({
 });
 
 export function PortalThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
+  const [theme] = useState<Theme>("light");
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("portal_theme") as Theme | null;
-      if (saved === "dark") {
-        setThemeState("dark");
-        document.documentElement.classList.add("dark");
-      } else {
-        setThemeState("light");
-        document.documentElement.classList.remove("dark");
-      }
+      localStorage.removeItem("portal_theme");
     } catch {
-      document.documentElement.classList.remove("dark");
+      // ignore
     }
-    setMounted(true);
+    document.documentElement.classList.remove("dark");
 
     return () => {
-      // Ensure dark mode does not leak to public pages when leaving portal
       document.documentElement.classList.remove("dark");
     };
   }, []);
 
-  function setTheme(t: Theme) {
-    setThemeState(t);
-    try {
-      localStorage.setItem("portal_theme", t);
-    } catch {
-      // ignore
-    }
-    if (t === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }
-
-  function toggleTheme() {
-    const next = theme === "light" ? "dark" : "light";
-    setTheme(next);
-  }
+  const setTheme = () => {};
+  const toggleTheme = () => {};
 
   return (
     <PortalThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>

@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Mountain, Car, LogOut, ChevronDown, Globe } from "lucide-react";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { PortalNotification } from "./PortalNotification";
 import { useLanguage } from "@/lib/i18n/context";
 import { createClient } from "@/lib/supabase/client";
@@ -87,11 +86,8 @@ export function PortalNavbar({ user, portalType, badgeLabel }: PortalNavbarProps
           </span>
         </div>
 
-        {/* SISI KANAN: Theme Toggle + Bell Notification + User Pill (Exact Homestay Banyuwangi Foto) */}
+        {/* SISI KANAN: Bell Notification + User Pill */}
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-          {/* Dark / Light Mode Toggle */}
-          <ThemeToggle />
-
           {/* Functional Notification Bell with interactive popover */}
           <PortalNotification role={portalType} />
 
