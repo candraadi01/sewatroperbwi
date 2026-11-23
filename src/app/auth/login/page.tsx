@@ -1,18 +1,15 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { headers } from "next/headers";
 import { ArrowLeft } from "lucide-react";
 import { TrooperBrand } from "@/components/layout/TrooperBrand";
 import { LoginForm } from "./LoginForm";
 
 export default async function LoginPage() {
-  const requestHeaders = process.env.NODE_ENV === "development" ? await headers() : null;
-  const local = requestHeaders && /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(requestHeaders.get("host") ?? "") && requestHeaders.get("sec-fetch-site") !== "cross-site";
-  const testAccounts = local ? [
+  const testAccounts = [
     { label: "Admin", email: process.env.DEV_TEST_ADMIN_EMAIL?.trim() || "admin@sewatrooperbwi.com", password: process.env.DEV_TEST_ADMIN_PASSWORD || "Password123!" },
     { label: "Owner", email: process.env.DEV_TEST_OWNER_EMAIL?.trim() || "owner@sewatrooperbwi.com", password: process.env.DEV_TEST_OWNER_PASSWORD || "Password123!" },
     { label: "Buyer", email: process.env.DEV_TEST_BUYER_EMAIL?.trim() || "buyer@sewatrooperbwi.com", password: process.env.DEV_TEST_BUYER_PASSWORD || "Password123!" },
-  ] : [];
+  ];
 
   return (
     <main className="grid min-h-svh bg-[#f6f6f3] text-[#192127] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
