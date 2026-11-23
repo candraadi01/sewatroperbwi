@@ -27,7 +27,7 @@ export function ProductCard({
   closedReason?: string;
   compact?: boolean;
 }) {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const productUrl = date
     ? `/sewa/${p.slug}?date=${encodeURIComponent(date)}`
     : `/sewa/${p.slug}`;
@@ -38,12 +38,12 @@ export function ProductCard({
   }
   const mainImage = rawImg;
 
-  const badgeText = p.badge_label || (p.is_featured ? "Paket Favorit" : null);
+  const badgeText = p.badge_label || (p.is_featured ? t("package_favorite", "Paket Favorit") : null);
   const durationDisplay =
     p.duration_text ||
     (p.duration_minutes
-      ? `${Math.round(p.duration_minutes / 60)} Jam`
-      : "1 Hari");
+      ? `${Math.round(p.duration_minutes / 60)} ${t("duration_hours", "Jam")}`
+      : `1 ${t("duration_day", "Hari")}`);
   const capacityDisplay = t("guest_capacity", "Max {n} Orang").replace("{n}", String(p.passenger_capacity || 6));
   const destinationPoints = getProductDestinationPoints(p);
   const finalPrice = p.base_price && p.base_price > 0 ? p.base_price : 750000;
@@ -66,9 +66,9 @@ export function ProductCard({
         </div>
         <p className={styles.compactDescription}>{p.short_description || destinationPoints.map((point) => point.name).join(" · ")}</p>
         <div className={styles.compactActions}>
-          <div><small>Mulai dari</small><strong>{p.base_price ? formatIDR(p.base_price) : "Cek tarif"}</strong></div>
+          <div><small>{t("price_starting_from", "Mulai dari")}</small><strong>{p.base_price ? formatIDR(p.base_price) : t("price_check", "Cek tarif")}</strong></div>
           <Link className={styles.primary} href={productUrl} aria-label={`Lihat ${p.name}`}>
-            {isClosed ? "Detail" : "Booking"} <ArrowRight size={14} />
+            {isClosed ? (language === "id" ? "Detail" : t("buyer_btn_detail", "Detail")) : (language === "id" ? "Booking" : t("tour_book_btn", "Booking"))} <ArrowRight size={14} />
           </Link>
         </div>
       </div>
@@ -232,7 +232,7 @@ export function ProductCard({
 
           {/* Tarif Paket — Sesuai Konsep Warna Web */}
           <div className="flex items-baseline justify-between mb-4">
-            <span className="text-xs text-[color:var(--gold,#327691)] font-bold">*Mulai</span>
+            <span className="text-xs text-[color:var(--gold,#327691)] font-bold">*{t("price_starting_from", "Mulai")}</span>
             <div className="text-right">
               <span className="text-base sm:text-lg font-black text-[color:var(--ink,#263b46)] tracking-tight">
                 {formatIDR(finalPrice)}
@@ -251,7 +251,7 @@ export function ProductCard({
               : "bg-[var(--gold,#327691)] hover:bg-[var(--gold-hover,#255b70)] active:scale-[0.99] text-[color:var(--on-gold,#fff)]"
           }`}
         >
-          <span>{isClosed ? "Jadwal Tutup (Cek Detail)" : t("btn_book_now", "Booking Sekarang")}</span>
+          <span>{isClosed ? (language === "id" ? "Jadwal Tutup (Cek Detail)" : t("closed_schedule", "Jadwal Tutup (Cek Detail)")) : (language === "id" ? "Booking Sekarang" : t("btn_book_now", "Booking Sekarang"))}</span>
         </Link>
       </div>
     </div>

@@ -24,7 +24,7 @@ export function FooterContent({ address, email, phone, whatsapp, hours }: {
 }) {
   const { language, t } = useLanguage();
   const [intro, explore, contact, terms, privacy, faq] = copy[language];
-  const links = [["/sewa", "nav_tour"], ["/destinasi", "nav_destinations"], ["/#testimonial", "nav_testimonial"], ["/artikel", "nav_articles"]];
+  const links = [["/sewa", "nav_tour"], ["/destinasi", "nav_destinations"], ["/testimonial", "nav_testimonial"], ["/artikel", "nav_articles"]];
 
   return (
     <footer className={`${styles.landing} ${styles.darkBand} border-t border-white/10`}>

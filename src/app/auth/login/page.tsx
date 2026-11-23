@@ -3,11 +3,59 @@
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Mountain, Mail, AlertCircle, ShieldCheck } from "lucide-react";
+import { Mountain, Mail, AlertCircle, ShieldCheck, FlaskConical, Shield, Briefcase, User, Zap } from "lucide-react";
 import { Button, Input, Card } from "@/components/ui";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { safeRedirectPath } from "@/lib/security/redirect";
 import { createClient } from "@/lib/supabase/client";
+
+const TEST_ACCOUNTS = [
+  {
+    id: "admin",
+    name: "Admin",
+    roleLabel: "Super Admin",
+    email: "admin@sewatrooperbwi.com",
+    password: "AdminTrooper2026!",
+    badge: "ADMIN",
+    theme: {
+      border: "border-purple-200 hover:border-purple-300",
+      activeBorder: "border-purple-600 ring-2 ring-purple-200 bg-purple-50/70",
+      badgeBg: "bg-purple-100 text-purple-700",
+      text: "text-purple-700",
+    },
+    dest: "/admin",
+  },
+  {
+    id: "owner",
+    name: "Owner",
+    roleLabel: "Mitra Trooper",
+    email: "owner@sewatrooperbwi.com",
+    password: "OwnerTrooper2026!",
+    badge: "OWNER",
+    theme: {
+      border: "border-blue-200 hover:border-blue-300",
+      activeBorder: "border-blue-600 ring-2 ring-blue-200 bg-blue-50/70",
+      badgeBg: "bg-blue-100 text-blue-700",
+      text: "text-blue-700",
+    },
+    dest: "/owner",
+  },
+  {
+    id: "buyer",
+    name: "Buyer",
+    roleLabel: "Pelanggan",
+    email: "buyer@sewatrooperbwi.com",
+    password: "BuyerTrooper2026!",
+    badge: "BUYER",
+    theme: {
+      border: "border-emerald-200 hover:border-emerald-300",
+      activeBorder: "border-emerald-600 ring-2 ring-emerald-200 bg-emerald-50/70",
+      badgeBg: "bg-emerald-100 text-emerald-700",
+      text: "text-emerald-700",
+    },
+    dest: "/buyer",
+  },
+] as const;
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -27,6 +75,9 @@ function LoginForm() {
   );
 
   const supabase = createClient();
+  const selectedAccount = TEST_ACCOUNTS.find(
+    (a) => a.email.toLowerCase() === email.trim().toLowerCase()
+  );
 
   async function handleGoogleLogin() {
     if (!isSupabaseConfigured()) {
@@ -49,9 +100,8 @@ function LoginForm() {
     }
   }
 
-  async function handlePasswordLogin(e: React.FormEvent) {
-    e.preventDefault();
-    if (!email.trim() || !password) return;
+  async function performLogin(targetEmail: string, targetPass: string) {
+    if (!targetEmail.trim() || !targetPass) return;
     if (!isSupabaseConfigured()) {
       setError("Login belum dikonfigurasi pengelola.");
       return;
@@ -61,16 +111,42 @@ function LoginForm() {
     setError("");
     setMessage("");
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
+    let { data, error: signInError } = await supabase.auth.signInWithPassword({
+      email: targetEmail.trim(),
+      password: targetPass,
     });
 
-    if (error) {
+    // Otomatis daftarkan akun buyer jika belum ada di database Supabase
+    if (signInError && targetEmail === "buyer@sewatrooperbwi.com") {
+      try {
+        const { data: signUpData } = await supabase.auth.signUp({
+          email: targetEmail.trim(),
+          password: targetPass,
+          options: {
+            data: {
+              full_name: "Pelanggan Demo Trooper",
+              phone: "081234567890",
+            },
+          },
+        });
+        if (signUpData?.user) {
+          const retry = await supabase.auth.signInWithPassword({
+            email: targetEmail.trim(),
+            password: targetPass,
+          });
+          data = retry.data;
+          signInError = retry.error;
+        }
+      } catch {
+        // Abaikan dan gunakan error awal jika signup gagal
+      }
+    }
+
+    if (signInError) {
       setError(
-        error.message === "Invalid login credentials"
+        signInError.message === "Invalid login credentials"
           ? "Email atau kata sandi tidak cocok. Silakan periksa kembali."
-          : error.message
+          : signInError.message
       );
       setLoading(false);
       return;
@@ -97,6 +173,11 @@ function LoginForm() {
 
       window.location.assign(target);
     }
+  }
+
+  async function handlePasswordLogin(e: React.FormEvent) {
+    e.preventDefault();
+    await performLogin(email, password);
   }
 
   async function handleMagicLinkLogin(e: React.FormEvent) {
@@ -192,6 +273,86 @@ function LoginForm() {
               </div>
             </div>
           )}
+
+          {/* Panel Akun Testing untuk Tahap Pengembangan */}
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50/60 p-3.5 shadow-2xs">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5 text-amber-950 font-bold text-xs">
+                <FlaskConical size={15} className="text-amber-600 shrink-0" />
+                <span>Akun Testing (Tahap Pengembangan)</span>
+              </div>
+              <span className="text-[10px] font-semibold text-amber-800 bg-amber-100/90 border border-amber-200/80 px-2 py-0.5 rounded-full">
+                Mode Uji Coba
+              </span>
+            </div>
+
+            <p className="text-[11px] text-amber-900/80 mb-2.5 leading-snug">
+              Pilih akun di bawah untuk mengisi form login secara otomatis:
+            </p>
+
+            <div className="grid grid-cols-3 gap-2">
+              {TEST_ACCOUNTS.map((acc) => {
+                const isSelected = email.trim().toLowerCase() === acc.email.toLowerCase();
+                return (
+                  <button
+                    key={acc.id}
+                    type="button"
+                    onClick={() => {
+                      setEmail(acc.email);
+                      setPassword(acc.password);
+                      setMethod("password");
+                      setError("");
+                      setMessage("");
+                    }}
+                    className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                      isSelected
+                        ? acc.theme.activeBorder
+                        : `bg-white/95 ${acc.theme.border}`
+                    }`}
+                  >
+                    <div className="flex items-center gap-1 mb-1">
+                      {acc.id === "admin" && <Shield size={12} className={acc.theme.text} />}
+                      {acc.id === "owner" && <Briefcase size={12} className={acc.theme.text} />}
+                      {acc.id === "buyer" && <User size={12} className={acc.theme.text} />}
+                      <span className="text-xs font-bold text-neutral-800">{acc.name}</span>
+                    </div>
+                    <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase ${acc.theme.badgeBg}`}>
+                      {acc.badge}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Info Akun Terpilih & Tombol Masuk Cepat */}
+            {selectedAccount && (
+              <div className="mt-3 pt-2.5 border-t border-amber-200/70 flex items-center justify-between gap-2 text-xs">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-bold text-neutral-800">
+                      {selectedAccount.roleLabel}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-neutral-600 font-mono truncate">
+                    {selectedAccount.email}
+                  </p>
+                  <p className="text-[10px] text-neutral-500 font-mono">
+                    Sandi: {selectedAccount.password}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  disabled={loading || googleLoading}
+                  onClick={() => performLogin(selectedAccount.email, selectedAccount.password)}
+                  className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#2c6881] hover:bg-[#235367] text-white font-semibold text-[11px] shadow-xs transition disabled:opacity-50 cursor-pointer"
+                  title={`Langsung masuk sebagai ${selectedAccount.name}`}
+                >
+                  <Zap size={12} />
+                  Masuk Cepat
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Method Tabs */}
           <div className="grid grid-cols-2 p-1 bg-neutral-100 rounded-xl mb-5 text-xs font-semibold">

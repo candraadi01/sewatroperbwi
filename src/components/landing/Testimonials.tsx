@@ -37,12 +37,12 @@ export function ReviewCards({ items }: { items: TestimonialItem[] }) {
 }
 
 export function Testimonials({ items }: { items: TestimonialItem[] }) {
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
   return (
     <section id="testimonial" className={`${styles.container} ${styles.section}`}>
       <div className={styles.sectionHeader}>
-        <div><h2>{language === "id" ? "Ulasan pelanggan" : t("testimonials_title")}</h2><p>{language === "id" ? "Pengalaman wisatawan saat menjelajahi Banyuwangi bersama kami." : t("testimonials_subtitle")}</p></div>
-        <Link className={styles.secondary} href="/testimonial">{language === "id" ? "Lihat semua ulasan" : t("nav_testimonial")} <ArrowRight size={16} /></Link>
+        <div><h2>{t("testimonials_title", "Ulasan pelanggan")}</h2><p>{t("testimonials_subtitle", "Pengalaman wisatawan saat menjelajahi Banyuwangi bersama kami.")}</p></div>
+        <Link className={styles.secondary} href="/testimonial">{t("testimonials_all", "Lihat semua ulasan")} <ArrowRight size={16} /></Link>
       </div>
       <ReviewCards items={items.slice(0, 3)} />
     </section>

@@ -20,7 +20,7 @@ const menu = [
   { href: "/", label: "nav_home", Icon: Home },
   { href: "/sewa", label: "nav_tour", Icon: Car },
   { href: "/destinasi", label: "nav_destinations", Icon: Compass },
-  { href: "/#testimonial", label: "nav_testimonial", Icon: Star },
+  { href: "/testimonial", label: "nav_testimonial", Icon: Star },
   { href: "/artikel", label: "nav_articles", Icon: BookOpen },
 ];
 
@@ -79,8 +79,7 @@ export function Header({ user }: { user?: HeaderUser | null }) {
 
   function links(withIcons = false) {
     return menu.map(({ href, label, Icon }) => {
-      const current = href === "/" ? pathname === "/" :
-        href !== "/#testimonial" && (pathname === href || pathname.startsWith(href + "/"));
+      const current = href === "/" ? pathname === "/" : (pathname === href || pathname.startsWith(href + "/"));
       return (
         <Link key={href} href={href} aria-current={current ? "page" : undefined}
           className={styles.navLink} onClick={() => setMobileOpen(false)}>

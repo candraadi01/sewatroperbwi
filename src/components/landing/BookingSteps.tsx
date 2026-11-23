@@ -1,30 +1,44 @@
 "use client";
 
 import { useState } from "react";
+import { useLanguage } from "@/lib/i18n/context";
 import styles from "./cinematic.module.css";
 
-export function BookingSteps({ title, subtitle, steps }: {
-  title: string;
+export function BookingSteps({ title, subtitle, steps, isCustom = false }: {
+  title?: string;
   subtitle?: string;
-  steps: readonly (readonly [string, string])[];
+  steps?: readonly (readonly [string, string])[];
+  isCustom?: boolean;
 }) {
   const [active, setActive] = useState(0);
+  const { language, t } = useLanguage();
+
+  const displayTitle = !isCustom || language !== "id" ? t("booking_steps_title", "Alur booking") : (title || t("booking_steps_title", "Alur booking"));
+  const displaySubtitle = !isCustom || language !== "id" ? t("booking_steps_subtitle", "Empat langkah mudah untuk memesan Jeep Trooper Anda.") : (subtitle || t("booking_steps_subtitle", "Empat langkah mudah untuk memesan Jeep Trooper Anda."));
+
+  const localizedDefaultSteps = [
+    [t("step_1_title", "Pilih paket"), t("step_1_desc", "Tentukan tanggal, jumlah peserta, dan kebutuhan penjemputan.")],
+    [t("step_2_title", "Ajukan booking"), t("step_2_desc", "Admin akan mengecek ketersediaan armada dan mengonfirmasi pengajuan Anda.")],
+    [t("step_3_title", "Bayar setelah disetujui"), t("step_3_desc", "Pilih DP atau lunas dari halaman pesanan setelah Admin menyetujui.")],
+  ] as const;
+
+  const currentSteps = !isCustom || language !== "id" ? localizedDefaultSteps : (steps && steps.length > 0 ? steps : localizedDefaultSteps);
 
   return (
     <section className={`${styles.container} ${styles.section}`} aria-labelledby="steps-heading">
       <div className={`${styles.steps} ${styles.bookingGuide}`}>
         <div className={styles.guideIntro}>
-          <h2 id="steps-heading">{title}</h2>
-          {subtitle && <p>{subtitle}</p>}
+          <h2 id="steps-heading">{displayTitle}</h2>
+          {displaySubtitle && <p>{displaySubtitle}</p>}
         </div>
         <ol tabIndex={0} aria-labelledby="steps-heading" onScroll={({ currentTarget: list }) => {
           const first = list.firstElementChild;
           const second = first?.nextElementSibling;
           if (!first || !second) return;
           const stride = second.getBoundingClientRect().left - first.getBoundingClientRect().left;
-          if (stride > 0) setActive(Math.min(steps.length - 1, Math.round(list.scrollLeft / stride)));
+          if (stride > 0) setActive(Math.min(currentSteps.length - 1, Math.round(list.scrollLeft / stride)));
         }}>
-          {steps.map(([heading, copy], index) => (
+          {currentSteps.map(([heading, copy], index) => (
             <li key={`${index}-${heading}`} aria-current={index === active ? "step" : undefined}>
               <span aria-hidden="true">{index + 1}</span><div><strong>{heading}</strong><p>{copy}</p></div>
             </li>

@@ -60,11 +60,18 @@ export function CinematicHero({ destinations, heading, accent, description, back
       </div>
       <div className={`${styles.container} ${styles.heroGrid}`}>
         <div className={styles.heroCopy}>
-          <p className={styles.eyebrow}>{eyebrow}</p>
-          <h1 id="landing-title">{heading} {accent && <em>{accent}</em>}</h1>
-          <p className={styles.heroDescription}>{description}</p>
+          <p className={styles.eyebrow}>{language === "id" ? eyebrow : t("hero_eyebrow", eyebrow)}</p>
+          <h1 id="landing-title">
+            {language === "id" ? heading : t("hero_heading", heading)}{" "}
+            {accent && <em>{language === "id" ? accent : t("hero_accent", accent)}</em>}
+          </h1>
+          <p className={styles.heroDescription}>
+            {language === "id" ? description : t("hero_description", description)}
+          </p>
           <div className={styles.heroActions}>
-            <a href="#armada" className={styles.secondary}>Lihat armada <ArrowDown size={17} /></a>
+            <a href="#armada" className={styles.secondary}>
+              {t("hero_action_fleet", "Lihat armada")} <ArrowDown size={17} />
+            </a>
           </div>
         </div>
         <FleetShowcase key={fleet.map(({ name, photo }) => name + photo).join("|")} slides={fleet} />
@@ -76,7 +83,7 @@ export function CinematicHero({ destinations, heading, accent, description, back
             <label>
               <span>{t("nav_destinations")}</span>
               <select value={destination} onChange={(event) => setDestination(event.target.value)}>
-                <option value="">Semua destinasi</option>
+                <option value="">{t("search_all_destinations", "Semua destinasi")}</option>
                 {destinations.map(({ id, queryParam, name }) => <option value={queryParam} key={id}>{name}</option>)}
               </select>
             </label>
@@ -84,23 +91,23 @@ export function CinematicHero({ destinations, heading, accent, description, back
           <div className={styles.searchField}>
             <CalendarDays size={20} aria-hidden="true" />
             <div className={styles.dateField}>
-              <span>Tanggal sewa</span>
+              <span>{t("search_date_label", "Tanggal sewa")}</span>
               <HeroDatePicker value={date} onChange={setDate} schedules={schedules} />
             </div>
           </div>
           <div className={styles.searchField}>
             <Users size={20} aria-hidden="true" />
             <label>
-              <span>Peserta per Jeep</span>
+              <span>{t("search_passengers_label", "Peserta per Jeep")}</span>
               <select value={passengers} onChange={(event) => setPassengers(event.target.value)}>
-                <option value="">Pilih jumlah</option>
+                <option value="">{t("search_select_count", "Pilih jumlah")}</option>
                 {Array.from({ length: 7 }, (_, index) => index + 1).map((count) =>
-                  <option value={count} key={count}>{count} peserta</option>
+                  <option value={count} key={count}>{count} {t("search_passenger_unit", "peserta")}</option>
                 )}
               </select>
             </label>
           </div>
-          <button type="submit" className={styles.primary}><Search size={18} /> {language === "id" ? "Cek ketersediaan" : t("search_btn_paket")}</button>
+          <button type="submit" className={styles.primary}><Search size={18} /> {language === "id" ? "Cek ketersediaan" : t("search_submit", "Cari trip")}</button>
         </form>
       </div>
     </section>
