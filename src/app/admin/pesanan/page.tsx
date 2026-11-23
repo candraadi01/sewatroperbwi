@@ -79,7 +79,7 @@ export default async function Orders({
         </div>
 
         {/* Quick Filter Tabs */}
-        <div className="flex flex-wrap gap-2 pt-1">
+        <div className="flex items-center gap-2 pt-1 overflow-x-auto pb-1 sm:flex-wrap">
           <Link
             href="/admin/pesanan"
             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs ${

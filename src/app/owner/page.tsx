@@ -51,7 +51,7 @@ export default async function OwnerDashboard() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
           <Link
             href="/owner/armada"
             className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#263b46] hover:bg-[#1b2b33] dark:bg-neutral-800 dark:hover:bg-neutral-700 text-white text-xs sm:text-sm font-bold shadow-xs transition"

@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Mountain,
   LayoutDashboard,
   ShoppingBag,
   Package,
@@ -12,18 +11,15 @@ import {
   Users,
   Settings,
   BarChart3,
-  Globe,
   Menu,
   X,
   LogOut,
   Newspaper,
-  Shield,
   Compass,
   Calendar,
   Search,
 } from "lucide-react";
 import { cn } from "@/components/ui";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 interface AdminUser {
   id: string;
@@ -44,14 +40,15 @@ const adminNavItems: NavItem[] = [
   { label: "Transaksi & Pesanan", href: "/admin/pesanan", icon: ShoppingBag },
   { label: "Jadwal & Kuota", href: "/admin/jadwal", icon: Calendar },
   { label: "Tour & Armada", href: "/admin/produk", icon: Package },
-  { label: "Tim Driver", href: "/admin/tim", icon: Users },
+  { label: "Tim Driver", href: "/admin/tim", icon: Compass },
+  { label: "Manajemen Users", href: "/admin/users", icon: Users },
   { label: "Kelola Artikel", href: "/admin/artikel", icon: Newspaper },
   { label: "Pencairan Mitra", href: "/admin/penarikan", icon: CreditCard },
   { label: "Laporan Finansial", href: "/admin/laporan", icon: BarChart3 },
   { label: "Pengaturan Sistem", href: "/admin/pengaturan", icon: Settings },
 ];
 
-export function AdminSidebar({ user }: { user: AdminUser }) {
+export function AdminSidebar({ user }: { user?: AdminUser }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -78,18 +75,24 @@ export function AdminSidebar({ user }: { user: AdminUser }) {
 
   const sidebarContent = (
     <div className="flex flex-col h-full bg-white dark:bg-neutral-900 select-none">
-      {/* User Profile Card (Matches Homestay Concept) */}
+      {/* User Profile Card (Samakan dengan Buyer & Owner) */}
       <div className="p-4 border-b border-[#e4ebef] dark:border-neutral-800 bg-white dark:bg-neutral-900 flex items-center justify-between gap-2.5">
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="w-10 h-10 rounded-full bg-[#5d7d8c] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-2xs">
-            {user.fullName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "A"}
+          <div className="w-10 h-10 rounded-full bg-[#327691] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-2xs">
+            {user?.fullName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "A"}
           </div>
           <div className="min-w-0 flex-1">
-            <span className="font-bold text-sm text-[#263b46] dark:text-neutral-100 block truncate">
-              {user.fullName || "Administrator"}
+            <span
+              className="font-bold text-sm text-[#263b46] dark:text-neutral-100 block truncate"
+              title={user?.fullName || "Administrator"}
+            >
+              {user?.fullName || "Administrator"}
             </span>
-            <span className="text-[11px] text-[#8e9da5] dark:text-neutral-400 block truncate">
-              {user.email}
+            <span
+              className="text-[11px] text-[#8e9da5] dark:text-neutral-400 block truncate"
+              title={user?.email}
+            >
+              {user?.email || "admin@sewatrooperbwi.com"}
             </span>
           </div>
         </div>
@@ -164,8 +167,8 @@ export function AdminSidebar({ user }: { user: AdminUser }) {
 
   return (
     <>
-      {/* Mobile Sub Bar */}
-      <div className="md:hidden flex items-center justify-between px-4 py-2.5 bg-white dark:bg-neutral-900 border-b border-[#e4ebef] dark:border-neutral-800">
+      {/* Mobile Sub Bar (Sticky di bawah Navbar agar selalu mudah diakses) */}
+      <div className="md:hidden sticky top-16 z-30 flex items-center justify-between px-4 py-2.5 bg-white dark:bg-neutral-900 border-b border-[#e4ebef] dark:border-neutral-800 shadow-2xs">
         <span className="font-extrabold text-xs uppercase tracking-wider text-[#327691] dark:text-[#8abbd0]">
           Menu Navigasi Admin
         </span>
@@ -190,7 +193,7 @@ export function AdminSidebar({ user }: { user: AdminUser }) {
       {/* Mobile Drawer */}
       <div
         className={cn(
-          "fixed top-0 bottom-0 left-0 w-72 bg-white dark:bg-neutral-900 z-50 shadow-2xl transition-transform duration-200 md:hidden flex flex-col",
+          "fixed top-0 bottom-0 left-0 w-72 sm:w-80 max-w-[85vw] bg-white dark:bg-neutral-900 z-50 shadow-2xl transition-transform duration-200 md:hidden flex flex-col",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >

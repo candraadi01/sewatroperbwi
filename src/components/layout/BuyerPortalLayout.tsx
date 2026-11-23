@@ -220,9 +220,9 @@ export function BuyerPortalLayout({
         {/* Top Navbar seperti contoh Foto Homestay */}
         <PortalNavbar user={user} portalType="buyer" badgeLabel={t("buyer_portal_title", "Portal Pelanggan")} />
 
-        {/* Mobile Sub Bar */}
-        <div className="md:hidden flex items-center justify-between px-4 py-2.5 bg-white dark:bg-neutral-900 border-b border-[#e4ebef] dark:border-neutral-800">
-          <span className="font-bold text-xs text-[#327691] dark:text-[#8abbd0]">
+        {/* Mobile Sub Bar (Sticky di bawah Navbar agar selalu mudah diakses) */}
+        <div className="md:hidden sticky top-16 z-30 flex items-center justify-between px-4 py-2.5 bg-white dark:bg-neutral-900 border-b border-[#e4ebef] dark:border-neutral-800 shadow-2xs">
+          <span className="font-extrabold text-xs uppercase tracking-wider text-[#327691] dark:text-[#8abbd0]">
             Portal Pelanggan
           </span>
           <button
@@ -246,7 +246,7 @@ export function BuyerPortalLayout({
         {/* Mobile Drawer */}
         <div
           className={cn(
-            "fixed top-0 bottom-0 left-0 w-72 bg-white dark:bg-neutral-900 z-50 shadow-2xl transition-transform duration-200 md:hidden flex flex-col",
+            "fixed top-0 bottom-0 left-0 w-72 sm:w-80 max-w-[85vw] bg-white dark:bg-neutral-900 z-50 shadow-2xl transition-transform duration-200 md:hidden flex flex-col",
             mobileOpen ? "translate-x-0" : "-translate-x-full",
           )}
         >
@@ -268,8 +268,8 @@ export function BuyerPortalLayout({
           </aside>
 
           {/* Area Konten Utama Luas & Responsif */}
-          <div className="flex-1 min-w-0 flex flex-col">
-            <main className="flex-1 p-5 sm:p-7 md:p-8 lg:p-10 max-w-[1440px] w-full">
+          <div className="flex-1 min-w-0 flex flex-col overflow-x-hidden">
+            <main className="flex-1 p-3.5 sm:p-6 md:p-8 lg:p-10 max-w-[1440px] w-full min-w-0">
               {children}
             </main>
           </div>

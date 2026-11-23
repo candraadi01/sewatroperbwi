@@ -3,6 +3,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { safeRedirectPath } from "../src/lib/security/redirect";
+import { loginDestination } from "../src/lib/auth/login-destination";
+import { GET as authCallback } from "../src/app/auth/callback/route";
 import { POST as switchDemo } from "../src/app/api/auth/switch-demo/route";
 import { POST as simulatePayment } from "../src/app/api/payments/[code]/simulate/route";
 import { preparePayment, type PaymentAttempt, type StoredBooking } from "../src/lib/services/booking";
@@ -89,6 +91,8 @@ test("redirect allowlist rejects external paths and backslashes", () => {
   for (const value of [
     "//evil.test",
     "/\\evil.test",
+    "/a/..//evil.test",
+    "/a/%2e%2e//evil.test",
     "https://evil.test",
     "/a\nLocation:evil",
   ])
@@ -97,6 +101,17 @@ test("redirect allowlist rejects external paths and backslashes", () => {
     safeRedirectPath("/checkout?quote_id=abc"),
     "/checkout?quote_id=abc",
   );
+});
+test("login keeps safe return destinations and chooses the portal by verified roles", () => {
+  assert.equal(loginDestination("/", ["buyer", "admin"]), "/admin");
+  assert.equal(loginDestination(null, ["owner"]), "/owner");
+  assert.equal(loginDestination("/a/..//evil.test", ["buyer"]), "/buyer");
+  assert.equal(loginDestination("/checkout?quote_id=abc", ["buyer"]), "/checkout?quote_id=abc");
+});
+test("OAuth cancellation returns to the login form without using an external redirect", async () => {
+  const result = await authCallback(new Request("http://localhost:3000/auth/callback?error=access_denied&next=%2F%2Fevil.test"));
+  assert.equal(result.status, 307);
+  assert.equal(result.headers.get("location"), "http://localhost:3000/auth/login?error=access_denied&redirectTo=%2F");
 });
 test("webhook signature is mandatory, bound to amount and exact bytes", () => {
   process.env.MIDTRANS_SERVER_KEY = "unit-test-key";

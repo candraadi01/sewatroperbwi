@@ -25,8 +25,8 @@ export default async function OwnerLayout({
         {/* Area Kerja: Sidebar di Kiri & Konten di Kanan */}
         <div className="flex-1 flex flex-col md:flex-row w-full">
           <OwnerSidebar user={user} />
-          <div className="flex-1 min-w-0 flex flex-col">
-            <main className="flex-1 p-5 sm:p-7 md:p-8 lg:p-10 max-w-[1440px] w-full">
+          <div className="flex-1 min-w-0 flex flex-col overflow-x-hidden">
+            <main className="flex-1 p-3.5 sm:p-6 md:p-8 lg:p-10 max-w-[1440px] w-full min-w-0">
               {children}
             </main>
           </div>

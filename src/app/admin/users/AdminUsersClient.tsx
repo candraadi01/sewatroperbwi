@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Users, Shield, UserCheck, UserX, Search, Mail, Phone, Calendar } from "lucide-react";
+import { Search, UserCheck, UserX } from "lucide-react";
 
 interface UserItem {
   id: string;
@@ -13,7 +13,7 @@ interface UserItem {
   roles: string[];
 }
 
-export function OwnerUsersClient({ initialUsers }: { initialUsers: UserItem[] }) {
+export function AdminUsersClient({ initialUsers }: { initialUsers: UserItem[] }) {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | "buyer" | "owner" | "admin">("all");
 
@@ -105,7 +105,7 @@ export function OwnerUsersClient({ initialUsers }: { initialUsers: UserItem[] })
       {/* Tabel Pengguna */}
       <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-[#e4ebef] dark:border-neutral-800 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs sm:text-sm">
+          <table className="w-full min-w-[560px] text-left text-xs sm:text-sm">
             <thead className="bg-[#f8fafc] dark:bg-neutral-800/60 text-[#53636d] dark:text-neutral-400 uppercase tracking-wider text-[11px] border-b border-[#e4ebef] dark:border-neutral-800">
               <tr>
                 <th className="py-3.5 px-4 font-bold">Nama & Email</th>
@@ -196,3 +196,4 @@ export function OwnerUsersClient({ initialUsers }: { initialUsers: UserItem[] })
     </div>
   );
 }
+

@@ -109,7 +109,7 @@ export function BuyerDashboardClient({ user, orders }: BuyerDashboardClientProps
           <h2 className="text-sm font-bold text-[#1e293b] dark:text-neutral-200 mb-3.5">
             {t("buyer_activity_summary", "Ringkasan Aktivitas")}
           </h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
             {/* Card 1: Perlu Pembayaran */}
             <Link
               href="/buyer/pesanan"
@@ -190,7 +190,7 @@ export function BuyerDashboardClient({ user, orders }: BuyerDashboardClientProps
 
         {/* 2. Banner Jadwal Trip Terdekat */}
         {nextTrip ? (
-          <div className="rounded-3xl bg-white dark:bg-neutral-900 border-2 border-[#d2e4ec] dark:border-neutral-800 p-6 sm:p-8 shadow-sm relative overflow-hidden">
+          <div className="rounded-3xl bg-white dark:bg-neutral-900 border-2 border-[#d2e4ec] dark:border-neutral-800 p-4 sm:p-6 md:p-8 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-[#e8f3f7] to-transparent dark:from-neutral-800/40 rounded-full blur-2xl -mr-20 -mt-20 pointer-events-none" />
 
             <div className="relative z-10 space-y-6">

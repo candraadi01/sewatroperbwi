@@ -48,6 +48,7 @@ next-env.d.ts
 /scripts/cloud_*.csv
 *.dump
 *.backup
+trooper-test-accounts.local.json
 
 *.zip
 node_modules/

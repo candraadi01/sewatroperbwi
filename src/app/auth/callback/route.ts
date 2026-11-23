@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { safeRedirectPath } from "@/lib/security/redirect";
+import { loginDestination } from "@/lib/auth/login-destination";
+import { getAuthUser } from "@/lib/auth/helpers";
 
 /**
  * Auth callback handler.
@@ -16,17 +18,21 @@ export async function GET(request: Request) {
   const redirectTo = safeRedirectPath(next);
 
   if (code) {
-    const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-    if (!error) {
-      // Redirect ke tujuan awal setelah login berhasil
-      return NextResponse.redirect(`${origin}${redirectTo}`);
+    try {
+      const supabase = await createClient();
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (!error) {
+        const user = await getAuthUser();
+        if (user) return NextResponse.redirect(`${origin}${loginDestination(redirectTo, user.roles)}`);
+        await supabase.auth.signOut({ scope: "local" });
+      }
+    } catch {
+      // A failed code exchange should return to the login form.
     }
   }
 
   // Jika error atau tidak ada code, redirect ke login dengan pesan error
   return NextResponse.redirect(
-    `${origin}/login?error=auth_callback_failed&redirectTo=${encodeURIComponent(redirectTo)}`,
+    `${origin}/auth/login?error=${searchParams.get("error") === "access_denied" ? "access_denied" : "auth_callback_failed"}&redirectTo=${encodeURIComponent(redirectTo)}`,
   );
 }
