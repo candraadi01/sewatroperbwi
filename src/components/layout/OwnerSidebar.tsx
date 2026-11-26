@@ -9,13 +9,13 @@ import {
   ReceiptText,
   Wallet,
   User,
-  Menu,
   X,
   LogOut,
   Calendar,
   Search,
 } from "lucide-react";
 import { cn } from "@/components/ui";
+import { useLanguage } from "@/lib/i18n/context";
 
 interface OwnerUser {
   id: string;
@@ -24,19 +24,25 @@ interface OwnerUser {
   roles: string[];
 }
 
-// Menu Inti Pemilik Armada — Font Jelas (text-sm), Nyaman & Proporsional
-const ownerNavItems = [
-  { label: "Dashboard", href: "/owner", icon: LayoutDashboard },
-  { label: "Jadwal & Kuota", href: "/owner/jadwal", icon: Calendar },
-  { label: "Katalog Armada Pemilik", href: "/owner/armada", icon: Car },
-  { label: "History Transaksi", href: "/owner/transaksi", icon: ReceiptText },
-  { label: "Tarik Tunai", href: "/owner/tarik-dana", icon: Wallet },
-  { label: "Profil & Rekening", href: "/owner/profil", icon: User },
-];
-
 export function OwnerSidebar({ user }: { user?: OwnerUser }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { t } = useLanguage();
+
+  useEffect(() => {
+    const handler = () => setMobileOpen((prev) => !prev);
+    window.addEventListener("portal:toggle-mobile-menu", handler);
+    return () => window.removeEventListener("portal:toggle-mobile-menu", handler);
+  }, []);
+
+  const ownerNavItems = [
+    { label: t("owner_menu_dashboard", "Dashboard"), href: "/owner", icon: LayoutDashboard },
+    { label: t("owner_menu_jadwal", "Jadwal & Kuota"), href: "/owner/jadwal", icon: Calendar },
+    { label: t("owner_menu_armada", "Katalog Armada Pemilik"), href: "/owner/armada", icon: Car },
+    { label: t("owner_menu_transaksi", "History Transaksi"), href: "/owner/transaksi", icon: ReceiptText },
+    { label: t("owner_menu_tarik", "Tarik Tunai"), href: "/owner/tarik-dana", icon: Wallet },
+    { label: t("owner_menu_profil", "Profil & Rekening"), href: "/owner/profil", icon: User },
+  ];
 
   function isActive(href: string) {
     if (href === "/owner") return pathname === "/owner";
@@ -132,21 +138,6 @@ export function OwnerSidebar({ user }: { user?: OwnerUser }) {
 
   return (
     <>
-      {/* Mobile Sub Bar (Sticky di bawah Navbar agar selalu mudah diakses) */}
-      <div className="md:hidden sticky top-16 z-30 flex items-center justify-between px-4 py-2.5 bg-white dark:bg-neutral-900 border-b border-[#e4ebef] dark:border-neutral-800 shadow-2xs">
-        <span className="font-extrabold text-xs uppercase tracking-wider text-[#327691] dark:text-[#8abbd0]">
-          Menu Navigasi Pemilik
-        </span>
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#e9f3f7] dark:bg-neutral-800 text-[#327691] dark:text-[#8abbd0] font-bold text-xs transition cursor-pointer"
-          aria-label="Buka menu navigasi"
-        >
-          {mobileOpen ? <X size={15} /> : <Menu size={15} />}
-          <span>{mobileOpen ? "Tutup" : "Daftar Menu"}</span>
-        </button>
-      </div>
-
       {/* Mobile Drawer Overlay */}
       {mobileOpen && (
         <div
@@ -173,7 +164,7 @@ export function OwnerSidebar({ user }: { user?: OwnerUser }) {
       </div>
 
       {/* Desktop Persistent Sidebar (Lebar Pas w-[268px], Sticky di bawah Navbar) */}
-      <aside className="hidden md:flex flex-col w-[268px] shrink-0 border-r border-[#e4ebef] dark:border-neutral-800 bg-white dark:bg-neutral-900 sticky top-16 h-[calc(100vh-64px)] z-20">
+      <aside className="hidden md:flex flex-col w-[268px] shrink-0 border-r border-[#e4ebef] dark:border-neutral-800 bg-white dark:bg-neutral-900 sticky top-12 sm:top-13 h-[calc(100vh-48px)] sm:h-[calc(100vh-52px)] z-20">
         {sidebarContent}
       </aside>
     </>

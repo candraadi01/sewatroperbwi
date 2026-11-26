@@ -46,7 +46,7 @@ export default async function Detail({
     ? whatsappLink(settings.contact_whatsapp) : null;
 
   return (
-    <div className={`${styles.landing} ${styles.publicPageBackdrop} min-h-screen pb-[calc(7rem+env(safe-area-inset-bottom))] lg:pb-24`}>
+    <div className={`${styles.landing} ${styles.publicPageBackdrop} min-h-screen pb-12 lg:pb-24`}>
       {/* Top Breadcrumb Bar */}
       <div className="bg-[var(--surface)] border-b border-[var(--line)] sticky top-[3.45rem] min-[851px]:top-16 z-30 shadow-xs">
         <div className="container-app py-3 flex items-center justify-between gap-4">

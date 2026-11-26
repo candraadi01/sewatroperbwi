@@ -1,8 +1,19 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Bell, Check, Trash2, Calendar, CreditCard, Car, Info, CheckCircle2 } from "lucide-react";
+import { 
+  Bell, 
+  Check, 
+  Trash2, 
+  Calendar, 
+  CreditCard, 
+  Car, 
+  Info, 
+  CheckCircle2,
+  Loader2,
+  X
+} from "lucide-react";
 
 export interface NotificationItem {
   id: string;
@@ -15,108 +26,124 @@ export interface NotificationItem {
 }
 
 interface PortalNotificationProps {
-  role: "admin" | "owner" | "buyer";
+  role?: "admin" | "owner" | "buyer";
+  userId?: string;
 }
 
-export function PortalNotification({ role }: PortalNotificationProps) {
+function getLocalIds(key: string): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw);
+    return new Set(Array.isArray(parsed) ? parsed : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveLocalIds(key: string, set: Set<string>) {
+  if (typeof window === "undefined") return;
+  try {
+    const arr = Array.from(set).slice(-150);
+    localStorage.setItem(key, JSON.stringify(arr));
+  } catch {
+    // Abaikan masalah storage quota
+  }
+}
+
+export function PortalNotification({ role, userId }: PortalNotificationProps) {
+  void role;
   const [open, setOpen] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [activeUserId, setActiveUserId] = useState<string | undefined>(userId);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Default notifications based on role
-  const initialNotifications: Record<"admin" | "owner" | "buyer", NotificationItem[]> = {
-    buyer: [
-      {
-        id: "b-1",
-        title: "Pesanan Disetujui Admin",
-        message: "Booking Jeep Kawah Ijen #TRP-8820 telah disetujui. Silakan selesaikan pembayaran DP/lunas.",
-        time: "10 menit lalu",
-        read: false,
-        type: "booking",
-        href: "/buyer/pesanan",
-      },
-      {
-        id: "b-2",
-        title: "Armada & Driver Siap",
-        message: "Driver Pak Slamet (Trooper Hitam Plat P 1234 XX) dijadwalkan menjemput Anda tepat waktu.",
-        time: "2 jam lalu",
-        read: false,
-        type: "fleet",
-        href: "/buyer/pesanan",
-      },
-      {
-        id: "b-3",
-        title: "Voucher Trip Terbit",
-        message: "Voucher reservasi Jeep Trooper siap ditunjukkan kepada driver saat penjemputan.",
-        time: "1 hari lalu",
-        read: true,
-        type: "system",
-        href: "/buyer/pesanan",
-      },
-    ],
-    admin: [
-      {
-        id: "a-1",
-        title: "Pesanan Baru Menunggu Review",
-        message: "Ada 1 reservasi paket Baluran + Fotografer baru yang perlu diverifikasi dan disetujui.",
-        time: "5 menit lalu",
-        read: false,
-        type: "booking",
-        href: "/admin/pesanan",
-      },
-      {
-        id: "a-2",
-        title: "Pembayaran Berhasil Masuk",
-        message: "Pembayaran tagihan invoice #INV-9902 sebesar Rp 1.250.000 sukses diverifikasi Midtrans.",
-        time: "1 jam lalu",
-        read: false,
-        type: "payment",
-        href: "/admin/laporan",
-      },
-      {
-        id: "a-3",
-        title: "Penugasan Driver Akhir Pekan",
-        message: "Pastikan armada Jeep Trooper telah teralokasi untuk seluruh rute trip sabtu-minggu ini.",
-        time: "4 jam lalu",
-        read: true,
-        type: "fleet",
-        href: "/admin/tim",
-      },
-    ],
-    owner: [
-      {
-        id: "o-1",
-        title: "Armada Anda Disewa",
-        message: "Unit Jeep Trooper #01 telah dipesan pelanggan untuk trip petualangan Sukamade 2D1N.",
-        time: "15 menit lalu",
-        read: false,
-        type: "fleet",
-        href: "/owner/transaksi",
-      },
-      {
-        id: "o-2",
-        title: "Pencairan Saldo Diproses",
-        message: "Permohonan penarikan dana Rp 1.500.000 telah disetujui dan ditransfer ke rekening bank Anda.",
-        time: "3 jam lalu",
-        read: false,
-        type: "payment",
-        href: "/owner/tarik-dana",
-      },
-      {
-        id: "o-3",
-        title: "Laporan Finansial Siap",
-        message: "Rekap pendapatan bagi hasil armada bulan ini dapat diunduh pada halaman riwayat transaksi.",
-        time: "1 hari lalu",
-        read: true,
-        type: "system",
-        href: "/owner/transaksi",
-      },
-    ],
-  };
+  const readKey = activeUserId ? `portal_notif_read_${activeUserId}` : "portal_notif_read";
+  const dismissedKey = activeUserId ? `portal_notif_dismissed_${activeUserId}` : "portal_notif_dismissed";
 
-  const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications[role]);
+  // Ambil notifikasi dari API backend dan sinkronkan dengan cache persisten lokal
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await fetch("/api/notifications", {
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const effectiveUid = data.userId || userId;
+        if (effectiveUid && effectiveUid !== activeUserId) {
+          setActiveUserId(effectiveUid);
+        }
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+        const rKey = effectiveUid ? `portal_notif_read_${effectiveUid}` : "portal_notif_read";
+        const dKey = effectiveUid ? `portal_notif_dismissed_${effectiveUid}` : "portal_notif_dismissed";
+        const localRead = getLocalIds(rKey);
+        const localDismissed = getLocalIds(dKey);
 
+        if (Array.isArray(data.notifications)) {
+          const merged = data.notifications
+            .filter((n: NotificationItem) => !localDismissed.has(n.id))
+            .map((n: NotificationItem) => ({
+              ...n,
+              read: Boolean(n.read || localRead.has(n.id)),
+            }));
+          setNotifications(merged);
+        }
+      }
+    } catch (err) {
+      console.error("[PortalNotification] fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId, activeUserId]);
+
+  // Mount awal & polling background berkala (tanpa me-reset status baca/hapus pengguna)
+  useEffect(() => {
+    let isMounted = true;
+    async function initFetch() {
+      try {
+        const res = await fetch("/api/notifications", {
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+        });
+        if (res.ok && isMounted) {
+          const data = await res.json();
+          const effectiveUid = data.userId || userId;
+          if (effectiveUid) {
+            setActiveUserId(effectiveUid);
+          }
+
+          const rKey = effectiveUid ? `portal_notif_read_${effectiveUid}` : "portal_notif_read";
+          const dKey = effectiveUid ? `portal_notif_dismissed_${effectiveUid}` : "portal_notif_dismissed";
+          const localRead = getLocalIds(rKey);
+          const localDismissed = getLocalIds(dKey);
+
+          if (Array.isArray(data.notifications)) {
+            const merged = data.notifications
+              .filter((n: NotificationItem) => !localDismissed.has(n.id))
+              .map((n: NotificationItem) => ({
+                ...n,
+                read: Boolean(n.read || localRead.has(n.id)),
+              }));
+            setNotifications(merged);
+          }
+        }
+      } catch (err) {
+        console.error("[PortalNotification] init error:", err);
+      }
+    }
+
+    initFetch();
+    const interval = setInterval(initFetch, 45000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [userId]);
+
+  // Tutup dropdown saat klik di luar
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -127,19 +154,104 @@ export function PortalNotification({ role }: PortalNotificationProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  function markAllAsRead() {
+  // Tandai semua notifikasi sudah dibaca (Realtime & Persisten)
+  const markAllAsRead = async () => {
+    const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
+    if (unreadIds.length === 0) return;
+
+    // Optimistic UI update seketika
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  }
 
-  function clearAll() {
-    setNotifications([]);
-  }
+    // Simpan ke localStorage agar tidak kembali normal saat di-refresh
+    const localRead = getLocalIds(readKey);
+    notifications.forEach((n) => localRead.add(n.id));
+    saveLocalIds(readKey, localRead);
 
-  function markAsRead(id: string) {
+    try {
+      await fetch("/api/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ all: true, readIds: notifications.map((n) => n.id) }),
+      });
+    } catch (err) {
+      console.error("[PortalNotification] markAllAsRead error:", err);
+    }
+  };
+
+  // Tandai satu notifikasi sudah dibaca (Realtime & Persisten)
+  const markAsRead = async (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const target = notifications.find((n) => n.id === id);
+    if (!target || target.read) return;
+
+    // Optimistic UI update
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
-  }
+
+    // Simpan ke localStorage
+    const localRead = getLocalIds(readKey);
+    localRead.add(id);
+    saveLocalIds(readKey, localRead);
+
+    try {
+      await fetch("/api/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+    } catch (err) {
+      console.error("[PortalNotification] markAsRead error:", err);
+    }
+  };
+
+  // Hapus satu notifikasi (Realtime & Persisten)
+  const deleteNotification = async (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+
+    // Optimistic UI update seketika
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+
+    // Simpan ke localStorage dismissed
+    const localDismissed = getLocalIds(dismissedKey);
+    localDismissed.add(id);
+    saveLocalIds(dismissedKey, localDismissed);
+
+    try {
+      await fetch(`/api/notifications?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (err) {
+      console.error("[PortalNotification] deleteNotification error:", err);
+    }
+  };
+
+  // Bersihkan semua notifikasi (Realtime & Persisten)
+  const clearAll = async () => {
+    if (notifications.length === 0) return;
+    const allIds = notifications.map((n) => n.id);
+
+    // Optimistic UI update
+    setNotifications([]);
+
+    // Simpan ke localStorage
+    const localDismissed = getLocalIds(dismissedKey);
+    allIds.forEach((id) => localDismissed.add(id));
+    saveLocalIds(dismissedKey, localDismissed);
+
+    try {
+      await fetch("/api/notifications", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ allIds }),
+      });
+    } catch (err) {
+      console.error("[PortalNotification] clearAll error:", err);
+    }
+  };
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   function getIcon(type: NotificationItem["type"]) {
     switch (type) {
@@ -156,17 +268,21 @@ export function PortalNotification({ role }: PortalNotificationProps) {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Bell Notification Button */}
+      {/* Bell Notification Button (Minimalis & Elegan Persis Foto 2) */}
       <button
         type="button"
-        onClick={() => setOpen(!open)}
-        className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl border border-[#dce6eb] dark:border-neutral-800 bg-white dark:bg-neutral-900 flex items-center justify-center text-[#527484] dark:text-neutral-300 hover:bg-[#f4f9fb] dark:hover:bg-neutral-800 hover:text-[#263b46] dark:hover:text-white transition shadow-2xs cursor-pointer"
+        onClick={() => {
+          const nextOpen = !open;
+          setOpen(nextOpen);
+          if (nextOpen) fetchNotifications();
+        }}
+        className="relative p-1.5 rounded-full text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition cursor-pointer flex items-center justify-center"
         aria-label="Buka Notifikasi"
       >
-        <Bell size={18} />
+        <Bell size={19} strokeWidth={2} />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center animate-pulse">
-            {unreadCount}
+          <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center animate-pulse">
+            {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
@@ -185,28 +301,30 @@ export function PortalNotification({ role }: PortalNotificationProps) {
                   {unreadCount} baru
                 </span>
               )}
+              {loading && <Loader2 size={13} className="animate-spin text-neutral-400" />}
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               {unreadCount > 0 && (
                 <button
                   type="button"
                   onClick={markAllAsRead}
-                  className="px-2 py-1 text-[11px] font-semibold text-[#327691] hover:underline cursor-pointer flex items-center gap-1"
+                  className="px-2 py-1 rounded-lg text-[11px] font-semibold text-[#327691] hover:bg-[#e9f3f7] dark:hover:bg-neutral-800 transition cursor-pointer flex items-center gap-1"
                   title="Tandai semua sudah dibaca"
                 >
-                  <Check size={12} />
-                  <span>Dibaca</span>
+                  <Check size={13} />
+                  <span>Dibaca Semua</span>
                 </button>
               )}
               {notifications.length > 0 && (
                 <button
                   type="button"
                   onClick={clearAll}
-                  className="p-1 text-neutral-400 hover:text-red-600 transition cursor-pointer"
-                  title="Bersihkan notifikasi"
+                  className="px-2 py-1 rounded-lg text-[11px] font-semibold text-neutral-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer flex items-center gap-1"
+                  title="Bersihkan semua notifikasi"
                 >
                   <Trash2 size={13} />
+                  <span>Hapus Semua</span>
                 </button>
               )}
             </div>
@@ -216,23 +334,25 @@ export function PortalNotification({ role }: PortalNotificationProps) {
           <div className="max-h-80 overflow-y-auto divide-y divide-[#f0f4f6] dark:divide-neutral-800">
             {notifications.length === 0 ? (
               <div className="p-8 text-center text-neutral-400">
-                <CheckCircle2 size={32} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
-                <p className="font-semibold text-xs">Belum ada notifikasi baru</p>
-                <p className="text-[11px] text-neutral-400 mt-0.5">Semua pesan dan pembaruan sistem akan muncul di sini.</p>
+                <CheckCircle2 size={32} className="mx-auto text-emerald-500/70 mb-2" />
+                <p className="font-semibold text-xs text-neutral-700 dark:text-neutral-200">Semua Beres!</p>
+                <p className="text-[11px] text-neutral-400 mt-0.5">
+                  Tidak ada notifikasi tertunda. Pesan baru akan muncul secara otomatis di sini.
+                </p>
               </div>
             ) : (
               notifications.map((item) => (
                 <div
                   key={item.id}
                   onClick={() => markAsRead(item.id)}
-                  className={`p-3.5 hover:bg-[#fbfcfd] dark:hover:bg-neutral-800/40 transition flex items-start gap-3 cursor-pointer ${
+                  className={`group relative p-3.5 hover:bg-[#fbfcfd] dark:hover:bg-neutral-800/40 transition flex items-start gap-3 cursor-pointer ${
                     !item.read ? "bg-[#f4f9fb] dark:bg-neutral-800/20" : ""
                   }`}
                 >
                   <div className="w-8 h-8 rounded-xl bg-white dark:bg-neutral-800 border border-[#e4ebef] dark:border-neutral-700 flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
                     {getIcon(item.type)}
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 pr-6">
                     <div className="flex items-center justify-between gap-2">
                       <p className={`font-bold text-xs truncate ${!item.read ? "text-[#263b46] dark:text-neutral-100" : "text-neutral-600 dark:text-neutral-400"}`}>
                         {item.title}
@@ -247,16 +367,38 @@ export function PortalNotification({ role }: PortalNotificationProps) {
                     {item.href && (
                       <Link
                         href={item.href}
-                        onClick={() => setOpen(false)}
+                        onClick={() => {
+                          markAsRead(item.id);
+                          setOpen(false);
+                        }}
                         className="inline-block mt-1.5 text-[11px] font-bold text-[#327691] hover:underline"
                       >
                         Lihat Rincian →
                       </Link>
                     )}
                   </div>
-                  {!item.read && (
-                    <span className="w-2 h-2 rounded-full bg-[#327691] shrink-0 mt-1.5" />
-                  )}
+
+                  {/* Action buttons (Tandai Dibaca & Hapus Notifikasi) */}
+                  <div className="absolute right-3 top-3 flex items-center gap-1">
+                    {!item.read && (
+                      <button
+                        type="button"
+                        onClick={(e) => markAsRead(item.id, e)}
+                        className="p-1 rounded-md text-neutral-400 hover:text-[#327691] hover:bg-[#e9f3f7] dark:hover:bg-neutral-700 transition"
+                        title="Tandai sudah dibaca"
+                      >
+                        <Check size={13} />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => deleteNotification(item.id, e)}
+                      className="p-1 rounded-md text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition"
+                      title="Hapus notifikasi ini"
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
                 </div>
               ))
             )}

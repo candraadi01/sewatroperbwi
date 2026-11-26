@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useLanguage } from "@/lib/i18n/context";
 import styles from "./cinematic.module.css";
 
@@ -10,7 +9,6 @@ export function BookingSteps({ title, subtitle, steps, isCustom = false }: {
   steps?: readonly (readonly [string, string])[];
   isCustom?: boolean;
 }) {
-  const [active, setActive] = useState(0);
   const { language, t } = useLanguage();
 
   const displayTitle = !isCustom || language !== "id" ? t("booking_steps_title", "Alur booking") : (title || t("booking_steps_title", "Alur booking"));
@@ -31,16 +29,14 @@ export function BookingSteps({ title, subtitle, steps, isCustom = false }: {
           <h2 id="steps-heading">{displayTitle}</h2>
           {displaySubtitle && <p>{displaySubtitle}</p>}
         </div>
-        <ol tabIndex={0} aria-labelledby="steps-heading" onScroll={({ currentTarget: list }) => {
-          const first = list.firstElementChild;
-          const second = first?.nextElementSibling;
-          if (!first || !second) return;
-          const stride = second.getBoundingClientRect().left - first.getBoundingClientRect().left;
-          if (stride > 0) setActive(Math.min(currentSteps.length - 1, Math.round(list.scrollLeft / stride)));
-        }}>
+        <ol aria-labelledby="steps-heading">
           {currentSteps.map(([heading, copy], index) => (
-            <li key={`${index}-${heading}`} aria-current={index === active ? "step" : undefined}>
-              <span aria-hidden="true">{index + 1}</span><div><strong>{heading}</strong><p>{copy}</p></div>
+            <li key={`${index}-${heading}`}>
+              <span aria-hidden="true">{index + 1}</span>
+              <div>
+                <strong>{heading}</strong>
+                <p>{copy}</p>
+              </div>
             </li>
           ))}
         </ol>

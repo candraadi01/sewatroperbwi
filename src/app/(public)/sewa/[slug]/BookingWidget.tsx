@@ -13,9 +13,7 @@ import {
   Users,
   MapPin,
   Tag,
-  ShieldCheck,
   ArrowRight,
-  MessageCircle,
   Check,
   AlertCircle,
   Plus,
@@ -134,19 +132,14 @@ function getAvailableDepartureSlots(product: Product): {
   return { slots: baseSlots, defaultTime: defaultVal };
 }
 
-export function BookingWidget({
-  product,
-  pickupZones,
-  initialDate,
-  today,
-  contact,
-}: {
+export function BookingWidget(props: {
   product: Product;
   pickupZones: PickupZone[];
   initialDate: string;
   today: string;
-  contact: string | null;
+  contact?: string | null;
 }) {
+  const { product, pickupZones, initialDate, today } = props;
   const router = useRouter();
   const { slots: timeSlots, defaultTime } = getAvailableDepartureSlots(product);
   const [date, setDate] = useState(initialDate);
@@ -169,6 +162,26 @@ export function BookingWidget({
     Record<string, { isAvailable: boolean; reason?: string; bookedUnits: number; maxUnits: number }>
   >({});
   const [loadingSchedule, setLoadingSchedule] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    queueMicrotask(() => {
+      if (!active) return;
+      try {
+        const draft = JSON.parse(
+          sessionStorage.getItem("checkout_draft_fields") ||
+          localStorage.getItem("checkout_draft_fields") ||
+          "{}"
+        );
+        if (draft.pickupAddress && typeof draft.pickupAddress === "string") {
+          setAddress(draft.pickupAddress);
+        }
+      } catch {}
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     async function loadSchedule() {
@@ -281,24 +294,31 @@ export function BookingWidget({
   function next() {
     if (!quote || pending || isDateClosed || isUnitsExceeded) return;
     try {
+      const selectedZone = pickupZones.find((z) => z.id === zone);
+      const zoneCleanName = selectedZone ? formatZoneName(selectedZone.name) : "";
+      const trimmedAddress = address.trim();
+      const resolvedPickup = trimmedAddress || zoneCleanName || quote.pickup_address || quote.pickup_zone?.name || "";
+
       const quoteWithMetadata = {
         ...quote,
+        pickup_address: resolvedPickup,
         product_slug: product.slug,
         product_name: product.name,
       };
       sessionStorage.setItem("pending_booking_quote", JSON.stringify(quoteWithMetadata));
       localStorage.setItem("pending_booking_quote", JSON.stringify(quoteWithMetadata));
 
-      if (address) {
-        const existingDraft = JSON.parse(
-          sessionStorage.getItem("checkout_draft_fields") ||
-          localStorage.getItem("checkout_draft_fields") ||
-          "{}"
-        );
-        const updated = { ...existingDraft, pickupAddress: address };
-        sessionStorage.setItem("checkout_draft_fields", JSON.stringify(updated));
-        localStorage.setItem("checkout_draft_fields", JSON.stringify(updated));
-      }
+      const existingDraft = JSON.parse(
+        sessionStorage.getItem("checkout_draft_fields") ||
+        localStorage.getItem("checkout_draft_fields") ||
+        "{}"
+      );
+      const updated = {
+        ...existingDraft,
+        pickupAddress: resolvedPickup,
+      };
+      sessionStorage.setItem("checkout_draft_fields", JSON.stringify(updated));
+      localStorage.setItem("checkout_draft_fields", JSON.stringify(updated));
     } catch { }
     router.push("/checkout?quote_id=" + encodeURIComponent(quote.quote_id));
   }
@@ -307,12 +327,11 @@ export function BookingWidget({
     quote?.total_amount || product.base_price || 1350000;
 
   return (
-    <>
-      <aside
-        id="booking-card"
-        tabIndex={-1}
-        className={`${styles.bookingMotion} w-full min-w-0 scroll-mt-34 lg:sticky lg:top-34 rounded-2xl bg-[var(--surface)] border border-[var(--line)] shadow-xl`}
-      >
+    <aside
+      id="booking-card"
+      tabIndex={-1}
+      className={`${styles.bookingMotion} w-full min-w-0 scroll-mt-34 lg:sticky lg:top-34 rounded-2xl bg-[var(--surface)] border border-[var(--line)] shadow-xl`}
+    >
         <div className="rounded-t-2xl bg-[#182229] text-white p-4 sm:p-6">
           <p className="text-xs font-semibold text-slate-300">Estimasi sewa</p>
           <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
@@ -640,56 +659,13 @@ export function BookingWidget({
                 ? "Jadwal Ditutup Pada Tanggal Ini"
                 : isUnitsExceeded
                   ? `Kuota Kurang (Sisa ${remainingUnits} Unit)`
-                  : "Lanjutkan Booking"}
+                  : "Ajukan Booking Sekarang"}
             </span>
             {!isDateClosed && !isUnitsExceeded && (
               <ArrowRight size={16} strokeWidth={2.5} />
             )}
           </button>
-
-          <p className="flex items-start gap-2 text-xs leading-relaxed text-[color:var(--mist)]">
-            <ShieldCheck size={16} className="shrink-0 text-[color:var(--gold)]" />
-            Ajukan gratis. Setelah Admin menyetujui, Anda bisa bayar DP atau lunas.
-          </p>
-
-          {/* Quick CS WhatsApp */}
-          <div className="border-t border-[var(--line)] pt-1 text-center">
-            <a
-              href={contact ?? "/kontak"}
-              target={contact ? "_blank" : undefined}
-              rel={contact ? "noopener noreferrer" : undefined}
-              className="inline-flex min-h-11 items-center gap-1.5 text-xs font-bold text-[color:var(--mist)] hover:text-[color:var(--gold)] transition"
-            >
-              <MessageCircle size={15} />
-              <span>{contact ? "Chat Admin via WhatsApp" : "Hubungi Admin"}</span>
-            </a>
-          </div>
         </div>
       </aside>
-
-      {/* Floating Bottom Bar Khusus Mobile */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--surface)] backdrop-blur-md border-t border-[var(--line)] px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_20px_rgba(0,0,0,0.08)] flex items-center justify-between gap-3">
-        <div>
-          <span className="block text-[10px] font-bold text-[color:var(--mist)] uppercase tracking-wider">
-            {pending || error ? "Harga mulai" : `Total sewa (${units} Jeep)`}
-          </span>
-          <span className="text-base sm:text-lg font-black text-[color:var(--ink)]">
-            {pending || error ? (product.base_price ? formatIDR(product.base_price) : "Cek estimasi") : formatIDR(baseDisplayPrice)}
-          </span>
-          {isDateClosed && (
-            <span className="block text-[10px] font-bold text-rose-300">
-              ● Jadwal Ditutup
-            </span>
-          )}
-        </div>
-        <a
-          href="#booking-card"
-          className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[var(--gold)] px-4 text-sm font-extrabold text-[color:var(--on-gold)] hover:bg-[var(--gold-hover)]"
-        >
-          {isDateClosed || isUnitsExceeded ? "Ubah jadwal / unit" : "Pesan sekarang"}
-          <ArrowRight size={14} aria-hidden="true" />
-        </a>
-      </div>
-    </>
   );
 }

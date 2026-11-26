@@ -113,8 +113,15 @@ export async function POST(
       const rawTime = String(values.default_start_time || "08:00").trim();
       const firstTime = rawTime.split(",")[0].trim().slice(0, 5) || "08:00";
 
+      const {
+        latitude: rawLat,
+        longitude: rawLng,
+        location_label: rawLocLabel,
+        ...productValues
+      } = values as Record<string, unknown>;
+
       const rpcPayload = {
-        ...values,
+        ...productValues,
         default_start_time: firstTime,
       };
 
@@ -133,6 +140,53 @@ export async function POST(
             .eq("id", targetId);
         } catch {
           // ignore jika kolom DB masih strict time
+        }
+
+        // Simpan koordinat peta produk ke site_settings
+        const latNum = Number(rawLat);
+        const lngNum = Number(rawLng);
+        if (
+          rawLat !== null &&
+          rawLat !== "" &&
+          rawLng !== null &&
+          rawLng !== "" &&
+          Number.isFinite(latNum) &&
+          Number.isFinite(lngNum) &&
+          latNum >= -90 &&
+          latNum <= 90 &&
+          lngNum >= -180 &&
+          lngNum <= 180
+        ) {
+          try {
+            const { data: existingSetting } = await db
+              .from("site_settings")
+              .select("value")
+              .eq("key", "product_coordinates")
+              .maybeSingle();
+            const currentMap = (
+              (existingSetting?.value as Record<string, unknown>) ?? {}
+            );
+            const updatedMap = {
+              ...currentMap,
+              [String(targetId)]: {
+                lat: latNum,
+                lng: lngNum,
+                label: String(rawLocLabel || "").trim(),
+              },
+            };
+            await db.from("site_settings").upsert(
+              {
+                key: "product_coordinates",
+                value: updatedMap,
+                category: "general",
+                updated_by: user.id,
+                updated_at: new Date().toISOString(),
+              },
+              { onConflict: "key" }
+            );
+          } catch {
+            // ignore coordinate save error
+          }
         }
       }
     } else if (resource === "bisnis") {

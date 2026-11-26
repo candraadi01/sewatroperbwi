@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireOwner } from "@/lib/auth/helpers";
 import { getProducts } from "@/lib/services/catalog";
 import { formatIDR } from "@/lib/utils/currency";
-import { Car, CheckCircle2, ExternalLink, ShieldCheck, PhoneCall } from "lucide-react";
+import { CheckCircle2, ExternalLink, ShieldCheck, PhoneCall, MapPin } from "lucide-react";
 
 export const metadata = {
   title: "Katalog Armada Pemilik | Sewa Trooper Banyuwangi",
@@ -101,8 +101,11 @@ export default async function OwnerArmadaPage() {
                     <strong className="text-[#263b46]">{p.passenger_capacity} Penumpang</strong>
                   </div>
                   <div>
-                    <span className="text-[#697780] block text-[10px]">Penggerak:</span>
-                    <strong className="text-[#263b46]">4x4 Aktif / Low Gear</strong>
+                    <span className="text-[#697780] block text-[10px]">Titik Peta Lokasi:</span>
+                    <strong className="text-[#263b46] inline-flex items-center gap-1">
+                      <MapPin size={11} className="text-[#327691] shrink-0" />
+                      <span className="truncate">{p.location_label || "Banyuwangi"}</span>
+                    </strong>
                   </div>
                 </div>
 

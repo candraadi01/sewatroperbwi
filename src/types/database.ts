@@ -62,6 +62,9 @@ export interface Product {
   duration_text?: string;
   is_best_seller?: boolean;
   is_featured?: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
+  location_label?: string;
 }
 
 export interface PricingRule {

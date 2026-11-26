@@ -36,7 +36,6 @@ export function matchDestinationSlug(text: string): string | undefined {
 export function getProductDestinationPoints(p: Product): DestinationPoint[] {
   const slug = p.slug?.toLowerCase() || "";
   const name = p.name?.toLowerCase() || "";
-  const route = p.route_name?.toLowerCase() || "";
 
   // 1. Sukamade Packages
   if (slug.includes("sukamade") || (name.includes("sukamade") && !name.includes("djawatan"))) {
@@ -138,4 +137,82 @@ export function getProductDestinationPoints(p: Product): DestinationPoint[] {
   }
 
   return [{ name: "Banyuwangi Raya", slug: "" }];
+}
+
+export interface PresetCoordinate {
+  key: string;
+  label: string;
+  district: string;
+  lat: number;
+  lng: number;
+}
+
+export const BANYUWANGI_PRESET_COORDS: PresetCoordinate[] = [
+  { key: "ijen", label: "Kawah Ijen", district: "Kecamatan Licin", lat: -8.0583, lng: 114.2425 },
+  { key: "baluran", label: "Taman Nasional Baluran", district: "Kecamatan Wongsorejo", lat: -7.8389, lng: 114.3833 },
+  { key: "djawatan", label: "Hutan De Djawatan", district: "Kecamatan Cluring", lat: -8.4167, lng: 114.2167 },
+  { key: "sukamade", label: "Pantai Sukamade (Meru Betiri)", district: "Kecamatan Pesanggaran", lat: -8.5333, lng: 113.8833 },
+  { key: "purwo", label: "Taman Nasional Alas Purwo", district: "Kecamatan Tegaldlimo", lat: -8.65, lng: 114.4333 },
+  { key: "kota", label: "Kota Banyuwangi / Bandara", district: "Banyuwangi Kota", lat: -8.2192, lng: 114.3692 },
+];
+
+/**
+ * Mengembalikan koordinat titik lokasi armada di peta Banyuwangi.
+ * Prioritas: koordinat kustom yang disimpan Admin/Owner, lalu deteksi otomatis dari nama/slug/rute.
+ */
+export function resolveProductCoordinates(p: Product): {
+  lat: number;
+  lng: number;
+  label: string;
+  destinationKey: string;
+} {
+  if (
+    typeof p.latitude === "number" &&
+    typeof p.longitude === "number" &&
+    Number.isFinite(p.latitude) &&
+    Number.isFinite(p.longitude) &&
+    p.latitude !== 0 &&
+    p.longitude !== 0
+  ) {
+    const text = `${p.location_label || ""} ${p.name} ${p.slug} ${p.route_name || ""}`.toLowerCase();
+    const matched =
+      text.includes("baluran") ? "baluran" :
+      text.includes("ijen") || text.includes("wurung") ? "ijen" :
+      text.includes("djawatan") ? "djawatan" :
+      text.includes("sukamade") || text.includes("meru") ? "sukamade" :
+      text.includes("purwo") ? "purwo" :
+      "kota";
+    return {
+      lat: p.latitude,
+      lng: p.longitude,
+      label: p.location_label?.trim() || p.route_name?.trim() || p.name,
+      destinationKey: matched,
+    };
+  }
+
+  const text = `${p.slug || ""} ${p.name || ""} ${p.route_name || ""} ${(p.destinations || []).join(" ")}`.toLowerCase();
+
+  if (text.includes("baluran") && !text.includes("ijen")) {
+    return { lat: -7.8389, lng: 114.3833, label: "TN Baluran", destinationKey: "baluran" };
+  }
+  if (text.includes("sukamade") || text.includes("meru")) {
+    return { lat: -8.5333, lng: 113.8833, label: "Pantai Sukamade", destinationKey: "sukamade" };
+  }
+  if (text.includes("djawatan") || text.includes("jawatan")) {
+    return { lat: -8.4167, lng: 114.2167, label: "Hutan De Djawatan", destinationKey: "djawatan" };
+  }
+  if (text.includes("purwo")) {
+    return { lat: -8.65, lng: 114.4333, label: "TN Alas Purwo", destinationKey: "purwo" };
+  }
+  if (text.includes("wurung") && !text.includes("ijen")) {
+    return { lat: -8.0985, lng: 114.1558, label: "Kawah Wurung", destinationKey: "ijen" };
+  }
+  if (text.includes("ijen") || text.includes("blue fire")) {
+    return { lat: -8.0583, lng: 114.2425, label: "Kawah Ijen", destinationKey: "ijen" };
+  }
+  if (text.includes("teluk hijau") || text.includes("hijau")) {
+    return { lat: -8.5625, lng: 113.9242, label: "Teluk Hijau", destinationKey: "sukamade" };
+  }
+
+  return { lat: -8.2192, lng: 114.3692, label: "Kota Banyuwangi", destinationKey: "kota" };
 }

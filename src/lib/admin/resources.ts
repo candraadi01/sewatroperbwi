@@ -158,6 +158,9 @@ export const resources: Record<string, AdminResource> = {
       text("route_name", "Nama rute"),
       text("start_point", "Titik berangkat"),
       text("end_point", "Titik selesai"),
+      text("latitude", "Latitude Peta", { nullable: true, default: "" }),
+      text("longitude", "Longitude Peta", { nullable: true, default: "" }),
+      text("location_label", "Label Lokasi Peta", { nullable: true, default: "" }),
       text("cover_image_url", "Foto produk", { type: "image" }),
       text("included_facilities", "Termasuk (satu per baris)", {
         type: "lines",

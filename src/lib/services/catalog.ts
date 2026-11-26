@@ -7,6 +7,7 @@ import {
 } from "./products-data";
 import { createPublicClient } from "@/lib/supabase/public";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { resolveProductCoordinates } from "@/lib/utils/destinations";
 export interface CatalogFilterOptions {
   categorySlug?: string;
   serviceType?: string;
@@ -160,10 +161,76 @@ export const getProducts = cache(
         } else {
           items = (data as ProductRow[]).map(mapProduct);
         }
+
+        // Load saved custom product coordinates from site_settings if available
+        try {
+          const { data: coordSetting } = await createPublicClient()
+            .from("site_settings")
+            .select("value")
+            .eq("key", "product_coordinates")
+            .maybeSingle();
+          const coordMap = (coordSetting?.value ?? {}) as Record<
+            string,
+            { lat?: number; lng?: number; label?: string }
+          >;
+          items = items.map((item) => {
+            const saved = coordMap[item.id] || coordMap[item.slug];
+            if (
+              saved &&
+              typeof saved.lat === "number" &&
+              typeof saved.lng === "number" &&
+              Number.isFinite(saved.lat) &&
+              Number.isFinite(saved.lng)
+            ) {
+              return {
+                ...item,
+                latitude: saved.lat,
+                longitude: saved.lng,
+                location_label: saved.label || item.location_label,
+              };
+            }
+            const resolved = resolveProductCoordinates(item);
+            return {
+              ...item,
+              latitude: item.latitude ?? resolved.lat,
+              longitude: item.longitude ?? resolved.lng,
+              location_label: item.location_label || resolved.label,
+            };
+          });
+        } catch {
+          items = items.map((item) => {
+            const resolved = resolveProductCoordinates(item);
+            return {
+              ...item,
+              latitude: item.latitude ?? resolved.lat,
+              longitude: item.longitude ?? resolved.lng,
+              location_label: item.location_label || resolved.label,
+            };
+          });
+        }
       } catch (err) {
         console.warn("[getProducts] Exception database, beralih ke data sampel:", err);
-        items = SAMPLE_PRODUCTS.filter((p) => p.status === "published");
+        items = SAMPLE_PRODUCTS.filter((p) => p.status === "published").map((item) => {
+          const resolved = resolveProductCoordinates(item);
+          return {
+            ...item,
+            latitude: item.latitude ?? resolved.lat,
+            longitude: item.longitude ?? resolved.lng,
+            location_label: item.location_label || resolved.label,
+          };
+        });
       }
+    }
+    if (!isSupabaseConfigured()) {
+      items = items.map((item) => {
+        const resolved = resolveProductCoordinates(item);
+        return {
+          ...item,
+          latitude: item.latitude ?? resolved.lat,
+          longitude: item.longitude ?? resolved.lng,
+          location_label: item.location_label || resolved.label,
+        };
+      });
     }
     if (options?.serviceType)
       items = items.filter((p) => p.service_type === options.serviceType);

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   Maximize2,
   Minimize2,
@@ -11,25 +12,25 @@ import {
   TreePine,
   Waves,
   Car,
-  Compass,
-  Sparkles,
   ExternalLink,
-  ChevronRight,
-  ZoomIn,
-  ZoomOut,
+  ArrowRight,
+  Globe,
+  Layers,
+  Clock,
+  Users,
 } from "lucide-react";
 import { cn } from "@/components/ui";
+import type { Product } from "@/types/database";
+import { formatIDR } from "@/lib/utils/currency";
+import { resolveProductCoordinates } from "@/lib/utils/destinations";
+import "leaflet/dist/leaflet.css";
 
 export interface MapDestination {
   id: string;
   name: string;
   district: string;
   category: string;
-  description: string;
-  highlights: string[];
-  image: string;
   queryKey: string;
-  coords: { x: number; y: number }; // Percentage on map canvas
   lat: number;
   lng: number;
 }
@@ -37,40 +38,28 @@ export interface MapDestination {
 export const BANYUWANGI_DESTINATIONS: MapDestination[] = [
   {
     id: "baluran",
-    name: "Taman Nasional Baluran",
+    name: "TN Baluran",
     district: "Kecamatan Wongsorejo",
     category: "Taman Nasional & Savana",
-    description: "Africa Van Java di ujung utara Banyuwangi. Savana luas Bekol dan satwa liar banteng & rusa.",
-    highlights: ["Savana Bekol", "Pantai Bama", "Safari 4x4"],
-    image: "/images/landing/tour-baluran.jpg",
     queryKey: "baluran",
-    coords: { x: 72, y: 16 },
     lat: -7.8389,
     lng: 114.3833,
   },
   {
     id: "ijen",
-    name: "Kawah Ijen (Blue Fire)",
+    name: "Kawah Ijen",
     district: "Kecamatan Licin",
     category: "Pegunungan & Kawah",
-    description: "Kawah vulkanik megah dengan danau toska alami dan fenomena langka Blue Fire dunia.",
-    highlights: ["Blue Fire Alami", "Danau Toska", "Sunrise Spektakuler"],
-    image: "/images/landing/tour-kawah-ijen.jpg",
     queryKey: "ijen",
-    coords: { x: 34, y: 34 },
     lat: -8.0583,
     lng: 114.2425,
   },
   {
     id: "kota",
-    name: "Kota Banyuwangi & Bandara",
-    district: "Banyuwangi Kota - Rogojampi",
+    name: "Kota Banyuwangi",
+    district: "Banyuwangi Kota - Bandara",
     category: "Titik Kumpul / Meeting Point",
-    description: "Pusat penjemputan armada Jeep Trooper dari hotel, stasiun, pelabuhan Ketapang, atau Bandara BWX.",
-    highlights: ["Penjemputan Stasiun", "Bandara BWX", "Hotel Kota"],
-    image: "/images/landing/tour-kawah-ijen.jpg",
     queryKey: "kota",
-    coords: { x: 62, y: 46 },
     lat: -8.2192,
     lng: 114.3692,
   },
@@ -79,61 +68,94 @@ export const BANYUWANGI_DESTINATIONS: MapDestination[] = [
     name: "Hutan De Djawatan",
     district: "Kecamatan Cluring",
     category: "Hutan & Alam Purba",
-    description: "Hutan trembesi raksasa berkanopi magis bak latar film The Lord of the Rings.",
-    highlights: ["Pohon Raksasa Purba", "Spot Foto Populer", "Wisata Keluarga"],
-    image: "/images/landing/tour-djawatan.jpg",
     queryKey: "djawatan",
-    coords: { x: 48, y: 64 },
     lat: -8.4167,
     lng: 114.2167,
   },
   {
     id: "sukamade",
-    name: "Pantai Sukamade & TN Meru Betiri",
+    name: "Pantai Sukamade",
     district: "Kecamatan Pesanggaran",
     category: "Offroad 4x4 & Konservasi",
-    description: "Jalur petualangan offroad 4x4 sejati melintasi sungai dan hutan lebat menuju habitat penyu bertelur.",
-    highlights: ["Jalur Offroad Sungai", "Konservasi Penyu", "Hutan Tropis Asri"],
-    image: "/images/landing/tour-sukamade.jpg",
     queryKey: "sukamade",
-    coords: { x: 18, y: 80 },
     lat: -8.5333,
     lng: 113.8833,
   },
   {
     id: "purwo",
-    name: "Taman Nasional Alas Purwo",
+    name: "TN Alas Purwo",
     district: "Kecamatan Tegaldlimo",
     category: "Taman Nasional & Pantai",
-    description: "Semenanjung tertua dengan padang savana Sadengan, ombak legendaris G-Land, dan hutan asri.",
-    highlights: ["Savana Sadengan", "Pantai Plengkung", "Hutan Bambu Purwo"],
-    image: "/images/landing/tour-baluran.jpg",
     queryKey: "purwo",
-    coords: { x: 80, y: 84 },
     lat: -8.65,
     lng: 114.4333,
   },
 ];
 
+interface PlottedProduct {
+  product: Product;
+  lat: number;
+  lng: number;
+  label: string;
+  destinationKey: string;
+}
+
 interface BuyerDestinationMapProps {
+  products?: Product[];
   selectedDestination: string;
   onSelectDestination: (key: string) => void;
   onClose: () => void;
 }
 
 export function BuyerDestinationMap({
+  products = [],
   selectedDestination,
   onSelectDestination,
   onClose,
 }: BuyerDestinationMapProps) {
-  const [activePin, setActivePin] = useState<MapDestination | null>(() => {
-    return (
-      BANYUWANGI_DESTINATIONS.find((d) => d.queryKey === selectedDestination) ||
-      BANYUWANGI_DESTINATIONS[1] // Default Ijen
-    );
-  });
-  const [zoomLevel, setZoomLevel] = useState(1);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [mapType, setMapType] = useState<"roadmap" | "satellite">("roadmap");
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<import("leaflet").Map | null>(null);
+  const tileLayerRef = useRef<import("leaflet").TileLayer | null>(null);
+  const markersLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
+
+  // Hitung koordinat setiap produk Trooper dengan sedikit offset jika ada yang bertumpuk di titik yang sama
+  const plottedProducts = useMemo<PlottedProduct[]>(() => {
+    const coordCounts = new Map<string, number>();
+    return products.map((product) => {
+      const resolved = resolveProductCoordinates(product);
+      const key = `${resolved.lat.toFixed(3)},${resolved.lng.toFixed(3)}`;
+      const index = coordCounts.get(key) ?? 0;
+      coordCounts.set(key, index + 1);
+
+      let lat = resolved.lat;
+      let lng = resolved.lng;
+      if (index > 0) {
+        const angle = (index * 137.5 * Math.PI) / 180;
+        const radius = 0.015 + Math.floor(index / 6) * 0.012;
+        lat += Math.sin(angle) * radius;
+        lng += Math.cos(angle) * radius;
+      }
+
+      return {
+        product,
+        lat,
+        lng,
+        label: resolved.label,
+        destinationKey: resolved.destinationKey,
+      };
+    });
+  }, [products]);
+
+  const activePlotted = useMemo(() => {
+    if (selectedProductId) {
+      return plottedProducts.find((p) => p.product.id === selectedProductId) || plottedProducts[0] || null;
+    }
+    return plottedProducts[0] || null;
+  }, [plottedProducts, selectedProductId]);
 
   function getPinIcon(category: string) {
     if (category.includes("Pegunungan")) return <Mountain size={13} />;
@@ -143,33 +165,174 @@ export function BuyerDestinationMap({
     return <Waves size={13} />;
   }
 
+  // Initialize Leaflet Map with Google Maps Tiles
+  useEffect(() => {
+    let isMounted = true;
+    if (!mapContainerRef.current || mapInstanceRef.current) return;
+
+    async function initMap() {
+      const L = (await import("leaflet")).default;
+      if (!isMounted || !mapContainerRef.current || mapInstanceRef.current) return;
+
+      const map = L.map(mapContainerRef.current, {
+        center: [-8.22, 114.23],
+        zoom: 10,
+        zoomControl: true,
+      });
+
+      const tileUrl = "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}";
+      const tileLayer = L.tileLayer(tileUrl, {
+        attribution: "&copy; Google Maps",
+        maxZoom: 19,
+      }).addTo(map);
+
+      const markersLayer = L.layerGroup().addTo(map);
+
+      mapInstanceRef.current = map;
+      tileLayerRef.current = tileLayer;
+      markersLayerRef.current = markersLayer;
+    }
+
+    initMap();
+
+    return () => {
+      isMounted = false;
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+        tileLayerRef.current = null;
+        markersLayerRef.current = null;
+      }
+    };
+  }, []);
+
+  // Switch Roadmap / Satellite Google Maps Layer
+  useEffect(() => {
+    if (!tileLayerRef.current) return;
+    const lyrs = mapType === "satellite" ? "y" : "m";
+    tileLayerRef.current.setUrl(`https://mt1.google.com/vt/lyrs=${lyrs}&x={x}&y={y}&z={z}`);
+  }, [mapType]);
+
+  // Update Trooper Markers whenever products or selectedProductId changes
+  useEffect(() => {
+    let cancelled = false;
+    async function renderMarkers() {
+      const map = mapInstanceRef.current;
+      const layer = markersLayerRef.current;
+      if (!map || !layer) return;
+
+      const L = (await import("leaflet")).default;
+      if (cancelled) return;
+
+      layer.clearLayers();
+
+      plottedProducts.forEach((item) => {
+        const isActive = activePlotted?.product.id === item.product.id;
+
+        const iconHtml = `
+          <div style="position:relative;display:flex;align-items:center;justify-content:center;width:32px;height:40px;cursor:pointer;">
+            ${isActive ? '<span style="position:absolute;bottom:0;left:50%;transform:translate(-50%,50%);width:16px;height:8px;border-radius:50%;background:rgba(244,189,66,0.6);animation:ping 1.5s cubic-bezier(0,0,0.2,1) infinite;"></span>' : ""}
+            <svg width="32" height="40" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 4px 6px rgba(0,0,0,0.38));transform:${isActive ? "scale(1.25)" : "scale(1)"};transform-origin:bottom center;transition:transform 0.18s cubic-bezier(0.34,1.56,0.64,1);">
+              <path d="M16 1C7.71573 1 1 7.71573 1 16C1 26.2 14.3 38.3 15.3 39.2C15.7 39.6 16.3 39.6 16.7 39.2C17.7 38.3 31 26.2 31 16C31 7.71573 24.2843 1 16 1Z" fill="#F4BD42" stroke="#192127" stroke-width="2.5" stroke-linejoin="round"/>
+              <circle cx="16" cy="15" r="5.5" fill="#192127"/>
+              <circle cx="17.5" cy="13.5" r="1.8" fill="#F4BD42"/>
+            </svg>
+          </div>
+        `;
+
+        const divIcon = L.divIcon({
+          className: "trooper-map-marker",
+          html: iconHtml,
+          iconSize: [32, 40],
+          iconAnchor: [16, 40],
+        });
+
+        const marker = L.marker([item.lat, item.lng], {
+          icon: divIcon,
+          zIndexOffset: isActive ? 500 : 100,
+        });
+
+        marker.on("click", () => {
+          setSelectedProductId(item.product.id);
+          map.setView([item.lat, item.lng], Math.max(map.getZoom(), 11), { animate: true });
+        });
+
+        marker.addTo(layer);
+      });
+    }
+
+    renderMarkers();
+    return () => {
+      cancelled = true;
+    };
+  }, [plottedProducts, activePlotted]);
+
+  // Pan map when user clicks destination filter pill
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    if (!selectedDestination) {
+      map.setView([-8.22, 114.23], 10, { animate: true });
+      return;
+    }
+    const dest = BANYUWANGI_DESTINATIONS.find((d) => d.queryKey === selectedDestination);
+    if (dest) {
+      map.setView([dest.lat, dest.lng], 12, { animate: true });
+    }
+  }, [selectedDestination]);
+
+  // Invalidate map size when fullscreen toggles
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      mapInstanceRef.current?.invalidateSize();
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [isFullscreen]);
+
+  const activeProductUrl = activePlotted ? `/sewa/${activePlotted.product.slug}` : "/sewa";
+  const activeGoogleMapsUrl = activePlotted
+    ? `https://www.google.com/maps/search/?api=1&query=${activePlotted.lat},${activePlotted.lng}`
+    : "https://www.google.com/maps/place/Banyuwangi,+Kabupaten+Banyuwangi,+Jawa+Timur";
+
+  const activeImage =
+    activePlotted?.product.images?.[0] || "/images/landing/tour-trooper-baluran-savana.jpg";
+
   return (
     <div
       className={cn(
-        "rounded-2xl border border-[#e4ebef] dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden shadow-xs transition-all duration-300",
-        isFullscreen && "fixed inset-4 z-50 shadow-2xl flex flex-col",
+        "rounded-2xl border border-[#dbe0e4] bg-white overflow-hidden shadow-xs transition-all duration-300",
+        isFullscreen && "fixed inset-4 z-50 shadow-2xl flex flex-col"
       )}
     >
-      {/* Header Bar — Persis Format Foto Homestay */}
-      <div className="p-3.5 sm:p-4 border-b border-[#e4ebef] dark:border-neutral-800 flex items-center justify-between gap-3 bg-white dark:bg-neutral-900">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#327691] animate-pulse" />
-            <h3 className="font-extrabold text-sm sm:text-base text-[#263b46] dark:text-neutral-100 flex items-center gap-1.5">
-              <MapPin size={16} className="text-[#327691] dark:text-[#8abbd0]" />
-              Peta Sebaran Rute & Destinasi Jeep Trooper Banyuwangi
+      {/* Header Bar */}
+      <div className="p-3 sm:p-4 border-b border-[#dbe0e4] flex items-center justify-between gap-3 bg-white">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#f4bd42] animate-pulse shrink-0" />
+            <h3 className="font-extrabold text-xs sm:text-base text-[#192127] flex items-center gap-1.5 truncate">
+              <MapPin size={15} className="text-[#8a510b] shrink-0" />
+              <span>Peta Sebaran Armada Trooper</span>
             </h3>
           </div>
-          <p className="text-xs text-[#6e7f8a] dark:text-neutral-400 mt-0.5">
-            Menampilkan rute destinasi populer. Klik pin marker untuk melihat info singkat dan memfilter armada.
+          <p className="text-[11px] sm:text-xs text-[#52606b] mt-0.5 hidden xs:block">
+            Menampilkan <strong>{plottedProducts.length}</strong> armada Trooper di titik lokasi masing-masing.
           </p>
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
           <button
             type="button"
+            onClick={() => setMapType((prev) => (prev === "roadmap" ? "satellite" : "roadmap"))}
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#dbe0e4] bg-white hover:bg-[#faefd9] text-xs font-bold text-[#8a510b] transition cursor-pointer"
+          >
+            <Layers size={13} />
+            <span>{mapType === "roadmap" ? "Mode Satelit" : "Mode Peta"}</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#d8e3e8] dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-[#f3f8fa] text-xs font-bold text-[#3d525e] dark:text-neutral-200 transition cursor-pointer"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#dbe0e4] bg-white hover:bg-[#f6f6f3] text-xs font-bold text-[#192127] transition cursor-pointer"
           >
             {isFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
             <span>{isFullscreen ? "Kecilkan" : "Tampilan Penuh"}</span>
@@ -178,7 +341,7 @@ export function BuyerDestinationMap({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 text-xs font-bold text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition cursor-pointer"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-xs font-bold text-neutral-700 transition cursor-pointer"
             title="Tutup Peta"
           >
             <span>Tutup</span>
@@ -187,251 +350,132 @@ export function BuyerDestinationMap({
         </div>
       </div>
 
-      {/* Map Canvas with Relief Style & Pins */}
+      {/* Quick Destination Filter Bar (Scrollable tanpa teks terpotong / shrink-0) */}
+      <div className="px-3 py-2 bg-[#f8faf9] border-b border-[#dbe0e4] flex items-center gap-2 overflow-x-auto scroll-smooth no-scrollbar">
+        <button
+          type="button"
+          onClick={() => {
+            onSelectDestination("");
+            setSelectedProductId(null);
+          }}
+          className={cn(
+            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer border shrink-0",
+            !selectedDestination
+              ? "bg-[#f4bd42] border-[#f4bd42] text-[#151510] shadow-2xs"
+              : "bg-white border-[#dbe0e4] text-[#52606b] hover:bg-[#faefd9] hover:text-[#8a510b]"
+          )}
+        >
+          <Globe size={13} className="shrink-0" />
+          <span>Seluruh Banyuwangi</span>
+        </button>
+
+        {BANYUWANGI_DESTINATIONS.map((dest) => {
+          const isCurrent = selectedDestination === dest.queryKey;
+          return (
+            <button
+              key={dest.id}
+              type="button"
+              onClick={() => {
+                onSelectDestination(dest.queryKey);
+                setSelectedProductId(null);
+              }}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer border shrink-0",
+                isCurrent
+                  ? "bg-[#f4bd42] border-[#f4bd42] text-[#151510] shadow-2xs"
+                  : "bg-white border-[#dbe0e4] text-[#52606b] hover:bg-[#faefd9] hover:text-[#8a510b]"
+              )}
+            >
+              {getPinIcon(dest.category)}
+              <span>{dest.name}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Google Maps Canvas with Multiple Trooper Pins */}
       <div
         className={cn(
-          "relative w-full bg-[#e8f1f5] dark:bg-neutral-950 overflow-hidden select-none",
-          isFullscreen ? "flex-1 min-h-[450px]" : "h-[360px] sm:h-[400px]",
+          "relative w-full bg-[#e8f1f5] overflow-hidden",
+          isFullscreen ? "flex-1 min-h-[450px]" : "h-[340px] sm:h-[440px] md:h-[480px]"
         )}
       >
-        {/* Stylized Terrain Map Grid / Texture Background */}
-        <div
-          className="absolute inset-0 transition-transform duration-300 ease-out"
-          style={{ transform: `scale(${zoomLevel})` }}
-        >
-          {/* SVG Map of Banyuwangi Region (Topographic Graphic) */}
-          <svg
-            viewBox="0 0 1000 650"
-            className="w-full h-full object-cover opacity-90 dark:opacity-40"
-            preserveAspectRatio="none"
-          >
-            <defs>
-              <linearGradient id="landGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#d5e6d6" />
-                <stop offset="50%" stopColor="#e3ede3" />
-                <stop offset="100%" stopColor="#cce2cd" />
-              </linearGradient>
-              <linearGradient id="seaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#b9d9eb" />
-                <stop offset="100%" stopColor="#9fcbe3" />
-              </linearGradient>
-            </defs>
+        <div ref={mapContainerRef} className="w-full h-full z-10" />
 
-            {/* Background Sea */}
-            <rect width="1000" height="650" fill="url(#seaGrad)" />
-
-            {/* Landmass Contour (Banyuwangi Shape representation) */}
-            <path
-              d="M 50,0 
-                 C 250,20 600,10 750,70 
-                 C 820,110 860,200 840,280 
-                 C 820,350 830,420 860,490 
-                 C 890,560 840,650 720,650 
-                 C 550,650 400,640 250,650 
-                 C 100,650 50,550 80,450 
-                 C 110,350 70,200 50,0 Z"
-              fill="url(#landGrad)"
-              stroke="#b1cdb3"
-              strokeWidth="2"
-            />
-
-            {/* Mountain Elevation Areas (Ijen Caldera) */}
-            <path
-              d="M 280,180 C 350,150 430,220 390,290 C 330,340 250,280 280,180 Z"
-              fill="#c3dac1"
-              opacity="0.8"
-            />
-            <circle cx="340" cy="220" r="45" fill="#a8c7a6" opacity="0.6" />
-
-            {/* Forest Area (Meru Betiri / Sukamade) */}
-            <path
-              d="M 120,460 C 220,440 260,560 180,610 C 110,610 90,520 120,460 Z"
-              fill="#b6d4b4"
-              opacity="0.7"
-            />
-
-            {/* Peninsula (Alas Purwo) */}
-            <path
-              d="M 720,530 C 860,530 920,590 850,640 C 780,640 700,600 720,530 Z"
-              fill="#bed9bc"
-              opacity="0.75"
-            />
-
-            {/* Roads / Main Trooper 4x4 Corridors */}
-            <path
-              d="M 620,300 L 720,105"
-              stroke="#ffffff"
-              strokeWidth="3.5"
-              strokeDasharray="6 4"
-              opacity="0.7"
-            />
-            <path
-              d="M 620,300 L 340,220"
-              stroke="#ffffff"
-              strokeWidth="3.5"
-              strokeDasharray="6 4"
-              opacity="0.7"
-            />
-            <path
-              d="M 620,300 L 480,415"
-              stroke="#ffffff"
-              strokeWidth="3.5"
-              strokeDasharray="6 4"
-              opacity="0.7"
-            />
-            <path
-              d="M 480,415 L 180,520"
-              stroke="#ffffff"
-              strokeWidth="3.5"
-              strokeDasharray="6 4"
-              opacity="0.7"
-            />
-            <path
-              d="M 480,415 L 800,545"
-              stroke="#ffffff"
-              strokeWidth="3.5"
-              strokeDasharray="6 4"
-              opacity="0.7"
-            />
-
-            {/* Geographic Labels */}
-            <text x="320" y="160" fill="#4d6b4f" fontSize="13" fontWeight="bold">
-              Gunung Ijen 2.769m
-            </text>
-            <text x="740" y="80" fill="#4d6b4f" fontSize="13" fontWeight="bold">
-              Selat Bali / Wongsorejo
-            </text>
-            <text x="640" y="280" fill="#2d4e5f" fontSize="13" fontWeight="bold">
-              Banyuwangi Kota
-            </text>
-            <text x="140" y="440" fill="#4d6b4f" fontSize="13" fontWeight="bold">
-              TN Meru Betiri
-            </text>
-            <text x="760" y="515" fill="#4d6b4f" fontSize="13" fontWeight="bold">
-              TN Alas Purwo
-            </text>
-            <text x="880" y="360" fill="#5b869e" fontSize="14" fontWeight="bold" letterSpacing="2">
-              SELAT BALI
-            </text>
-            <text x="250" y="620" fill="#5b869e" fontSize="14" fontWeight="bold" letterSpacing="2">
-              SAMUDERA HINDIA
-            </text>
-          </svg>
-
-          {/* Interactive Marker Pins (Matches Homestay Foto [ 🏠 ] pins) */}
-          {BANYUWANGI_DESTINATIONS.map((dest) => {
-            const isCurrent = activePin?.id === dest.id;
-            const isFilterActive = selectedDestination === dest.queryKey;
-
-            return (
-              <div
-                key={dest.id}
-                style={{
-                  left: `${dest.coords.x}%`,
-                  top: `${dest.coords.y}%`,
-                }}
-                className="absolute -translate-x-1/2 -translate-y-1/2 z-20 cursor-pointer group"
-                onClick={() => {
-                  setActivePin(dest);
-                  onSelectDestination(dest.queryKey);
-                }}
-              >
-                {/* Marker Pin Circle */}
-                <div className="relative flex items-center justify-center">
-                  {/* Ping Animation on Selected */}
-                  {(isCurrent || isFilterActive) && (
-                    <span className="absolute w-10 h-10 rounded-full bg-[#327691]/40 animate-ping" />
-                  )}
-
-                  {/* Circular Button */}
-                  <div
-                    className={cn(
-                      "w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 border-2",
-                      isCurrent || isFilterActive
-                        ? "bg-[#327691] text-white border-white ring-2 ring-[#327691]"
-                        : "bg-white text-[#327691] border-[#327691] hover:bg-[#e9f3f7]",
-                    )}
-                  >
-                    {getPinIcon(dest.category)}
-                  </div>
-
-                  {/* Pin Label Tooltip */}
-                  <div className="absolute top-full mt-1.5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xs text-[#263b46] dark:text-neutral-100 text-[11px] font-extrabold px-2 py-0.5 rounded-md shadow-md border border-[#e4ebef] dark:border-neutral-800 pointer-events-none">
-                    {dest.name.split(" ")[0]} {dest.name.split(" ")[1] || ""}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Map Control Buttons (+ / - / Reset) */}
-        <div className="absolute top-3 left-3 z-30 flex flex-col gap-1.5 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xs p-1 rounded-xl border border-[#d8e3e8] dark:border-neutral-800 shadow-md">
-          <button
-            type="button"
-            onClick={() => setZoomLevel((z) => Math.min(z + 0.25, 2.0))}
-            className="w-7 h-7 flex items-center justify-center text-[#327691] hover:bg-[#e9f3f7] dark:hover:bg-neutral-800 rounded-lg text-sm font-bold transition cursor-pointer"
-            title="Zoom In"
-          >
-            +
-          </button>
-          <div className="h-px bg-neutral-200 dark:bg-neutral-700 mx-1" />
-          <button
-            type="button"
-            onClick={() => setZoomLevel((z) => Math.max(z - 0.25, 0.9))}
-            className="w-7 h-7 flex items-center justify-center text-[#327691] hover:bg-[#e9f3f7] dark:hover:bg-neutral-800 rounded-lg text-sm font-bold transition cursor-pointer"
-            title="Zoom Out"
-          >
-            −
-          </button>
-        </div>
-
-        {/* Floating Active Info Card (Pojok Bawah Kanan) */}
-        {activePin && (
-          <div className="absolute bottom-3 right-3 left-3 sm:left-auto sm:w-80 z-30 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md rounded-2xl border border-[#d8e3e8] dark:border-neutral-800 p-3.5 shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-200">
-            <div className="flex gap-3">
-              <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-neutral-200">
+        {/* Floating Active Trooper Product Card (Pojok Bawah Kiri, Responsif Mobile) */}
+        {activePlotted && (
+          <div className="absolute bottom-2.5 left-2.5 right-2.5 sm:right-auto sm:left-3 sm:bottom-3 sm:w-[340px] z-[400] bg-white/95 backdrop-blur-md rounded-2xl border border-[#dbe0e4] p-3 sm:p-3.5 shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-200">
+            <div className="flex gap-2.5 sm:gap-3">
+              <div className="relative w-16 h-16 sm:w-18 sm:h-18 rounded-xl overflow-hidden shrink-0 bg-neutral-200">
                 <Image
-                  src={activePin.image}
-                  alt={activePin.name}
+                  src={activeImage}
+                  alt={activePlotted.product.name}
                   fill
                   className="object-cover"
+                  unoptimized={
+                    activeImage.startsWith("https://") &&
+                    !activeImage.startsWith("https://res.cloudinary.com/")
+                  }
                 />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-1">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-[#327691] dark:text-[#8abbd0] truncate">
-                    {activePin.district}
+                  <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-[#8a510b] bg-[#faefd9] px-2 py-0.5 rounded-md truncate">
+                    <MapPin size={10} className="shrink-0" />
+                    <span className="truncate">{activePlotted.label}</span>
                   </span>
                   <button
                     type="button"
-                    onClick={() => setActivePin(null)}
-                    className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
+                    onClick={() => setSelectedProductId(null)}
+                    className="p-1 rounded-md text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 cursor-pointer shrink-0"
+                    aria-label="Tutup kartu detail"
                   >
                     <X size={13} />
                   </button>
                 </div>
-                <h4 className="font-bold text-xs sm:text-sm text-[#263b46] dark:text-neutral-100 truncate mt-0.5">
-                  {activePin.name}
+                <h4 className="font-extrabold text-xs sm:text-sm text-[#192127] line-clamp-1 mt-1">
+                  {activePlotted.product.name}
                 </h4>
-                <p className="text-[11px] text-[#6b7c87] dark:text-neutral-400 line-clamp-1 mt-0.5">
-                  {activePin.description}
-                </p>
+                <div className="flex items-center gap-2 text-[10px] sm:text-[11px] text-[#52606b] mt-0.5">
+                  <span className="inline-flex items-center gap-0.5">
+                    <Clock size={11} className="text-[#8a510b] shrink-0" />
+                    <span>{activePlotted.product.duration_text || "12 Jam"}</span>
+                  </span>
+                  <span>·</span>
+                  <span className="inline-flex items-center gap-0.5">
+                    <Users size={11} className="text-[#8a510b] shrink-0" />
+                    <span>Max {activePlotted.product.passenger_capacity || 6} Org</span>
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="mt-2.5 pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-2">
-              <span className="text-[10px] font-semibold text-neutral-500">
-                {activePin.highlights[0]} • {activePin.highlights[1]}
-              </span>
-              <button
-                type="button"
-                onClick={() => onSelectDestination(activePin.queryKey)}
-                className="px-2.5 py-1 rounded-lg bg-[#327691] hover:bg-[#2c6881] text-white font-bold text-[10px] transition cursor-pointer flex items-center gap-1 shrink-0"
-              >
-                <span>Filter Armada</span>
-                <ChevronRight size={11} />
-              </button>
+            <div className="mt-2 pt-2 border-t border-neutral-100 flex items-center justify-between gap-2">
+              <div>
+                <span className="block text-[9px] sm:text-[10px] text-[#52606b]">Mulai dari</span>
+                <strong className="text-xs sm:text-sm font-black text-[#192127]">
+                  {formatIDR(activePlotted.product.base_price || 750000)}
+                </strong>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <a
+                  href={activeGoogleMapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-2 py-1 rounded-lg border border-[#dbe0e4] text-[10px] sm:text-[11px] font-bold text-[#8a510b] hover:bg-[#faefd9] flex items-center gap-1 transition"
+                >
+                  <span>Maps</span>
+                  <ExternalLink size={10} />
+                </a>
+                <Link
+                  href={activeProductUrl}
+                  className="px-2.5 py-1 rounded-lg bg-[#f4bd42] hover:bg-[#ffd276] text-[#151510] font-extrabold text-[10px] sm:text-[11px] transition flex items-center gap-1 shrink-0 shadow-2xs"
+                >
+                  <span>Booking</span>
+                  <ArrowRight size={11} />
+                </Link>
+              </div>
             </div>
           </div>
         )}
@@ -439,4 +483,3 @@ export function BuyerDestinationMap({
     </div>
   );
 }
-

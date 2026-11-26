@@ -316,15 +316,16 @@
 .steps p { color: var(--mist); font-size: .82rem; }
 .bookingGuide { display: grid; gap: .85rem; padding: clamp(.8rem, 2vw, 1.35rem); background: linear-gradient(125deg, #fcf4e4, #fff 65%); }
 .guideIntro p { margin-top: .55rem; }
-.bookingGuide ol { grid-auto-flow: column; grid-auto-columns: minmax(12.5rem, 1fr); grid-template-columns: none; gap: .6rem; margin: 0; min-width: 0; overflow-x: auto; padding: .1rem .1rem .35rem; scroll-snap-type: x mandatory; scrollbar-width: thin; }
+.bookingGuide ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .85rem; margin: 0; min-width: 0; padding: .1rem; }
 .bookingGuide ol:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: .5rem; }
-.bookingGuide li { align-items: start; gap: .65rem; padding: .75rem; border: 1px solid var(--line); border-radius: .7rem; background: var(--surface); scroll-snap-align: start; }
+.bookingGuide li { align-items: start; gap: .65rem; padding: .75rem; border: 1px solid var(--line); border-radius: .7rem; background: var(--surface); }
 .bookingGuide li > span { width: 1.85rem; height: 1.85rem; background: var(--gold-wash); }
 .bookingGuide li strong { display: block; margin-bottom: .16rem; font-size: .97rem; }
-@media (max-width: 760px) {
-  .bookingGuide ol { grid-auto-columns: min(82%, 20rem); }
-  .bookingGuide li[aria-current="step"] { border-color: #d6ad61; background: #fff8ea; }
-  .bookingGuide li[aria-current="step"] > span { background: #f4bd42; color: #251901; }
+@media (max-width: 768px) {
+  .bookingGuide ol { display: grid; grid-template-columns: 1fr; grid-auto-flow: row; gap: .65rem; overflow-x: visible; }
+  .bookingGuide li { border-color: #e5ded2; background: #ffffff; }
+  .bookingGuide li:first-child { border-color: #d6ad61; background: #fff8ea; }
+  .bookingGuide li:first-child > span { background: #f4bd42; color: #251901; }
 }
 @media (prefers-reduced-motion: no-preference) {
   .bookingGuide li, .bookingGuide li > span { transition: background-color .25s, border-color .25s, color .25s, box-shadow .25s; }
@@ -395,7 +396,6 @@
   .assuranceIcon svg { width: 18px; }
   .tripGallery, .tripGallery:has(> :nth-child(3)):not(:has(> :nth-child(4))), .tripGallery:not(:has(> :nth-child(3))) { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(9.25rem, 56%); gap: .55rem; overflow-x: auto; scroll-snap-type: x proximity; padding: .2rem .2rem .55rem; }
   .tripPhoto { scroll-snap-align: start; }
-  .bookingGuide ol { grid-template-columns: none; }
   .routeGrid, .steps ol { grid-template-columns: minmax(0, 1fr); }
   .cardPhoto { aspect-ratio: 1.6; }
   .cardBody { padding: .65rem; }

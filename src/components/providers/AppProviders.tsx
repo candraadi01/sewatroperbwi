@@ -9,11 +9,13 @@ import { LanguageSelector } from "@/components/common/LanguageSelector";
 export function AppProviders({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isPackageDetail = pathname.startsWith("/sewa/");
+  const isPortal = pathname.startsWith("/buyer") || pathname.startsWith("/admin") || pathname.startsWith("/owner");
+
   return (
     <CartProvider>
       {children}
       <CartDrawer />
-      <LanguageSelector aboveBookingBar={isPackageDetail} />
+      {!isPortal && <LanguageSelector aboveBookingBar={isPackageDetail} />}
     </CartProvider>
   );
 }

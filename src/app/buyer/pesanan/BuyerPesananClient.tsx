@@ -8,16 +8,13 @@ import {
   Users,
   Car,
   CheckCircle2,
-  AlertCircle,
   ArrowRight,
   CreditCard,
-  ShieldCheck,
   Phone,
   Printer,
   MapPin,
   Receipt,
   Search,
-  Filter,
   Check,
   XCircle,
   Sparkles,
@@ -92,7 +89,7 @@ export function BuyerPesananClient({
         </div>
         <Link
           href="/"
-          className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#327691] hover:bg-[#2c6881] text-white text-xs sm:text-sm font-bold shadow-xs transition shrink-0"
+          className="hidden sm:inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#327691] hover:bg-[#2c6881] text-white text-xs sm:text-sm font-bold shadow-xs transition shrink-0"
         >
           <Globe size={15} />
           <span>Ke Beranda Website</span>

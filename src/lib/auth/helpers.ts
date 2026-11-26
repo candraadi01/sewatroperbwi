@@ -10,6 +10,7 @@ export interface AuthUser {
   fullName: string;
   avatarUrl: string;
   roles: UserRole[];
+  phone?: string;
 }
 
 /**
@@ -45,7 +46,7 @@ export const getAuthUser = cache(async (): Promise<AuthUser | null> => {
     const [profileResult, rolesResult] = await Promise.all([
       supabase
         .from("profiles")
-        .select("full_name, email, avatar_url, account_status")
+        .select("full_name, email, avatar_url, phone, account_status")
         .eq("id", user.id)
         .single(),
       supabase.from("user_roles").select("role").eq("user_id", user.id),
@@ -69,6 +70,7 @@ export const getAuthUser = cache(async (): Promise<AuthUser | null> => {
       fullName: profileResult.data?.full_name ?? "",
       avatarUrl: profileResult.data?.avatar_url ?? "",
       roles,
+      phone: (profileResult.data as { phone?: string })?.phone ?? (user.user_metadata?.phone as string | undefined) ?? "",
     };
   } catch (e) {
     console.warn("[getAuthUser] Error checking user:", e);

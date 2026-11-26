@@ -45,7 +45,16 @@ export async function ResourcePage({
         const image = (content as { image?: unknown } | null)?.image;
         return { image_url: isGalleryImage(image) ? image : "", ...row };
       });
-      if (name === "produk")
+      if (name === "produk") {
+        const { data: coordSetting } = await db
+          .from("site_settings")
+          .select("value")
+          .eq("key", "product_coordinates")
+          .maybeSingle();
+        const coordMap = (coordSetting?.value ?? {}) as Record<
+          string,
+          { lat?: number; lng?: number; label?: string }
+        >;
         rows = rows.map((r) => {
           const prices = r.pricing_rules as {
             base_price: number;
@@ -57,8 +66,16 @@ export async function ResourcePage({
           const price = prices
             .filter((p) => p.is_active && !p.date_start && !p.date_end)
             .sort((a, b) => b.priority - a.priority)[0];
-          return { ...r, base_price: price?.base_price ?? 0 };
+          const savedCoord = coordMap[String(r.id)] || coordMap[String(r.slug)];
+          return {
+            ...r,
+            base_price: price?.base_price ?? 0,
+            latitude: savedCoord?.lat !== undefined ? String(savedCoord.lat) : "",
+            longitude: savedCoord?.lng !== undefined ? String(savedCoord.lng) : "",
+            location_label: savedCoord?.label || "",
+          };
         });
+      }
     }
   }
   const sources = [

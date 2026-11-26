@@ -11,7 +11,6 @@ import {
   Users,
   Settings,
   BarChart3,
-  Menu,
   X,
   LogOut,
   Newspaper,
@@ -20,6 +19,7 @@ import {
   Search,
 } from "lucide-react";
 import { cn } from "@/components/ui";
+import { useLanguage } from "@/lib/i18n/context";
 
 interface AdminUser {
   id: string;
@@ -34,23 +34,29 @@ interface NavItem {
   badge?: string;
 }
 
-// 7 Menu Inti Operasional Admin — Ukuran Font Jelas (text-sm), Proporsional & Rapi
-const adminNavItems: NavItem[] = [
-  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { label: "Transaksi & Pesanan", href: "/admin/pesanan", icon: ShoppingBag },
-  { label: "Jadwal & Kuota", href: "/admin/jadwal", icon: Calendar },
-  { label: "Tour & Armada", href: "/admin/produk", icon: Package },
-  { label: "Tim Driver", href: "/admin/tim", icon: Compass },
-  { label: "Manajemen Users", href: "/admin/users", icon: Users },
-  { label: "Kelola Artikel", href: "/admin/artikel", icon: Newspaper },
-  { label: "Pencairan Mitra", href: "/admin/penarikan", icon: CreditCard },
-  { label: "Laporan Finansial", href: "/admin/laporan", icon: BarChart3 },
-  { label: "Pengaturan Sistem", href: "/admin/pengaturan", icon: Settings },
-];
-
 export function AdminSidebar({ user }: { user?: AdminUser }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { t } = useLanguage();
+
+  useEffect(() => {
+    const handler = () => setMobileOpen((prev) => !prev);
+    window.addEventListener("portal:toggle-mobile-menu", handler);
+    return () => window.removeEventListener("portal:toggle-mobile-menu", handler);
+  }, []);
+
+  const adminNavItems: NavItem[] = [
+    { label: t("admin_menu_dashboard", "Dashboard"), href: "/admin", icon: LayoutDashboard },
+    { label: t("admin_menu_pesanan", "Transaksi & Pesanan"), href: "/admin/pesanan", icon: ShoppingBag },
+    { label: t("admin_menu_jadwal", "Jadwal & Kuota"), href: "/admin/jadwal", icon: Calendar },
+    { label: t("admin_menu_produk", "Tour & Armada"), href: "/admin/produk", icon: Package },
+    { label: t("admin_menu_tim", "Tim Driver"), href: "/admin/tim", icon: Compass },
+    { label: t("admin_menu_users", "Manajemen Users"), href: "/admin/users", icon: Users },
+    { label: t("admin_menu_artikel", "Kelola Artikel"), href: "/admin/artikel", icon: Newspaper },
+    { label: t("admin_menu_penarikan", "Pencairan Mitra"), href: "/admin/penarikan", icon: CreditCard },
+    { label: t("admin_menu_laporan", "Laporan Finansial"), href: "/admin/laporan", icon: BarChart3 },
+    { label: t("admin_menu_pengaturan", "Pengaturan Sistem"), href: "/admin/pengaturan", icon: Settings },
+  ];
 
   function isActive(href: string) {
     if (href === "/admin") return pathname === "/admin";
@@ -167,21 +173,6 @@ export function AdminSidebar({ user }: { user?: AdminUser }) {
 
   return (
     <>
-      {/* Mobile Sub Bar (Sticky di bawah Navbar agar selalu mudah diakses) */}
-      <div className="md:hidden sticky top-16 z-30 flex items-center justify-between px-4 py-2.5 bg-white dark:bg-neutral-900 border-b border-[#e4ebef] dark:border-neutral-800 shadow-2xs">
-        <span className="font-extrabold text-xs uppercase tracking-wider text-[#327691] dark:text-[#8abbd0]">
-          Menu Navigasi Admin
-        </span>
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#e9f3f7] dark:bg-neutral-800 text-[#327691] dark:text-[#8abbd0] font-bold text-xs transition cursor-pointer"
-          aria-label="Buka menu navigasi"
-        >
-          {mobileOpen ? <X size={15} /> : <Menu size={15} />}
-          <span>{mobileOpen ? "Tutup" : "Daftar Menu"}</span>
-        </button>
-      </div>
-
       {/* Mobile Drawer Overlay */}
       {mobileOpen && (
         <div
@@ -208,7 +199,7 @@ export function AdminSidebar({ user }: { user?: AdminUser }) {
       </div>
 
       {/* Desktop Persistent Sidebar (Lebar Pas w-[268px], Sticky di bawah Navbar) */}
-      <aside className="hidden md:flex flex-col w-[268px] shrink-0 border-r border-[#e4ebef] dark:border-neutral-800 bg-white dark:bg-neutral-900 sticky top-16 h-[calc(100vh-64px)] z-20">
+      <aside className="hidden md:flex flex-col w-[268px] shrink-0 border-r border-[#e4ebef] dark:border-neutral-800 bg-white dark:bg-neutral-900 sticky top-12 sm:top-13 h-[calc(100vh-48px)] sm:h-[calc(100vh-52px)] z-20">
         {sidebarContent}
       </aside>
     </>

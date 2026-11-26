@@ -1,5 +1,6 @@
 import { requireBuyer } from "@/lib/auth/helpers";
 import { getOwnBookings } from "@/lib/services/booking";
+import { getProducts } from "@/lib/services/catalog";
 import { BuyerDashboardClient } from "./BuyerDashboardClient";
 
 export const metadata = {
@@ -9,7 +10,16 @@ export const metadata = {
 
 export default async function BuyerDashboardPage() {
   const user = await requireBuyer("/buyer");
-  const orders = await getOwnBookings();
+  const [orders, products] = await Promise.all([
+    getOwnBookings(),
+    getProducts(),
+  ]);
 
-  return <BuyerDashboardClient user={user} orders={orders} />;
+  return (
+    <BuyerDashboardClient
+      user={user}
+      orders={orders}
+      recommendedProducts={products.slice(0, 4)}
+    />
+  );
 }

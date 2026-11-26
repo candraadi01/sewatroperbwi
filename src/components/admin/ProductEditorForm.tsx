@@ -7,22 +7,21 @@ import {
   Check, 
   AlertCircle, 
   ExternalLink, 
-  Image as ImageIcon, 
   DollarSign, 
   Clock, 
   MapPin, 
   Sparkles, 
-  ShieldCheck, 
   Info, 
-  Car, 
-  Users, 
   Calendar,
   Layers,
   ChevronRight,
   Eye
 } from "lucide-react";
 import { TimeListEditor } from "./TimeListEditor";
+import { CoordinateMapPicker } from "./CoordinateMapPicker";
+import { resolveProductCoordinates } from "@/lib/utils/destinations";
 import { formatIDR } from "@/lib/utils/currency";
+import type { Product } from "@/types/database";
 
 type Row = Record<string, unknown>;
 
@@ -36,15 +35,15 @@ interface ProductEditorFormProps {
   onUpload: (key: string, file?: File) => Promise<void>;
 }
 
-export function ProductEditorForm({
-  selected,
-  onClose,
-  options,
-  busy,
-  error,
-  onSave,
-  onUpload,
-}: ProductEditorFormProps) {
+export function ProductEditorForm(props: ProductEditorFormProps) {
+  const {
+    selected,
+    onClose,
+    busy,
+    error,
+    onSave,
+    onUpload,
+  } = props;
   const [activeTab, setActiveTab] = useState<"info" | "pricing" | "schedule" | "route" | "facilities">("info");
 
   // State lokal untuk live preview buyer
@@ -58,6 +57,20 @@ export function ProductEditorForm({
     selected.driver_included !== undefined ? Boolean(selected.driver_included) : true
   );
   const [coverUrl, setCoverUrl] = useState<string>(String(selected.cover_image_url || ""));
+  const fallbackCoord = resolveProductCoordinates(selected as unknown as Product);
+  const [latitude, setLatitude] = useState<string>(
+    selected.latitude !== undefined && selected.latitude !== null && selected.latitude !== ""
+      ? String(selected.latitude)
+      : String(fallbackCoord.lat)
+  );
+  const [longitude, setLongitude] = useState<string>(
+    selected.longitude !== undefined && selected.longitude !== null && selected.longitude !== ""
+      ? String(selected.longitude)
+      : String(fallbackCoord.lng)
+  );
+  const [locationLabel, setLocationLabel] = useState<string>(
+    String(selected.location_label || fallbackCoord.label || "")
+  );
 
   const tabs = [
     { id: "info", label: "1. Info Utama & Banner", icon: Layers, desc: "Judul, foto & status" },
@@ -138,6 +151,9 @@ export function ProductEditorForm({
         <input type="hidden" name="is_owner_approved" value={String(selected.is_owner_approved ?? true)} />
 
         {/* ================= TAB 1: INFORMASI UTAMA & BANNER ================= */}
+        <input type="hidden" name="latitude" value={latitude} />
+        <input type="hidden" name="longitude" value={longitude} />
+        <input type="hidden" name="location_label" value={locationLabel} />
         {activeTab === "info" && (
           <div className="space-y-6 animate-fadeIn">
             {/* Visual Guide Box */}
@@ -205,7 +221,7 @@ export function ProductEditorForm({
                   <option value="inactive">Nonaktif Sementara</option>
                   <option value="archived">Diarsipkan</option>
                 </select>
-                <span className="text-[11px] text-slate-400">Pilih 'Aktif' agar pembeli dapat melihat dan memesan paket ini.</span>
+                <span className="text-[11px] text-slate-400">Pilih &apos;Aktif&apos; agar pembeli dapat melihat dan memesan paket ini.</span>
               </div>
 
               <div className="space-y-1.5 md:col-span-2">
@@ -346,7 +362,7 @@ export function ProductEditorForm({
                   </label>
                 </div>
                 <span className="text-[11px] text-slate-400">
-                  Centang untuk menampilkan badge 'Termasuk Driver & BBM'.
+                  Centang untuk menampilkan badge &apos;Termasuk Driver &amp; BBM&apos;.
                 </span>
               </div>
             </div>
@@ -486,6 +502,18 @@ export function ProductEditorForm({
                 <span className="text-[11px] text-slate-400">Misal 24 jam: pemesanan minimal dilakukan H-1 sebelum keberangkatan.</span>
               </div>
             </div>
+
+            {/* Pengaturan Titik Lokasi Google Maps */}
+            <CoordinateMapPicker
+              latitude={latitude}
+              longitude={longitude}
+              locationLabel={locationLabel}
+              onChange={({ lat, lng, label }) => {
+                setLatitude(lat);
+                setLongitude(lng);
+                setLocationLabel(label);
+              }}
+            />
           </div>
         )}
 

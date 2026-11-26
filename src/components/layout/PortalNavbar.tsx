@@ -1,8 +1,10 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Mountain, Car, LogOut, ChevronDown, Globe } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { LogOut, Globe } from "lucide-react";
 import { PortalNotification } from "./PortalNotification";
 import { useLanguage } from "@/lib/i18n/context";
 import { createClient } from "@/lib/supabase/client";
@@ -12,15 +14,17 @@ interface PortalNavbarUser {
   fullName?: string;
   email?: string;
   roles?: string[];
+  avatarUrl?: string;
 }
 
 interface PortalNavbarProps {
   user: PortalNavbarUser;
   portalType: "admin" | "owner" | "buyer";
-  badgeLabel: string;
+  badgeLabel?: string;
 }
 
-export function PortalNavbar({ user, portalType, badgeLabel }: PortalNavbarProps) {
+export function PortalNavbar({ user, portalType }: PortalNavbarProps) {
+  const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
@@ -52,66 +56,68 @@ export function PortalNavbar({ user, portalType, badgeLabel }: PortalNavbarProps
     } catch (err) {
       console.error("[portal signout server error]", err);
     }
-    window.location.assign("/");
+    router.push("/");
+    router.refresh();
   };
 
   const homeHref = portalType === "admin" ? "/admin" : portalType === "owner" ? "/owner" : "/buyer";
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white dark:bg-neutral-900 border-b border-[#e4ebef] dark:border-neutral-800 shadow-2xs select-none">
-      <div className="w-full px-3.5 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4">
-        {/* SISI KIRI: Brand Logo & Title & Badge (Matches Homestay Foto) */}
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <Link href={homeHref} className="flex items-center gap-2 sm:gap-2.5 group min-w-0">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#e9f3f7] dark:bg-neutral-800 text-[#327691] flex items-center justify-center font-bold shadow-2xs group-hover:scale-105 transition-transform shrink-0">
-              {portalType === "owner" ? (
-                <Car size={18} strokeWidth={2.4} className="sm:size-5" />
-              ) : (
-                <Mountain size={18} strokeWidth={2.4} className="sm:size-5" />
-              )}
-            </div>
-            <div className="flex flex-col leading-none min-w-0">
-              <span className="font-extrabold text-xs sm:text-base tracking-tight text-[#263b46] dark:text-neutral-100 truncate max-w-[135px] xs:max-w-[200px] sm:max-w-none">
-                Sewa Trooper Banyuwangi
-              </span>
-              <span className="hidden xs:block text-[10px] sm:text-[11px] font-semibold text-[#8b9ba5] dark:text-neutral-400 mt-0.5 truncate">
-                {t("portal_sub", "Portal Resmi 4x4")}
-              </span>
-            </div>
-          </Link>
-
-          {/* Role Badge */}
-          <span className="hidden md:inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-[#e9f3f7] dark:bg-neutral-800 text-[#327691] border border-[#d2e4ec] dark:border-neutral-700 shrink-0">
-            {badgeLabel}
+      <div className="w-full px-3.5 sm:px-5 lg:px-6 h-12 sm:h-13 flex items-center justify-between">
+        {/* SISI KIRI: Logo Jeep Trooper + Nama Brand (Ramping & Proporsional Persis Foto 2) */}
+        <Link href={homeHref} className="flex items-center gap-2 sm:gap-2.5 group min-w-0">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 74 43"
+            className="w-8 sm:w-9 h-auto text-[#d99b26] dark:text-[#f4bd42] shrink-0 group-hover:scale-105 transition-transform"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 29h4l2-6 15-3 6-12h27l7 4 3 15 4 2v6h-9m-15 0H23m-14 0H3v-6Z" />
+            <path d="M27 20 33 11h21l6 4 2 6H27Zm18-9v10m10-10 2 10M10 26l13-2m1-4 1 9m6-5h31M65 25l2 2m-37-19 1-3h24l3 3M5 31h6m52 1h8" />
+            <path d="M29 26h11m5 0h11M34 29v3m10-5v6m18-11v5" />
+            <circle cx="16" cy="34" r="7" />
+            <circle cx="16" cy="34" r="3.5" />
+            <circle cx="55" cy="34" r="7" />
+            <circle cx="55" cy="34" r="3.5" />
+          </svg>
+          <span className="font-bold text-xs sm:text-sm tracking-tight text-[#263b46] dark:text-neutral-100 truncate">
+            Sewa Trooper Banyuwangi
           </span>
-        </div>
+        </Link>
 
-        {/* SISI KANAN: Bell Notification + User Pill */}
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-          {/* Functional Notification Bell with interactive popover */}
-          <PortalNotification role={portalType} />
+        {/* SISI KANAN: Lonceng Notifikasi + Avatar Bulat Profil Akun (Persis Foto 2) */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          {/* Functional Notification Bell (Minimalis & Ringkas) */}
+          <PortalNotification role={portalType} userId={user.id} />
 
-          {/* User Profile Pill & Dropdown (Matches Foto: [C] Candra youtube 1) */}
+          {/* User Profile Avatar Circle (Foto 2: Bulat Biru [P] / [A] 30px) */}
           <div className="relative" ref={userMenuRef}>
             <button
               type="button"
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-1.5 sm:gap-2.5 pl-1.5 pr-2 sm:pr-3 py-1 rounded-full border border-[#dce6eb] dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-[#f4f9fb] dark:hover:bg-neutral-800 text-[#263b46] dark:text-neutral-100 transition cursor-pointer shadow-2xs"
+              className="flex items-center justify-center rounded-full hover:opacity-90 transition cursor-pointer shadow-2xs focus:outline-none"
+              aria-label="Menu Pengguna"
             >
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#5d7d8c] text-white flex items-center justify-center text-xs sm:text-sm font-bold shrink-0">
-                {user.fullName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "C"}
-              </div>
-
-              <span className="hidden xs:inline-block text-xs sm:text-sm font-bold text-[#263b46] dark:text-neutral-100 max-w-[80px] sm:max-w-[140px] truncate text-left">
-                {user.fullName || "Pengguna"}
-              </span>
-
-              <ChevronDown
-                size={14}
-                className={`text-[#55717f] dark:text-neutral-400 transition-transform duration-200 shrink-0 ${
-                  dropdownOpen ? "rotate-180" : ""
-                }`}
-              />
+              {user.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt={user.fullName || "Avatar"}
+                  className="rounded-full object-cover shrink-0 border border-slate-200 dark:border-neutral-700 block"
+                  style={{ width: "30px", height: "30px", minWidth: "30px", minHeight: "30px", aspectRatio: "1 / 1" }}
+                />
+              ) : (
+                <div
+                  className="rounded-full bg-[#0284c7] text-white flex items-center justify-center text-xs sm:text-sm font-bold shrink-0 shadow-xs"
+                  style={{ width: "30px", height: "30px", minWidth: "30px", minHeight: "30px", aspectRatio: "1 / 1" }}
+                >
+                  {user.fullName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "A"}
+                </div>
+              )}
             </button>
 
             {/* User Dropdown Menu */}
